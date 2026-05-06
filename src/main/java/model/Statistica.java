@@ -114,9 +114,7 @@ public class Statistica {
            this.forza= nuovoForza;
         }
 
-        public void setDestrezza( int nuovoDestrezza){
-          this.destrezza= nuovoDestrezza;
-        }
+        public void setDestrezza( int nuovoDestrezza){this.destrezza= nuovoDestrezza;}
 
         public void setCostituzione( int nuovoCostituzione){
           this.costituzione= nuovoCostituzione;
@@ -137,6 +135,18 @@ public class Statistica {
         public void setFortuna( int nuovoFortuna){
           this.fortuna= nuovoFortuna;
         }
+
+           public void sommaStatistiche(Statistica puntiDaAggiungere) {
+                   this.hpCorrenti+= puntiDaAggiungere.getHpCorrenti();
+                   this.manaCorrenti+= puntiDaAggiungere.getManaCorrenti();
+                   this.forza+= puntiDaAggiungere.getForza();
+                   this.destrezza += puntiDaAggiungere.getDestrezza();
+                   this.costituzione += puntiDaAggiungere.getCostituzione();
+                   this.intelligenza+= puntiDaAggiungere.getIntelligenza();
+                   this.fede+= puntiDaAggiungere.getFede();
+                   this.carisma+= puntiDaAggiungere.getCarisma();
+                   this.fortuna+= puntiDaAggiungere.getFortuna();
+              }
 
 }
 

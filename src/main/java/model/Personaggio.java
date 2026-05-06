@@ -37,4 +37,13 @@ public class Personaggio {
 
 
                       }
+
+
+                 public void addPuntiStatistica(int puntiRicevuti) {
+
+                          this.puntiStatistica += puntiRicevuti;
+                           }
+
+
+
 }

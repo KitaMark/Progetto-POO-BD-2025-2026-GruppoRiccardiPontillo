@@ -11,7 +11,19 @@ public class Master extends Utente{
     //public Personaggio creaPersonaggio(String nomePersonaggio, Razza razzaScelta, Classe classeScelta, Campagna campagnaPartecipa) {
            //eccezione poichè il master non cres i PG.
     //}
+
+         public Campagna creaCampagna( String nomeCampagna, int maxGiocatori){
+                  return  new Campagna(nomeCampagna, maxGiocatori);
+                 }
+
+         public void assegnaPuntiStatistica( Personaggio pgRicevente,int puntiAssegnati){
+                   pgRicevente.addPuntiStatistica(puntiAssegnati);
+
+                }
+
 }
+
+
 
 
 
