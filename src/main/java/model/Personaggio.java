@@ -12,8 +12,8 @@ public class Personaggio {
        private Campagna campagnaPersonaggio;
        private ArrayList<Oggetto>  inventario;
 
-           public Personaggio(String nome, Statistica statisticheBase, Classe classePersonaggio, Razza razzaPersonaggio,
-                       boolean  isPg,Statistica statisticheFinali, Campagna campagnaPersonaggio){
+           public Personaggio(String nome, Razza razzaPersonaggio, Classe classePersonaggio, Statistica statisticheBase,
+                       boolean  isPg, Campagna campagnaPersonaggio){
 
                             this.nome=nome;
                             this.razzaPersonaggio= razzaPersonaggio;

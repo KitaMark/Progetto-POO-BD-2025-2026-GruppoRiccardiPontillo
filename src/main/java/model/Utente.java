@@ -33,5 +33,19 @@ public class Utente {
           }
 
 
+           public Personaggio creaPersonaggio(String nomePersonaggio, Razza razzaScelta, Classe classeScelta, Campagna campagnaPartecipa){
+             if((campagnaPartecipa.getIsIniziata() == true) || (campagnaPartecipa.getListaPersonaggiPartecipanti().size() >= campagnaPartecipa.getMaxGiocatori())){
+                          //fare eccezzione (penso sia migliore)
+                             }
 
-}
+                     Statistica statBase = new Statistica();
+                     Personaggio nuovoPG = new Personaggio(nomePersonaggio, razzaScelta, classeScelta,statBase,true, campagnaPartecipa);
+                               return nuovoPG;
+                      }
+
+
+
+    }
+
+
+
