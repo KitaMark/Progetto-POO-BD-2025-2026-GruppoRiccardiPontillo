@@ -2,7 +2,7 @@ package model;
 import java.util.ArrayList;
 public class Classe {
     private ArrayList<Abilita> abilitaSbloccabili;
-    private ArrayList<Oggetto> equipaggiamentoIniziale;
+    private ArrayList<OggettoEquipaggiabile> equipaggiamentoIniziale;
 
 
        public Classe(){
@@ -14,7 +14,7 @@ public class Classe {
              this.abilitaSbloccabili.add(nuovaAbilita);
              }
 
-          public void aggiungiEquipaggiamento(Oggetto nuovoOggetto){
+          public void aggiungiEquipaggiamento(OggettoEquipaggiabile nuovoOggetto){
              this.equipaggiamentoIniziale.add(nuovoOggetto);         //vedere se implementare
           }
 
@@ -23,7 +23,16 @@ public class Classe {
                   return abilitaSbloccabili;
                  }
 
-               public ArrayList<Oggetto> getEquipaggiamentoIniziale() {
+              public ArrayList<OggettoEquipaggiabile> getEquipaggiamentoIniziale() {
                  return equipaggiamentoIniziale;
                 }
+
+              public void setAbilitaSbloccabili(ArrayList<Abilita> nuovoAbilitaSbloccabili){
+                  this.abilitaSbloccabili= nuovoAbilitaSbloccabili;
+              }
+
+              public void setEquipaggiamentoIniziale(ArrayList<OggettoEquipaggiabile> nuovoEquipaggiamentoInizile){
+                  this.equipaggiamentoIniziale= nuovoEquipaggiamentoInizile;
+              }
+
 }

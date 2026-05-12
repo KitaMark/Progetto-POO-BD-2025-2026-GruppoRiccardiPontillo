@@ -2,13 +2,13 @@ package model;
 
 public class OggettoEquipaggiabile extends Oggetto{
          private Statistica requisiti;
-         private boolean equipaggiato;
-         private Statistica bonus;
+         private boolean isEquipaggiato;
+
 
 
            public OggettoEquipaggiabile(String nomeOggetto, int costo, Statistica requisiti,  Statistica bonus){
-                      super(nomeOggetto, costo);
-                      this.equipaggiato= false;
+                      super(nomeOggetto, costo, bonus);
+                      this.isEquipaggiato= false;
 
                this.requisiti = new Statistica(
                        requisiti.getForza(),
@@ -20,7 +20,18 @@ public class OggettoEquipaggiabile extends Oggetto{
                        requisiti.getFortuna()
                );
 
-                      this.bonus=bonus;
 
            }
+
+              public boolean getIsEquipaggiato(){
+                    return this.isEquipaggiato;
+                  }
+
+              public void setIsEquipaggiato(boolean nuovoIsEquipaggiato){
+                  this.isEquipaggiato= nuovoIsEquipaggiato;
+              }
+
+
+
+
 }

@@ -30,7 +30,7 @@ public class Statistica {
         this.manaCorrenti = 50;
     }
 
-    //Costruttore specifico per l'inizializzazione dei requisiti degli equipaggiamenti.
+    //Costruttore specifico per l'inizializzazione dei requisiti degli equipaggiamenti. (metodo creaPersonaggio in utente)
     public Statistica(int forza, int destrezza, int costituzione, int intelligenza, int fede, int carisma, int fortuna) {
         this.forza = forza;
         this.destrezza = destrezza;
@@ -45,6 +45,21 @@ public class Statistica {
         this.hpCorrenti = 0;
         this.maxMana = 0;
         this.manaCorrenti = 0;
+    }
+
+    // Costruttore di copia (usato nel metodo  getStatisticheFinali in Personaggio)
+    public Statistica(Statistica altra) {
+        this.forza = altra.getForza();
+        this.destrezza = altra.getDestrezza();
+        this.costituzione = altra.getCostituzione();
+        this.intelligenza = altra.getIntelligenza();
+        this.fede = altra.getFede();
+        this.carisma = altra.getCarisma();
+        this.fortuna = altra.getFortuna();
+        this.maxHp = altra.getMaxHp();
+        this.maxMana = altra.getMaxMana();
+        this.hpCorrenti = altra.getHpCorrenti();
+        this.manaCorrenti = altra.getManaCorrenti();
     }
 
 
@@ -139,6 +154,8 @@ public class Statistica {
            public void sommaStatistiche(Statistica puntiDaAggiungere) {
                    this.hpCorrenti+= puntiDaAggiungere.getHpCorrenti();
                    this.manaCorrenti+= puntiDaAggiungere.getManaCorrenti();
+                   this.maxHp += puntiDaAggiungere.getMaxHp();
+                   this.maxMana += puntiDaAggiungere.getMaxMana();
                    this.forza+= puntiDaAggiungere.getForza();
                    this.destrezza += puntiDaAggiungere.getDestrezza();
                    this.costituzione += puntiDaAggiungere.getCostituzione();
@@ -147,6 +164,17 @@ public class Statistica {
                    this.carisma+= puntiDaAggiungere.getCarisma();
                    this.fortuna+= puntiDaAggiungere.getFortuna();
               }
+
+
+           public int calcolaLivello() {
+              int sommaCapacita = this.forza + this.destrezza + this.costituzione +
+                     this.intelligenza + this.fede + this.carisma + this.fortuna;
+
+                  int livelloPG= sommaCapacita / 10; //ogni 10 punti un livello
+                  if (livelloPG < 1) return 1; //controllo per assicurarci che il livello minimo sia almeno 1
+
+                          return livelloPG;
+                          }
 
 }
 
