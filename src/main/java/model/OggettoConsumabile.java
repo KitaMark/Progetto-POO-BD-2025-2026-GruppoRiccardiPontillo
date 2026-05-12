@@ -6,20 +6,43 @@ public class OggettoConsumabile extends Oggetto{
       private int ripristinoMana;
 
 
-          public OggettoConsumabile(String nomeOggetto, int costo, Statistica bonus, int quantita, int ripristinoHp, int ripristinoMana){
-                  super(nomeOggetto, costo, bonus);
+          public OggettoConsumabile(String nomeOggetto, int costo,  int quantita, int ripristinoHp, int ripristinoMana){
+                  super(nomeOggetto, costo);
 
                    this.quantita= quantita; //chiedere se quantita da inizializzare a 1
                    this.ripristinoHp= ripristinoHp;
                    this.ripristinoMana= ripristinoMana;
           }
 
-          public void usa(Personaggio pg) {
-               pg.getStatisticaBase().sommaStatistiche(this.getBonusStat());
+           //vedere se va bene
+           public void usa(Personaggio pg) {
+              Statistica statConsumabili = pg.getStatisticheFinali();//accediamo a stat hp e mana
 
-               pg.aggiornaStatoPG();//calcolo stato pg per mostrare i cambiamenti dopo l'uso dell'oggetto
+                int nuoviHp = statConsumabili.getHpCorrenti() + this.ripristinoHp;
 
-               pg.getInventario().remove(this); // avendo usato l'oggetto esso va rimosso
-    }
+                 if (nuoviHp > statConsumabili.getMaxHp()){
+
+                      nuoviHp = statConsumabili.getMaxHp();
+                    }
+
+                      statConsumabili.setHpCorrenti(nuoviHp);
+
+                 int nuovoMana = statConsumabili.getManaCorrenti() + this.ripristinoMana;
+
+                 if (nuovoMana > statConsumabili.getMaxMana()){
+
+                      nuovoMana = statConsumabili.getMaxMana();
+                  }
+
+                      statConsumabili.setManaCorrenti(nuovoMana);
+
+                                 this.quantita--; // Riduciamo di 1 l'uso
+
+                             if (this.quantita <= 0) {
+                               // Rimuoviamo l'oggetto solo se le cariche sono finite
+                              pg.getInventario().remove(this);
+                              }
+                                     pg.aggiornaStatoPG();
+                                }
 
 }
