@@ -28,5 +28,8 @@ public class Oggetto {
                this.costo= nuovoCosto;
            }
 
+           public void controllaEquipaggiamento(Statistica statBasePG) {
+               // Gli oggetti generici non fanno nulla, serve per futuro override in ogg equipaggiabile
 
+                }
 }

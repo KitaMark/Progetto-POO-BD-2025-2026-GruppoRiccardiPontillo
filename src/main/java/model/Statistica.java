@@ -176,5 +176,12 @@ public class Statistica {
                           return livelloPG;
                           }
 
+
+           public boolean soddisfaRequisito( Statistica limite){
+               return this.forza >= limite.getForza() && this.destrezza >= limite.getDestrezza() && this.costituzione >= limite.getCostituzione() &&
+              this.intelligenza >= limite.getIntelligenza() && this.fede >= limite.getFede() && this.carisma >= limite.getCarisma() &&
+                 this.fortuna >= limite.getFortuna();
+           }
+
 }
 

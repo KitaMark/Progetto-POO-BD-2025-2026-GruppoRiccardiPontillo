@@ -34,6 +34,25 @@ public class Campagna {
                 }
 
 
+             public void aggiungiPG(Personaggio pgDaAggiungere){
+                 if((this.isIniziata==false) && (this.listaPersonaggiPartecipanti.size() < this.maxGiocatori)) {
+                     listaPersonaggiPartecipanti.add(pgDaAggiungere);
+                 }
+             }
+
+             public boolean Istroppi(){
+                  return this.listaPersonaggiPartecipanti.size()>= maxGiocatori;
+                }
+
+
+             public void concludiCampagna(){
+               if(this.isIniziata== true){
+                    this.isIniziata= false;   //campagna finita
+               }
+
+             }
+
+
 
 
 }

@@ -33,7 +33,11 @@ public class OggettoEquipaggiabile extends Oggetto{
                     return this.isEquipaggiato;
                   }
 
-              public void setIsEquipaggiato(boolean nuovoIsEquipaggiato){
+             public Statistica getRequisiti() {
+                    return requisiti;
+                      }
+
+               public void setIsEquipaggiato(boolean nuovoIsEquipaggiato){
                   this.isEquipaggiato= nuovoIsEquipaggiato;
               }
 
@@ -41,7 +45,17 @@ public class OggettoEquipaggiabile extends Oggetto{
                        this.bonus= nuovoBonus;
                      }
 
+            public void setRequisiti(Statistica nuovoRequisiti) {
+                   this.requisiti = nuovoRequisiti;
+                      }
 
+
+              @Override
+               public void controllaEquipaggiamento(Statistica statBasePG) {
+              if ((this.isEquipaggiato==true) && (statBasePG.soddisfaRequisito(this.requisiti) == false)) {
+                this.isEquipaggiato = false;
+                 }
+              }
 
 
 

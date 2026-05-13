@@ -81,6 +81,54 @@ public class Personaggio {
                          }
 
 
+
+
+              public void Equipaggia( OggettoEquipaggiabile oggettoDaEquipaggiare){
+                  if(this.statisticheBase.soddisfaRequisito(oggettoDaEquipaggiare.getRequisiti()) == true){
+                       oggettoDaEquipaggiare.setIsEquipaggiato(true);
+                       aggiornaStatoPG();
+                  }
+              }
+
+
+             public void disequipaggia(OggettoEquipaggiabile oggettoDaDisequipaggiare) {
+                    if ((oggettoDaDisequipaggiare != null) && (oggettoDaDisequipaggiare.getIsEquipaggiato()==true)) {
+                   oggettoDaDisequipaggiare.setIsEquipaggiato(false); // Cambia lo stato interno dell'oggetto
+                       aggiornaStatoPG();
+                            }
+                          }
+
+                  public void sommaOro(int quantita) {
+                         if (quantita > 0) {
+                        this.oroPosseduto += quantita;
+                            }
+                            }
+
+                  public boolean sottraiOro(int costo) {
+                       if (costo <= this.oroPosseduto) {
+                           this.oroPosseduto -= costo;
+                              return true;
+                             }
+                            return false;
+                             }
+
+                  public void acquistaOggetto(Oggetto oggettoDaAcquistare) {
+                     if (sottraiOro(oggettoDaAcquistare.getCosto()) ==true) {
+                          this.inventario.add(oggettoDaAcquistare);
+                           }
+                       }
+
+
+
+              public void spendiPuntiStatistica(Statistica statDaIncrementare) {
+                  if (this.puntiStatistica > 0) {
+                      this.statisticheBase.sommaStatistiche(statDaIncrementare);
+                      this.puntiStatistica--;
+                      aggiornaStatoPG();
+                  }
+              }
+
+
               public void aggiornaStatoPG() {
                 this.statisticheFinali = this.getStatisticheFinali();// ricalcolo le stat finali PG
                 this.livello = this.statisticheFinali.calcolaLivello(); //calcolo il livello dopo le modifiche
@@ -92,9 +140,18 @@ public class Personaggio {
                   this.statisticheFinali.setManaCorrenti(this.statisticheFinali.getMaxMana());
                     }
 
-                 //implementare se oggetto adesso è effettivamente equipaggiabile dopo le modifiche
+                  for (OggettoEquipaggiabile oggettoDaControllare : equipaggiamento) {
+                       if ((oggettoDaControllare.getIsEquipaggiato()==true) && (this.statisticheBase.soddisfaRequisito(oggettoDaControllare.getRequisiti())==false)) {
+                            oggettoDaControllare.setIsEquipaggiato(false);
+                        }
+                    }
+
                    }
-    }
+                           }
+
+
+
+
 
 
 }

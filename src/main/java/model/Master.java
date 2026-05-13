@@ -44,6 +44,14 @@ public class Master extends Utente{
                               return false;
                                           }
 
+
+
+          public void cambiaAndamentoCampagna(boolean nuovoAndamento){
+               if(campagnaAttiva != null){
+                     campagnaAttiva.setIniziata(nuovoAndamento);
+               }
+          }
+
 }
 
 
