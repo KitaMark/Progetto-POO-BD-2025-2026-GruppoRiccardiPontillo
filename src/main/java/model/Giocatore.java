@@ -8,7 +8,7 @@ public class Giocatore extends Utente{
 
            super(username,password,email);
            listaPG = new ArrayList<Personaggio>();
-           listaCampagne = new ArrayList<Campagne>();
+           listaCampagne = new ArrayList<Campagna>();
        }
 
        public void iscrivitiCampagna(Campagna campagna){
@@ -16,8 +16,8 @@ public class Giocatore extends Utente{
                throw new IllegalArgumentException("Campagna non esistente");
            }
            else{
-               listaCampagna.add(campagna);
-               campagna.partecipanti.add(this);
+               listaCampagne.add(campagna);
+               campagna.getListaPartecipanti().add(this);
            }
        }
 

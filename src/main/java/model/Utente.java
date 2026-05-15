@@ -17,9 +17,9 @@ public abstract class Utente {
                 return this.username;
            }
 
-           public String getEmail(){
-                return this.email;
-
+           public String getEmail() {
+               return this.email;
+           }
 
            //sono stati aggiunti metodi setusername e setpassword per futura estensibilità del sistema,
                // nonostante esuli dalla specifica
