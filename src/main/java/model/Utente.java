@@ -1,51 +1,57 @@
 package model;
 
 
-public class Utente {
-      private String userName;
+public abstract class Utente {
+      private String username;
       private String password;
       private String email;
 
-        public Utente(String userName, String password, String email) {
-                this.userName = userName;
-                this.password = password;
-                this.email = email;
-        }
-
-           public String getUserName(){
-                return this.userName;
-           }
-
-           public String getPassword(){
-                return this.password;
+      //costruttore, da utilizzare per le sottoclassi.
+          public Utente(String email, String username, String password){
+              this.email = email;
+              this.username = username;
+              this.password = password;
+          }
+      //metodi public
+           public String getUsername(){
+                return this.username;
            }
 
            public String getEmail(){
                 return this.email;
-           }
 
-           public void setUserName(String nuovoUserName) {
-                this.userName = nuovoUserName;
+
+           //sono stati aggiunti metodi setusername e setpassword per futura estensibilità del sistema,
+               // nonostante esuli dalla specifica
+           public void setUsername(String usernameLogin, String passwordLogin, String nuovoUsername) {
+            if(controllaAccesso(usernameLogin, passwordLogin)) {
+                this.username = nuovoUsername;
+            }
           }
 
-          public void setPassword(String nuovaPassword){
+            public void setPassword(String usernameLogin, String passwordLogin, String nuovaPassword){
+            if(controllaAccesso(usernameLogin, passwordLogin)){
                 this.password= nuovaPassword;
+            }
+          }
+
+          @Override
+          public String toString(){
+              return email + " " + username;
           }
 
 
-           public Personaggio creaPersonaggio(String nomePersonaggio, Razza razzaScelta, Classe classeScelta, Campagna campagnaPartecipa){
-             if((campagnaPartecipa.getIsIniziata() == true) || (campagnaPartecipa.getListaPersonaggiPartecipanti().size() >= campagnaPartecipa.getMaxGiocatori())){
-                          //fare eccezzione (penso sia migliore)
-                             }
-
-                     Statistica statBase = new Statistica();
-                     Personaggio nuovoPG = new Personaggio(nomePersonaggio, razzaScelta, classeScelta,statBase,true, campagnaPartecipa);
-                               return nuovoPG;
-                      }
-
-
-
-    }
+          //servizi interni alla classe
+          protected final boolean controllaAccesso(String username, String password){
+            if(username == null || !(username.equals(this.username))){
+                return false;
+            }
+            if(password == null || !(password.equals(this.password))){
+                return false;
+            }
+            return true;
+          }
+}
 
 
 
