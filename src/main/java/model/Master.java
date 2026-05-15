@@ -1,12 +1,15 @@
 package model;
+import java.util.ArrayList;
 
 public class Master extends Utente{
      private Campagna campagnaAttiva;
+     private ArrayList<Personaggio> listaPnG;
 
 
         public Master(String userName, String password, String email){
                  super(userName,password,email);
-                 this.campagnaAttiva= null; //si riempie quando chiamiamo il metodo creaCampagna
+                 campagnaAttiva= null; //si riempie quando chiamiamo il metodo creaCampagna
+                 listaPng = new ArrayList<Personaggio>();
           }
 
 
@@ -15,13 +18,17 @@ public class Master extends Utente{
            //eccezione poichè il master non cres i PG.
     //}
 
-         public Campagna creaCampagna( String nomeCampagna, int maxGiocatori){
-                  return  new Campagna(nomeCampagna, maxGiocatori);
-                 }
+         public void creaCampagna( String nomeCampagna, int maxGiocatori){
+                  campagnaAttiva = new Campagna(nomeCampagna, maxGiocatori, this);
+                 } //diversamente dalla traccia, non restituisce un riferimento a campagna ma aggiorna un campo interno alla classe
 
-         public void assegnaPuntiStatistica( Personaggio pgRicevente,int puntiAssegnati){
-                   pgRicevente.addPuntiStatistica(puntiAssegnati);
-
+         public void assegnaPuntiStatistica( Personaggio personaggio, int puntiAssegnati){
+                   if(//personaggioInCampagna(personaggio)){
+                       //assegna punti. metodo di ricerca da definire.
+                   }
+                   else{
+                       throw IllegalArgumentException("personaggio non esistente.")
+                   }
                 }
 
 
@@ -31,7 +38,7 @@ public class Master extends Utente{
                        return true;
              }
                     return false;
-         }
+         } //da controllare
 
 
          public boolean modificaStatistichePG(Personaggio pg, Statistica statModificate) {
@@ -42,14 +49,8 @@ public class Master extends Utente{
                     return true;
                        }
                               return false;
-                                          }
+                                          } //da controllare
 
-
-
-          public void cambiaAndamentoCampagna(boolean nuovoAndamento){
-               if(campagnaAttiva != null){
-                     campagnaAttiva.setIniziata(nuovoAndamento);
-               }
           }
 
 }

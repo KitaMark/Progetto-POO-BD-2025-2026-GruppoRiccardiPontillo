@@ -37,9 +37,8 @@ public abstract class Utente {
 
           @Override
           public String toString(){
-              return email + " " + username;
-          }
-
+           return String.format("email: %s%n username: %s%n", this.getEmail(), this.getUsername());
+           }
 
           //servizi interni alla classe
           protected final boolean controllaAccesso(String username, String password){

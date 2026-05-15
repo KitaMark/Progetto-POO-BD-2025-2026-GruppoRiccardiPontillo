@@ -4,13 +4,15 @@ public class Campagna {
        private String nomeCampagna;
        private int maxGiocatori;
        private boolean isIniziata;
-       private ArrayList<Personaggio>  listaPersonaggiPartecipanti;
+       private ArrayList<Personaggio>  listaPersonaggi;
+       private ArrayList<Giocatore> partecipanti;
+       private Master master;
 
-         public Campagna(String nomeCampagna, int maxGiocatori){
+         public Campagna(String nomeCampagna, int maxGiocatori, Master master){
                 this.nomeCampagna= nomeCampagna;
                 this.maxGiocatori=maxGiocatori;
                 this.isIniziata= false;
-                this.listaPersonaggiPartecipanti= new ArrayList<>();
+                this.listaPersonaggi= new ArrayList<Personaggio>();
          }
 
               public int getMaxGiocatori(){
@@ -21,34 +23,25 @@ public class Campagna {
                  return this.isIniziata;
                   }
 
+              public String getMaster(){
+                return master.toString(); //ricorda di fare override in master
+              }
+
+              public void getListaPartecipanti(){
+                return partecipanti; //da gestire stampa fuori
+              }
+
               public void setMaxGiocatori( int nuovoMaxGiocatori){
                     this.maxGiocatori= nuovoMaxGiocatori;
               }
 
-              public void setIniziata( boolean nuovoIsIniziata){
-                   this.isIniziata= nuovoIsIniziata;
+              public void inizia(){
+                   this.isIniziata= true;
+              } //non è possibile, una volta iniziata la campagna, riportarla allo stato non iniziata.
+
+              public void getListaPersonaggi(){ return listaPersonaggi; //gestire stampa
               }
 
-              public ArrayList<Personaggio> getListaPersonaggiPartecipanti(){
-                     return listaPersonaggiPartecipanti;
-                }
-
-
-             public void aggiungiPG(Personaggio pgDaAggiungere){
-                 if((this.isIniziata==false) && (this.listaPersonaggiPartecipanti.size() < this.maxGiocatori)) {
-                     listaPersonaggiPartecipanti.add(pgDaAggiungere);
-                 }
-             }
-
-             public boolean Istroppi(){
-                  return this.listaPersonaggiPartecipanti.size()>= maxGiocatori;
-                }
-
-
-             public void concludiCampagna(){
-               if(this.isIniziata== true){
-                    this.isIniziata= false;   //campagna finita
-               }
 
              }
 
