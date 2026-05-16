@@ -21,5 +21,22 @@ public class Giocatore extends Utente{
            }
        }
 
+     @Override
+    public  void creaPersonaggio(String nomePG, Razza razzaScelta, Classe classeScelta, Campagna campagnaGiocante){
+         for (Personaggio pgDaControllare : listaPG) {
+             if (pgDaControllare.getCampagnaPersonaggio().equals(campagnaGiocante)) {
+                 throw new IllegalArgumentException("Un giocatore può creare un solo PG per campagna.");
+             }
+         }
+
+
+           Statistica statsIniziali = new Statistica();
+         Personaggio nuovoPg = new Personaggio(nomePG, razzaScelta, classeScelta, statsIniziali, true, campagnaGiocante);
+
+         this.listaPG.add(nuovoPg);
+
+
+         }
+
 
 }

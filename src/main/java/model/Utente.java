@@ -50,6 +50,9 @@ public abstract class Utente {
             }
             return true;
           }
+
+         public abstract void creaPersonaggio(String nomePG, Razza razzaScelta, Classe classeScelta, Campagna campagnaGiocante);
+
 }
 
 

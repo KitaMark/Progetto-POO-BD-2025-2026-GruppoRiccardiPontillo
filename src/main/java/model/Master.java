@@ -15,8 +15,19 @@ public class Master extends Utente {
         this.campagnaAttiva = new Campagna(nomeCampagna, maxGiocatori, this);
     }
 
+
+    @Override
+    public void creaPersonaggio(String nomePG, Razza razzaScelta, Classe classeScelta, Campagna campagnaGiocante) {
+        // Il Master non ha il limite di "un solo personaggio", quindi non facciamo quel controllo.
+
+        Statistica statsBase = new Statistica();
+        Personaggio nuovoPng= new Personaggio(nomePG, razzaScelta, classeScelta, statsBase, false, campagnaGiocante);
+
+        this.listaPnG.add(nuovoPng);
+    }
+
+
     public void assegnaPuntiStatistica(Personaggio personaggio, int puntiAssegnati) {
-        // Rimosso il commento che rompeva l'if
         if (personaggio != null) {
             // logica da definire
         } else {

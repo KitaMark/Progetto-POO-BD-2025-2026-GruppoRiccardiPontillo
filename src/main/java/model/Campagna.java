@@ -13,6 +13,7 @@ public class Campagna {
                 this.maxGiocatori=maxGiocatori;
                 this.isIniziata= false;
                 this.listaPersonaggi= new ArrayList<Personaggio>();
+                this.partecipanti= new ArrayList<>(partecipanti);
          }
 
               public int getMaxGiocatori(){
@@ -27,9 +28,13 @@ public class Campagna {
                 return master.toString(); //ricorda di fare override in master
               }
 
-              public void getListaPartecipanti(){
+              public ArrayList<Giocatore> getListaPartecipanti(){
                 return partecipanti; //da gestire stampa fuori
               }
+
+               public ArrayList<Personaggio> getListaPersonaggi(){
+                   return listaPersonaggi; //gestire stampa
+               }
 
               public void setMaxGiocatori( int nuovoMaxGiocatori){
                     this.maxGiocatori= nuovoMaxGiocatori;
@@ -39,8 +44,7 @@ public class Campagna {
                    this.isIniziata= true;
               } //non è possibile, una volta iniziata la campagna, riportarla allo stato non iniziata.
 
-              public void getListaPersonaggi(){ return listaPersonaggi; //gestire stampa
-              }
+
 
 
              }
@@ -48,4 +52,4 @@ public class Campagna {
 
 
 
-}
+

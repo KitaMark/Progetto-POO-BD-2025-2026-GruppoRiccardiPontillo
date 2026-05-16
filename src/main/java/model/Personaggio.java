@@ -2,7 +2,7 @@ package model;
 import java.util.ArrayList;
 public class Personaggio {
        private String nome;
-       int livello;
+       private  int livello;
        private Statistica statisticheBase;
        private Classe classePersonaggio;
        private Razza razzaPersonaggio;
@@ -25,20 +25,13 @@ public class Personaggio {
                             this.oroPosseduto= 100;
                             this.puntiStatistica= 0;
 
-                            this.statisticheBase= new Statistica();
+                            this.statisticheBase= new Statistica(statisticheBase);
+                            this.statisticheBase.sommaStatistiche(this.razzaPersonaggio.getModificatoriRazza());
 
-                            //metodo per applicare i bonus stat dovuti dalla razza (meglio qua)
+                            this.inventario = new ArrayList<>();
+                            this.equipaggiamento = new ArrayList<>(classePersonaggio.getEquipaggiamentoIniziale());
 
-
-                           this.statisticheFinali= new Statistica();
-
-                           //metodo per aggiornare stat finali (meglio qua)
-
-                 //richiamo metodo calcolaLivello così in automatico c'è l'ho già
-
-              //cosi di base abbiamo l'eqquipaggiamento legato alla classe
-               this.inventario = new ArrayList<>();
-               this.equipaggiamento = new ArrayList<>(classePersonaggio.getEquipaggiamentoIniziale());
+                              this.aggiornaStatoPG();
 
                       }
 
@@ -50,7 +43,11 @@ public class Personaggio {
                         return this.inventario;
                  }
 
-                 public void setStatisticheBase(Statistica nuovaStatisticaBase){
+                 public Campagna getCampagnaPersonaggio() {
+                        return campagnaPersonaggio;
+                          }
+
+              public void setStatisticheBase(Statistica nuovaStatisticaBase){
                         this.statisticheBase= nuovaStatisticaBase;
                    }
 
@@ -58,8 +55,11 @@ public class Personaggio {
                      this.inventario= nuovoInventario;
                  }
 
+                   public void setCampagnaPersonaggio(Campagna nuovoCampagnaPersonaggio) {
+                            this.campagnaPersonaggio = nuovoCampagnaPersonaggio;
+                        }
 
-                 public void addPuntiStatistica(int puntiRicevuti) {
+                      public void addPuntiStatistica(int puntiRicevuti) {
 
                           this.puntiStatistica += puntiRicevuti;
                            }
@@ -67,12 +67,10 @@ public class Personaggio {
 
 
                public Statistica getStatisticheFinali() {
-                  Statistica statisticheTotali = new Statistica(this.statisticheBase);
-
-                    statisticheTotali.sommaStatistiche(this.razzaPersonaggio.getModificatoriRazza());
+                   Statistica statisticheTotali = new Statistica(this.statisticheBase);
 
                       for (OggettoEquipaggiabile oggettoEquipaggiato : equipaggiamento) {
-                               if (oggettoEquipaggiato.getIsEquipaggiato()) {
+                               if (oggettoEquipaggiato.getIsEquipaggiato()==true) {
                       statisticheTotali.sommaStatistiche(oggettoEquipaggiato.getBonusStat());
                               }
                        }
@@ -120,31 +118,41 @@ public class Personaggio {
 
 
 
-              public void spendiPuntiStatistica(Statistica statDaIncrementare) {
-                  if (this.puntiStatistica > 0) {
-                      this.statisticheBase.sommaStatistiche(statDaIncrementare);
-                      this.puntiStatistica--;
-                      aggiornaStatoPG();
-                  }
-              }
+                   public void spendiPuntiStatistica(Statistica statDaIncrementare) {
+                     int puntiRichiesti = statDaIncrementare.getForza() + statDaIncrementare.getDestrezza() +
+                        statDaIncrementare.getCostituzione() + statDaIncrementare.getIntelligenza() +
+                         statDaIncrementare.getFede() + statDaIncrementare.getCarisma() +
+                        statDaIncrementare.getFortuna();
+
+                      if (puntiRichiesti > 0 && this.puntiStatistica >= puntiRichiesti) {
+                       this.statisticheBase.sommaStatistiche(statDaIncrementare);
+                      this.puntiStatistica -= puntiRichiesti; // Sottraiamo il numero esatto di punti
+                     aggiornaStatoPG(); // Ricalcola tutto (compresi eventuali nuovi requisiti soddisfatti)
+                      }
+                    }
 
 
               public void aggiornaStatoPG() {
-                this.statisticheFinali = this.getStatisticheFinali();// ricalcolo le stat finali PG
+
+                  for (OggettoEquipaggiabile oggettoDaControllare : equipaggiamento) {
+                      if ((oggettoDaControllare.getIsEquipaggiato()==true) && (this.statisticheBase.soddisfaRequisito(oggettoDaControllare.getRequisiti())==false)) {
+                          oggettoDaControllare.setIsEquipaggiato(false);
+                      }
+                  }
+
+
+               this.statisticheFinali = this.getStatisticheFinali();// ricalcolo le stat finali PG
                 this.livello = this.statisticheFinali.calcolaLivello(); //calcolo il livello dopo le modifiche
 
                 if (this.statisticheFinali.getHpCorrenti() > this.statisticheFinali.getMaxHp()) {
-                this.statisticheFinali.setHpCorrenti(this.statisticheFinali.getMaxHp());
+                    this.statisticheFinali.setHpCorrenti(this.statisticheFinali.getMaxHp());
+                       }
 
                  if (this.statisticheFinali.getManaCorrenti() > this.statisticheFinali.getMaxMana()) {
                   this.statisticheFinali.setManaCorrenti(this.statisticheFinali.getMaxMana());
                     }
 
-                  for (OggettoEquipaggiabile oggettoDaControllare : equipaggiamento) {
-                       if ((oggettoDaControllare.getIsEquipaggiato()==true) && (this.statisticheBase.soddisfaRequisito(oggettoDaControllare.getRequisiti())==false)) {
-                            oggettoDaControllare.setIsEquipaggiato(false);
-                        }
-                    }
+
 
                    }
                            }
@@ -154,4 +162,4 @@ public class Personaggio {
 
 
 
-}
+
