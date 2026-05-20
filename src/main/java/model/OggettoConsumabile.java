@@ -16,33 +16,27 @@ public class OggettoConsumabile extends Oggetto{
 
            //vedere se va bene
            public void usa(Personaggio pg) {
-              Statistica statConsumabili = pg.getStatisticheFinali();//accediamo a stat hp e mana
+               Statistica statBase = pg.getStatisticaBase();
+               Statistica statFinali = pg.getStatisticheFinali();
 
-                int nuoviHp = statConsumabili.getHpCorrenti() + this.ripristinoHp;
+               int nuoviHp = statBase.getHpCorrenti() + this.ripristinoHp;
+               if (nuoviHp > statFinali.getMaxHp()){
+                   nuoviHp = statFinali.getMaxHp();
+               }
+               statBase.setHpCorrenti(nuoviHp);
 
-                 if (nuoviHp > statConsumabili.getMaxHp()){
+               int nuovoMana = statBase.getManaCorrenti() + this.ripristinoMana;
+               if (nuovoMana > statFinali.getMaxMana()){
+                   nuovoMana = statFinali.getMaxMana();
+               }
+               statBase.setManaCorrenti(nuovoMana);
 
-                      nuoviHp = statConsumabili.getMaxHp();
-                    }
+               this.quantita--;
+               if (this.quantita <= 0) {
+                   pg.getInventario().remove(this);
+               }
 
-                      statConsumabili.setHpCorrenti(nuoviHp);
-
-                 int nuovoMana = statConsumabili.getManaCorrenti() + this.ripristinoMana;
-
-                 if (nuovoMana > statConsumabili.getMaxMana()){
-
-                      nuovoMana = statConsumabili.getMaxMana();
-                  }
-
-                      statConsumabili.setManaCorrenti(nuovoMana);
-
-                                 this.quantita--; // Riduciamo di 1 l'uso
-
-                             if (this.quantita <= 0) {
-                               // Rimuoviamo l'oggetto solo se le cariche sono finite
-                              pg.getInventario().remove(this);
-                              }
-                                     pg.aggiornaStatoPG();
-                                }
+               pg.aggiornaStatoPG();
+           }
 
 }

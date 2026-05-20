@@ -8,7 +8,7 @@ public class Master extends Utente {
     public Master(String userName, String password, String email) {
         super(userName, password, email);
         this.campagnaAttiva = null;
-        this.listaPnG = new ArrayList<Personaggio>(); // Nome variabile corretto
+        this.listaPnG = new ArrayList<Personaggio>();
     }
 
     public void creaCampagna(String nomeCampagna, int maxGiocatori) {
