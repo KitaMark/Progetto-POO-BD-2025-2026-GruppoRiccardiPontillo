@@ -6,6 +6,17 @@ import javax.swing.*;
 
 public class Home {
     private JPanel mainPanel;
+    private JLabel username;
+    private JLabel email;
+    private JLabel password;
+    private JTextField textField1;
+    private JTextField textField2;
+    private JRadioButton masterRadioButton;
+    private JRadioButton giocatoreRadioButton;
+    private JLabel RuoloUtente;
+    private JButton registrati;
+    private JButton Accedi;
+    private JPasswordField passwordField1;
     private static JFrame frameHome;
     private Controller controller;
 
