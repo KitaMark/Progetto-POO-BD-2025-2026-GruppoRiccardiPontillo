@@ -9,12 +9,11 @@ public class OggettoConsumabile extends Oggetto{
           public OggettoConsumabile(String nomeOggetto, int costo,  int quantita, int ripristinoHp, int ripristinoMana){
                   super(nomeOggetto, costo);
 
-                   this.quantita= quantita; //chiedere se quantita da inizializzare a 1
+                   this.quantita= quantita;
                    this.ripristinoHp= ripristinoHp;
                    this.ripristinoMana= ripristinoMana;
           }
 
-           //vedere se va bene
            public void usa(Personaggio pg) {
                Statistica statBase = pg.getStatisticaBase();
                Statistica statFinali = pg.getStatisticheFinali();

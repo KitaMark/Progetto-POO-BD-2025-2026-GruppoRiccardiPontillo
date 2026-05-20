@@ -11,7 +11,7 @@ public class Personaggio {
        private Statistica statisticheFinali;
        private int oroPosseduto;
        private Campagna campagnaPersonaggio;
-       private ArrayList<Oggetto>  inventario;
+       private ArrayList<OggettoConsumabile>  inventario;
        private ArrayList<OggettoEquipaggiabile> equipaggiamento;
 
            public Personaggio(String nome, Razza razzaPersonaggio, Classe classePersonaggio, Statistica statisticheBase,
@@ -25,11 +25,11 @@ public class Personaggio {
                             this.oroPosseduto= 100;
                             this.puntiStatistica= 0;
 
-                            this.statisticheBase= new Statistica(statisticheBase);
+                            this.statisticheBase= new Statistica();
                             this.statisticheBase.sommaStatistiche(this.razzaPersonaggio.getModificatoriRazza());
 
-                            this.inventario = new ArrayList<>();
-                            this.equipaggiamento = new ArrayList<>(classePersonaggio.getEquipaggiamentoIniziale());
+                            this.inventario = new ArrayList<OggettoConsumabile>();
+                            this.equipaggiamento = new ArrayList<OggettoEquipaggiabile>(classePersonaggio.getEquipaggiamentoIniziale());
 
                               this.aggiornaStatoPG();
 
@@ -39,7 +39,7 @@ public class Personaggio {
                      return this.statisticheBase;
                    }
 
-                 public ArrayList<Oggetto> getInventario(){
+                 public ArrayList<OggettoConsumabile> getInventario(){
                         return this.inventario;
                  }
 
@@ -47,23 +47,11 @@ public class Personaggio {
                         return campagnaPersonaggio;
                           }
 
-              public void setStatisticheBase(Statistica nuovaStatisticaBase){
-                        this.statisticheBase= nuovaStatisticaBase;
-                   }
-
-                 public void setInventario(ArrayList<Oggetto> nuovoInventario){
-                     this.inventario= nuovoInventario;
-                 }
-
-                   public void setCampagnaPersonaggio(Campagna nuovoCampagnaPersonaggio) {
-                            this.campagnaPersonaggio = nuovoCampagnaPersonaggio;
-                        }
 
                       public void addPuntiStatistica(int puntiRicevuti) {
 
                           this.puntiStatistica += puntiRicevuti;
                            }
-
 
 
                public Statistica getStatisticheFinali() {
@@ -110,11 +98,18 @@ public class Personaggio {
                             return false;
                              }
 
-                  public void acquistaOggetto(Oggetto oggettoDaAcquistare) {
-                     if (sottraiOro(oggettoDaAcquistare.getCosto()) ==true) {
-                          this.inventario.add(oggettoDaAcquistare);
-                           }
-                       }
+    public void acquistaOggetto(Oggetto oggettoDaAcquistare) {
+        // Nota: "== true" si può omettere, è implicito se il metodo restituisce un boolean
+        if (sottraiOro(oggettoDaAcquistare.getCosto())) {
+
+            if (oggettoDaAcquistare instanceof OggettoConsumabile) {
+                this.inventario.add((OggettoConsumabile) oggettoDaAcquistare);
+            } else if (oggettoDaAcquistare instanceof OggettoEquipaggiabile) {
+                this.equipaggiamento.add((OggettoEquipaggiabile) oggettoDaAcquistare);
+            }
+
+        }
+    }
 
 
 

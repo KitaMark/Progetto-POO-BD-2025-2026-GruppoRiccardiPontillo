@@ -29,23 +29,25 @@ public class Master extends Utente {
 
     public void assegnaPuntiStatistica(Personaggio personaggio, int puntiAssegnati) {
         if (personaggio != null) {
-            // logica da definire
+
+            personaggio.addPuntiStatistica(puntiAssegnati);
         } else {
             throw new IllegalArgumentException("personaggio non esistente."); // Aggiunto 'new'
         }
     }
 
     public boolean rimuoviPersonaggio(Personaggio pgDaRimuovere) {
-        if ((this.campagnaAttiva != null) && (this.campagnaAttiva.getListaPartecipanti().contains(pgDaRimuovere))) {
-            this.campagnaAttiva.getListaPartecipanti().remove(pgDaRimuovere);
+        if ((this.campagnaAttiva != null) && (this.campagnaAttiva.getListaPersonaggi().contains(pgDaRimuovere))) {
+            this.campagnaAttiva.getListaPersonaggi().remove(pgDaRimuovere);
             return true;
         }
         return false;
     }
 
-    public boolean modificaStatistichePG(Personaggio pg, Statistica statModificate) {
-        if ((this.campagnaAttiva != null) && (this.campagnaAttiva.getListaPartecipanti().contains(pg))) {
-            pg.getStatisticaBase().sommaStatistiche(statModificate);
+    public boolean modificaStatistichePG(Personaggio pg, Statistica nuoveStatistiche) {
+        if ((this.campagnaAttiva != null) && (this.campagnaAttiva.getListaPersonaggi().contains(pg))) {
+            // Sovrascrive i valori vecchi con i nuovi valori assoluti
+            pg.getStatisticaBase().sovrascriviStatistiche(nuoveStatistiche);
             pg.aggiornaStatoPG();
             return true;
         }

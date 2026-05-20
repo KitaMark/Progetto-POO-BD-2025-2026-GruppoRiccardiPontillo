@@ -183,5 +183,19 @@ public class Statistica {
                  this.fortuna >= limite.getFortuna();
            }
 
+             public void sovrascriviStatistiche(Statistica nuoveStatistiche) {
+                 this.forza = nuoveStatistiche.getForza();
+                  this.destrezza = nuoveStatistiche.getDestrezza();
+                 this.costituzione = nuoveStatistiche.getCostituzione();
+                 this.intelligenza = nuoveStatistiche.getIntelligenza();
+                  this.fede = nuoveStatistiche.getFede();
+                 this.carisma = nuoveStatistiche.getCarisma();
+                this.fortuna = nuoveStatistiche.getFortuna();
+                 this.maxHp = nuoveStatistiche.getMaxHp();
+               this.maxMana = nuoveStatistiche.getMaxMana();
+                this.hpCorrenti = nuoveStatistiche.getHpCorrenti();
+                   this.manaCorrenti = nuoveStatistiche.getManaCorrenti();
+                 }
+
 }
 
