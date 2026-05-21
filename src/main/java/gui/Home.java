@@ -62,8 +62,14 @@ public class Home {
 
 
                     if (utenteLoggato instanceof Master) {
-                        // Gui per master da rendere visibile
+                        JFrame masterFrame = new JFrame("Dashboard Master - " + utenteLoggato.getUsername());
+                        MasterGUI masterGUI = new MasterGUI(controller, (Master) utenteLoggato, masterFrame);
 
+                        masterFrame.setContentPane(masterGUI.getMainPanel());
+                        masterFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        masterFrame.setSize(800, 600); // Imposta una grandezza iniziale comoda
+                        masterFrame.setLocationRelativeTo(null); // Centra sullo schermo
+                        masterFrame.setVisible(true);
                     } else {
                         //GUI giocatore da rendere visibile
                     }

@@ -1,6 +1,11 @@
 package controller;
+import exception.CampagnaAttivaEsistenteException;
 import exception.DatiMancantiException;
+import exception.NomeMancanteCampagnaException;
 import model.*;
+import java.util.List;
+import java.util.ArrayList;
+
 
 public class Controller {
     private Utente utenteAttivo; //tenere traccia utente nel sistema
@@ -51,6 +56,45 @@ public class Controller {
 
     public Utente getUtenteAttivo() {
         return utenteAttivo;
+    }
+
+    public void creaCampagna(String nomeCampagna, int maxGiocatori) throws CampagnaAttivaEsistenteException, NomeMancanteCampagnaException {
+        if(nomeCampagna == null || nomeCampagna.trim().isEmpty()) {
+            throw new NomeMancanteCampagnaException("Il nome della campagna non può essere vuoto.");
+        }
+
+        // chiedere Dao se master ha campagna attiva
+        // Se sì  throw new CampagnaAttivaEsistenteException("Hai già una campagna attiva. Concludila prima di crearne una nuova.");
+
+        // Creazione e salvataggio nel DB (da implementare col DAO)
+        System.out.println("Campagna '" + nomeCampagna + "' creata con successo! (Simulazione)");
+    }
+
+
+    public void eliminaCampagna(String nomeCampagna) throws Exception {
+        // Dao elimina campagna selezionata
+        System.out.println("Campagna '" + nomeCampagna + "' eliminata! (Simulazione)"); // per il momento
+    }
+
+    public void logout() {
+        this.utenteAttivo = null;
+        System.out.println("Logout effettuato. Utente scollegato.");
+    }
+
+    public void entraNellaCampagna(String nomeCampagna) throws NomeMancanteCampagnaException {
+        if (nomeCampagna == null || nomeCampagna.trim().isEmpty()) {
+            throw new NomeMancanteCampagnaException("Nome della campagna non valido.");
+        }
+
+        // In futuro: this.campagnaAttiva = campagnaDAO.trovaCampagna(nomeCampagna);
+        System.out.println("Accesso in corso alla campagna: '" + nomeCampagna + "' (Simulazione)"); // per il momento
+    }
+
+    //per popolare la jtable
+    public List<Campagna> getCampagneDelMaster() {
+        // DAO cerca solo le campagne associate all'utente attualmente loggato.
+        // return campagnaDAO.trovaCampagnePerMaster(utenteAttivo.getUsername());
+        return new ArrayList<>();  // per il momento
     }
 
 
