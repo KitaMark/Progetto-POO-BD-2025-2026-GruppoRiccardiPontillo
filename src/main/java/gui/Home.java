@@ -71,7 +71,13 @@ public class Home {
                         masterFrame.setLocationRelativeTo(null); // Centra sullo schermo
                         masterFrame.setVisible(true);
                     } else {
-                        //GUI giocatore da rendere visibile
+                        JFrame giocatoreFrame = new JFrame("Dashboard Giocatore - " + utenteLoggato.getUsername());
+                        GiocatoreGUI giocatoreGUI = new GiocatoreGUI(controller, (Giocatore) utenteLoggato, giocatoreFrame);
+                        giocatoreFrame.setContentPane(giocatoreGUI.getMainPanel());
+                        giocatoreFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        giocatoreFrame.setSize(800, 600);
+                        giocatoreFrame.setLocationRelativeTo(null); // Centra lo schermo
+                        giocatoreFrame.setVisible(true); // Rende visibile la finestra                    }
                     }
 
                 } catch (Exception ex) {

@@ -98,4 +98,22 @@ public class Controller {
     }
 
 
+
+    public void iscrivitiCampagna(String nomeCampagna) throws NomeMancanteCampagnaException{
+        if (nomeCampagna == null || nomeCampagna.trim().isEmpty()) {
+            throw new NomeMancanteCampagnaException("Nome della campagna non valido.");
+        }
+
+        //tramite dao controlliamo se campagna esiste controlla se essa e iniziata e ci sono posti sufficienti
+        //salva nel DB l'iscrizione
+
+        System.out.println("Iscrizione effettuata alla campagna: " + nomeCampagna + " (Simulazione)");
+    }
+
+
+
+
+
+
+
 }
