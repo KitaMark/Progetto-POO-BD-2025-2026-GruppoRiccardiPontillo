@@ -1,7 +1,5 @@
 package controller;
-import exception.CampagnaAttivaEsistenteException;
-import exception.DatiMancantiException;
-import exception.NomeMancanteCampagnaException;
+import exception.*;
 import model.*;
 import java.util.List;
 import java.util.ArrayList;
@@ -111,7 +109,65 @@ public class Controller {
     }
 
 
+    public void rimuoviPGdaCampagna(String nomePersonaggio) throws PgNonSelezionatoException {
+        if (nomePersonaggio == null || nomePersonaggio.trim().isEmpty()) {
+            throw new PgNonSelezionatoException("Seleziona un personaggio da rimuovere.");
+        }
+        // in futuro diremo al DAO di eliminarlo
+        System.out.println("Personaggio rimosso: " + nomePersonaggio + " (Simulazione)"); //per ora
+    }
 
+    public void modificaStatistichePG(String nomePersonaggio) throws Exception {
+        // Qui passeremo anche i nuovi valori delle statistiche
+        System.out.println("Apertura finestra di modifica statistiche per: " + nomePersonaggio);
+    }
+
+    public void assegnaPuntiStatistica(String nomePersonaggio, int quantitaPunti) throws Exception {
+        // In futuro: aggiorneremo il saldo dei punti spendibili del PG nel DB
+        System.out.println("Assegnati " + quantitaPunti + " punti a " + nomePersonaggio + " (Simulazione)"); //per ora
+    }
+
+
+
+    public void creaPnG(String nomePnG, String razza, int livello) throws NomeMancantePngException {
+        if (nomePnG == null || nomePnG.trim().isEmpty()) {
+            throw new NomeMancantePngException("Il nome del PnG non può essere vuoto.");
+        }
+        // in futuro lo salveremo nel DB
+        System.out.println("Nuovo PnG creato: " + nomePnG + " (Simulazione)");//per ora
+    }
+
+    public void rimuoviPnG(String nomePnG) throws PngNonSelezionatoException {
+        if (nomePnG == null || nomePnG.trim().isEmpty()) {
+            throw new PngNonSelezionatoException("Seleziona un PnG da rimuovere.");
+        }
+        System.out.println("PnG rimosso: " + nomePnG + " (Simulazione)"); //per ora
+    }
+
+    // --- TAB 3: IMPOSTAZIONI CAMPAGNA ---
+
+    public void cambiaStatoCampagna(String nomeCampagna, String nuovoStato) throws Exception {
+        // Dao cambia o in Corso o Finita
+        // Una volta "In Corso", i giocatori non potranno più iscriversi.
+        System.out.println("Lo stato della campagna '" + nomeCampagna + "' è ora: " + nuovoStato + " (Simulazione)");// per ora
+    }
+
+
+    public void aumentaStatistica(String statistica) throws StatisticaNonSelezionataException {
+        if (statistica == null || statistica.trim().isEmpty()) {
+            throw new StatisticaNonSelezionataException("Inserisci una statistica valida.");
+        }
+        // Dao fa controllo per vedere se ha i punti da spendere
+        System.out.println("Statistica '" + statistica + "' aumentata con successo! (Simulazione)");//per ora
+    }
+
+    public void compraOggetto(String nomeOggetto) throws OggettoNonSelezionatoException {
+        if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
+            throw new OggettoNonSelezionatoException("Inserisci un oggetto valido.");
+        }
+        // Dao controlla se PG esiste e ha abbastanza oro
+        System.out.println("Oggetto '" + nomeOggetto + "' acquistato! (Simulazione)");//per ora
+    }
 
 
 

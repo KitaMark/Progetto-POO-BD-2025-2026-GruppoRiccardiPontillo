@@ -34,7 +34,6 @@ public class MasterGUI {
         inizializzaTabella();
 
 
-
         logoutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -57,7 +56,7 @@ public class MasterGUI {
                 String nomeCampagna = JOptionPane.showInputDialog(frameAttuale, "Inserisci il nome della nuova Campagna:");
 
                 // Controllo per evitare che l'utente clicchi 'Annulla' o inserisca campi vuoti
-                if ((nomeCampagna != null) && (nomeCampagna.trim().isEmpty()==false)) {
+                if ((nomeCampagna != null) && (nomeCampagna.trim().isEmpty() == false)) {
                     try {
                         controller.creaCampagna(nomeCampagna, 5); // per ora
                         JOptionPane.showMessageDialog(frameAttuale, "Campagna creata con successo!", "Successo", JOptionPane.INFORMATION_MESSAGE);
@@ -104,24 +103,33 @@ public class MasterGUI {
             public void actionPerformed(ActionEvent e) {
                 int rigaSelezionata = tableCampagna.getSelectedRow();
 
-                //controllo per gestire caso in cui master dimentichi di selezionare la campagna in cui entrare
                 if (rigaSelezionata == -1) {
                     JOptionPane.showMessageDialog(frameAttuale, "Seleziona una campagna per entrarvi.", "Attenzione", JOptionPane.WARNING_MESSAGE);
-                    return; // Blocca tutto
+                    return;
                 }
 
                 String nomeCampagnaSelezionata = tableCampagna.getValueAt(rigaSelezionata, 0).toString();
 
                 try {
                     controller.entraNellaCampagna(nomeCampagnaSelezionata);
-                    JOptionPane.showMessageDialog(frameAttuale, "Ingresso in corso nella campagna: " + nomeCampagnaSelezionata, "Accesso Campagna", JOptionPane.INFORMATION_MESSAGE);
-                    // In futuro: nasconderemo questa finestra e apriremo quella della campagna
+                    frameAttuale.dispose();
+                    JFrame campagnaFrame = new JFrame("Regia Campagna: " + nomeCampagnaSelezionata);
+                    CampagnaMasterGUI regiaGUI = new CampagnaMasterGUI(controller, masterLoggato, nomeCampagnaSelezionata, campagnaFrame);
+
+                    campagnaFrame.setContentPane(regiaGUI.getMainPanel());
+                    campagnaFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+                    campagnaFrame.setSize(1000, 700);
+                    campagnaFrame.setLocationRelativeTo(null);
+                    campagnaFrame.setVisible(true);
+
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
     }
+
 
 
     //Metodo privato per dare un'intestazione alle colonne della JTable.

@@ -76,7 +76,7 @@ public class GiocatoreGUI {
             public void actionPerformed(ActionEvent e) {
                 int rigaSelezionata = tableCampagnaGiocatore.getSelectedRow();
 
-                //controllo per gestire caso in cui master dimentichi di selezionare la campagna in cui entrare
+                // controllo per gestire caso in cui il giocatore dimentichi di selezionare la campagna in cui entrare
                 if (rigaSelezionata == -1) {
                     JOptionPane.showMessageDialog(frameAttuale, "Seleziona una campagna per entrarvi.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return; // Blocca tutto
@@ -86,8 +86,16 @@ public class GiocatoreGUI {
 
                 try {
                     controller.entraNellaCampagna(nomeCampagnaSelezionata);
-                    JOptionPane.showMessageDialog(frameAttuale, "Ingresso in corso nella campagna: " + nomeCampagnaSelezionata, "Accesso Campagna", JOptionPane.INFORMATION_MESSAGE);
-                    // In futuro: nasconderemo questa finestra e apriremo quella della campagna
+                    frameAttuale.dispose();
+                    JFrame campagnaFrame = new JFrame("Scheda Personaggio - Campagna: " + nomeCampagnaSelezionata);
+                    CampagnaGiocatoreGUI campagnaGUI = new CampagnaGiocatoreGUI(controller, giocatoreLoggato, nomeCampagnaSelezionata, campagnaFrame);
+
+                    campagnaFrame.setContentPane(campagnaGUI.getMainPanel());
+                    campagnaFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    campagnaFrame.setSize(900, 600); // Dimensione ottimale per le schede del PG
+                    campagnaFrame.setLocationRelativeTo(null); // Centra lo schermo
+                    campagnaFrame.setVisible(true);
+
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
