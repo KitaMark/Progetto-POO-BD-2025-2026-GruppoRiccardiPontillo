@@ -1,38 +1,39 @@
 package model;
+
 import java.util.ArrayList;
+
 public class Classe {
+    private String nome;
     private ArrayList<Abilita> abilitaSbloccabili;
-    private ArrayList<OggettoEquipaggiabile> equipaggiamentoIniziale;
+    private ArrayList<Oggetto> equipaggiamentoIniziale;
 
+    public Classe(String nome) {
+        this.nome = nome;
+        abilitaSbloccabili = new ArrayList<>();
+        equipaggiamentoIniziale = new ArrayList<>();
+    }
 
-       public Classe(){
-             this.abilitaSbloccabili= new ArrayList<>();
-             this.equipaggiamentoIniziale= new ArrayList<>();
-       }
+    public String getNome() { return nome; }
 
-          public void aggiungiAbilita(Abilita nuovaAbilita){
-             this.abilitaSbloccabili.add(nuovaAbilita);
-             }
+    public ArrayList<Abilita> getAbilitaSbloccabili() { return abilitaSbloccabili; }
 
-          public void aggiungiEquipaggiamento(OggettoEquipaggiabile nuovoOggetto){
-             this.equipaggiamentoIniziale.add(nuovoOggetto);         //vedere se implementare
-          }
+    public ArrayList<Oggetto> getEquipaggiamentoIniziale() { return equipaggiamentoIniziale; }
 
+    public void addAbilita(Abilita abilita) { abilitaSbloccabili.add(abilita); }
 
-              public ArrayList<Abilita> getAbilitaSbloccabili() {
-                  return abilitaSbloccabili;
-                 }
+    public void addOggetto(Oggetto oggetto) { equipaggiamentoIniziale.add(oggetto); }
 
-              public ArrayList<OggettoEquipaggiabile> getEquipaggiamentoIniziale() {
-                 return equipaggiamentoIniziale;
-                }
+    public boolean removeAbilita(Abilita abilita){
+       return abilitaSbloccabili.remove(abilita);
+    }
 
-              public void setAbilitaSbloccabili(ArrayList<Abilita> nuovoAbilitaSbloccabili){
-                  this.abilitaSbloccabili= nuovoAbilitaSbloccabili;
-              }
+    public boolean removeOggetto(Oggetto oggetto){
+        if(equipaggiamentoIniziale.contains(oggetto)){
+            equipaggiamentoIniziale.remove(oggetto);
+            return true;
+        }
+        return false;
+    }
 
-              public void setEquipaggiamentoIniziale(ArrayList<OggettoEquipaggiabile> nuovoEquipaggiamentoInizile){
-                  this.equipaggiamentoIniziale= nuovoEquipaggiamentoInizile;
-              }
 
 }

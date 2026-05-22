@@ -1,165 +1,320 @@
 package model;
-import java.util.ArrayList;
+import java.util.*;
+
+
 public class Personaggio {
-       private String nome;
-       private  int livello;
-       private Statistica statisticheBase;
-       private Classe classePersonaggio;
-       private Razza razzaPersonaggio;
-       private int puntiStatistica;
-       private boolean isPg;
-       private Statistica statisticheFinali;
-       private int oroPosseduto;
-       private Campagna campagnaPersonaggio;
-       private ArrayList<Oggetto>  inventario;
-       private ArrayList<OggettoEquipaggiabile> equipaggiamento;
-
-           public Personaggio(String nome, Razza razzaPersonaggio, Classe classePersonaggio, Statistica statisticheBase,
-                       boolean  isPg, Campagna campagnaPersonaggio){
-
-                            this.nome=nome;
-                            this.razzaPersonaggio= razzaPersonaggio;
-                            this.classePersonaggio= classePersonaggio;
-                            this.campagnaPersonaggio= campagnaPersonaggio;
-                            this.isPg= isPg;
-                            this.oroPosseduto= 100;
-                            this.puntiStatistica= 0;
-
-                            this.statisticheBase= new Statistica(statisticheBase);
-                            this.statisticheBase.sommaStatistiche(this.razzaPersonaggio.getModificatoriRazza());
-
-                            this.inventario = new ArrayList<>();
-                            this.equipaggiamento = new ArrayList<>(classePersonaggio.getEquipaggiamentoIniziale());
-
-                              this.aggiornaStatoPG();
-
-                      }
-
-                 public Statistica  getStatisticaBase(){
-                     return this.statisticheBase;
-                   }
-
-                 public ArrayList<Oggetto> getInventario(){
-                        return this.inventario;
-                 }
-
-                 public Campagna getCampagnaPersonaggio() {
-                        return campagnaPersonaggio;
-                          }
-
-              public void setStatisticheBase(Statistica nuovaStatisticaBase){
-                        this.statisticheBase= nuovaStatisticaBase;
-                   }
-
-                 public void setInventario(ArrayList<Oggetto> nuovoInventario){
-                     this.inventario= nuovoInventario;
-                 }
-
-                   public void setCampagnaPersonaggio(Campagna nuovoCampagnaPersonaggio) {
-                            this.campagnaPersonaggio = nuovoCampagnaPersonaggio;
-                        }
-
-                      public void addPuntiStatistica(int puntiRicevuti) {
-
-                          this.puntiStatistica += puntiRicevuti;
-                           }
+    private String nome;
+    private Statistiche statisticheBase;
+    private Statistiche statisticheFinali;
+    private int hpCorrenti;
+    private int manaCorrente;
+    private final Classe classe;
+    private final Razza razza;
+    private int puntiStatistica;
+    private int oro;
+    private boolean isPg;
+    private HashMap<OggettoConsumabile, Integer> inventarioConsumabili;
+    private HashMap<OggettoEquipaggiabile, Boolean> inventarioEquipaggiabili;
+    private ArrayList<Abilita> listaAbilita;
 
 
+    //Per semplicità del sistema si preferisce implementare due HashMap distinte per i consumabili,
+    // associati alla quantità posseduta; poiché per gli equipaggiabili il valore d'interesse del modello è
+    // "isEquipaggiato", le chiavi sono associati a valori boolean che indicano se l'oggetto è equipaggiato.
+    //Per gli equipaggiabili si ritiene superfluo indicarne la quantità.
 
-               public Statistica getStatisticheFinali() {
-                   Statistica statisticheTotali = new Statistica(this.statisticheBase);
-
-                      for (OggettoEquipaggiabile oggettoEquipaggiato : equipaggiamento) {
-                               if (oggettoEquipaggiato.getIsEquipaggiato()==true) {
-                      statisticheTotali.sommaStatistiche(oggettoEquipaggiato.getBonusStat());
-                              }
-                       }
-
-                          return statisticheTotali;
-                         }
+    //Documentazione di riferimento HashMap: https://docs.oracle.com/javase/8/docs/api/java/util/HashMap.html.
+    //Documentazione Map: https://docs.oracle.com/javase/8/docs/api/java/util/Map.html
+    //Documentazione Collections: https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html
+    //Documentazione Set: https://docs.oracle.com/javase/8/docs/api/java/util/Set.html
+    //Documentazione Map.Entry: https://docs.oracle.com/javase/8/docs/api/java/util/Map.Entry.html
 
 
+    public Personaggio(Classe classe, Razza razza, String nome, boolean isPg) {
+        this.classe = classe;
+        this.razza = razza;
+        this.statisticheBase = new Statistiche();
+        this.nome = nome;
+        this.isPg = isPg;
+        this.puntiStatistica = 0;
+        this.oro = 0;
+        this.inventarioConsumabili = new HashMap<>();
+        this.inventarioEquipaggiabili = new HashMap<>();
+        this.listaAbilita = new ArrayList<>();
 
 
-              public void Equipaggia( OggettoEquipaggiabile oggettoDaEquipaggiare){
-                  if(this.statisticheBase.soddisfaRequisito(oggettoDaEquipaggiare.getRequisiti()) == true){
-                       oggettoDaEquipaggiare.setIsEquipaggiato(true);
-                       aggiornaStatoPG();
-                  }
-              }
+        inizializzaEquipaggiamentoIniziale(classe);
 
 
-             public void disequipaggia(OggettoEquipaggiabile oggettoDaDisequipaggiare) {
-                    if ((oggettoDaDisequipaggiare != null) && (oggettoDaDisequipaggiare.getIsEquipaggiato()==true)) {
-                   oggettoDaDisequipaggiare.setIsEquipaggiato(false); // Cambia lo stato interno dell'oggetto
-                       aggiornaStatoPG();
-                            }
-                          }
+        statisticheBase.aggiungiBonus(razza.getModificatori());
 
-                  public void sommaOro(int quantita) {
-                         if (quantita > 0) {
-                        this.oroPosseduto += quantita;
-                            }
-                            }
+        this.hpCorrenti = statisticheBase.getHpMax();
+        this.manaCorrente = statisticheBase.getManaMax();
+        aggiornaStatoPG();
+        //le statBase rappresentano le statistiche del personaggio con modificatori di razza applicati
+        //ed eventuali punti stat spesi. Le statFinali invece rappresentano le statistiche con bonus equipaggiamento.
 
-                  public boolean sottraiOro(int costo) {
-                       if (costo <= this.oroPosseduto) {
-                           this.oroPosseduto -= costo;
-                              return true;
-                             }
-                            return false;
-                             }
+    }
 
-                  public void acquistaOggetto(Oggetto oggettoDaAcquistare) {
-                     if (sottraiOro(oggettoDaAcquistare.getCosto()) ==true) {
-                          this.inventario.add(oggettoDaAcquistare);
-                           }
-                       }
+    //costruttore SOLO per master, per  creare png già avviati, ovvero con oro e punti statistica inizializzati.
+    public Personaggio(Classe classe, Razza razza, Statistiche statisticheBase, String nome,
+                       int oro, int puntiStatistica) {
+        this.classe = classe;
+        this.razza = razza;
+        this.statisticheBase = statisticheBase;
+        this.nome = nome;
+        this.isPg = false;
+        this.puntiStatistica = puntiStatistica;
+        this.oro = oro;
+        this.inventarioEquipaggiabili = new HashMap<>();
+        this.inventarioConsumabili = new HashMap<>();
+        this.listaAbilita = new ArrayList<>();
+
+        inizializzaEquipaggiamentoIniziale(classe);
+
+        statisticheBase.aggiungiBonus(razza.getModificatori());
+
+        this.hpCorrenti = statisticheBase.getHpMax();
+        this.manaCorrente = statisticheBase.getManaMax();
+        aggiornaStatoPG();
+
+    }
+
+    public void spendipuntiStatistica(int punti, String attributo) {
+        if (punti > puntiStatistica || punti < 1) throw new IllegalArgumentException("Valore punti non valido.");
+        statisticheBase.incrementa(attributo, punti);
+        puntiStatistica -= punti;
+        aggiornaStatoPG();
+    }
+
+    public void compraOggetto(Oggetto oggetto) {
+        if (oggetto == null) throw new IllegalArgumentException("Seleziona un oggetto valido.");
+        if (oro < oggetto.getCosto()) throw new IllegalArgumentException("Oro insufficiente.");
+        if (oggetto instanceof OggettoEquipaggiabile) {
+            if (!(inventarioEquipaggiabili.containsKey((OggettoEquipaggiabile) oggetto))) {
+                inventarioEquipaggiabili.put((OggettoEquipaggiabile) oggetto, false);
+                this.oro -= oggetto.getCosto();
+            } else {
+                throw new IllegalArgumentException("Seleziona un oggetto valido - non puoi " +
+                        "acquistare un equipaggiabile che già possiedi!");
+            }
+        } else if (oggetto instanceof OggettoConsumabile) {
+            addConsumabile((OggettoConsumabile) oggetto, 1);
+            this.oro -= oggetto.getCosto();
+        }
+    }
+
+    public void vendiOggetto(Oggetto oggetto) {
+        if (oggetto == null) throw new IllegalArgumentException("Seleziona un oggetto valido.");
+        if (oggetto instanceof OggettoEquipaggiabile) {
+            if (!(inventarioEquipaggiabili.containsKey((OggettoEquipaggiabile) oggetto))) {
+                throw new IllegalArgumentException("Non possiedi quest'oggetto!");
+            } else {
+                rimuoviEquipaggiabile((OggettoEquipaggiabile) oggetto);
+                oro += oggetto.getCosto() / 2;
+            }
+        } else if (oggetto instanceof OggettoConsumabile) {
+            if (inventarioConsumabili.containsKey((OggettoConsumabile) oggetto)) {
+                rimuoviConsumabile((OggettoConsumabile) oggetto, 1);
+                oro += oggetto.getCosto() / 2;
+            } else {
+                throw new IllegalArgumentException("Non possiedi quest'oggetto!");
+            }
+        }
+    }
+
+    public boolean equipaggia(OggettoEquipaggiabile equipaggiabile) {
+        if (equipaggiabile == null) throw new IllegalArgumentException("Oggetto non valido.");
+        if (inventarioEquipaggiabili.containsKey(equipaggiabile)) {
+            if (statisticheBase.soddisfa(equipaggiabile.getRequisiti())) {
+                inventarioEquipaggiabili.replace(equipaggiabile, true);
+                aggiornaStatoPG();
+                return true;
+            } else return false;
+        } else throw new IllegalArgumentException("Non possiedi quest'oggetto!");
+    }
+
+    public void rimuoviEquipaggiamento(OggettoEquipaggiabile equipaggiabile) {
+        if (equipaggiabile == null) throw new IllegalArgumentException("Oggetto non valido.");
+        if (inventarioEquipaggiabili.containsKey(equipaggiabile)) {
+            inventarioEquipaggiabili.replace(equipaggiabile, false);
+            aggiornaStatoPG();
+        } else throw new IllegalArgumentException("Non possiedi quest'oggetto!");
+    }
+
+    public void usaConsumabile(OggettoConsumabile oggetto) {
+        if (inventarioConsumabili.containsKey(oggetto)) {
+            ripristinaHP(oggetto.getRipristinoHP());
+            ripristinaMana(oggetto.getRipristinoMana());
+            rimuoviConsumabile(oggetto, 1);
+        } else throw new IllegalArgumentException("Non possiedi quest'oggetto!");
+    }
 
 
+    //getter
+    public String getNome() {
+        return nome;
+    }
 
-                   public void spendiPuntiStatistica(Statistica statDaIncrementare) {
-                     int puntiRichiesti = statDaIncrementare.getForza() + statDaIncrementare.getDestrezza() +
-                        statDaIncrementare.getCostituzione() + statDaIncrementare.getIntelligenza() +
-                         statDaIncrementare.getFede() + statDaIncrementare.getCarisma() +
-                        statDaIncrementare.getFortuna();
+    public Statistiche getStatisticheBase() {
+        return statisticheBase;
+    }
 
-                      if (puntiRichiesti > 0 && this.puntiStatistica >= puntiRichiesti) {
-                       this.statisticheBase.sommaStatistiche(statDaIncrementare);
-                      this.puntiStatistica -= puntiRichiesti; // Sottraiamo il numero esatto di punti
-                     aggiornaStatoPG(); // Ricalcola tutto (compresi eventuali nuovi requisiti soddisfatti)
-                      }
-                    }
+    public Statistiche getStatisticheFinali() {
+        return statisticheFinali;
+    }
 
+    public Classe getClasse() {
+        return classe;
+    }
 
-              public void aggiornaStatoPG() {
+    public Razza getRazza() {
+        return razza;
+    }
 
-                  for (OggettoEquipaggiabile oggettoDaControllare : equipaggiamento) {
-                      if ((oggettoDaControllare.getIsEquipaggiato()==true) && (this.statisticheBase.soddisfaRequisito(oggettoDaControllare.getRequisiti())==false)) {
-                          oggettoDaControllare.setIsEquipaggiato(false);
-                      }
-                  }
+    public int getHpCorrenti() {
+        return hpCorrenti;
+    }
 
+    public int getManaCorrente() {
+        return manaCorrente;
+    }
 
-               this.statisticheFinali = this.getStatisticheFinali();// ricalcolo le stat finali PG
-                this.livello = this.statisticheFinali.calcolaLivello(); //calcolo il livello dopo le modifiche
+    public int getPuntiStatistica() {
+        return puntiStatistica;
+    }
 
-                if (this.statisticheFinali.getHpCorrenti() > this.statisticheFinali.getMaxHp()) {
-                    this.statisticheFinali.setHpCorrenti(this.statisticheFinali.getMaxHp());
-                       }
+    public int getOro() {
+        return oro;
+    }
 
-                 if (this.statisticheFinali.getManaCorrenti() > this.statisticheFinali.getMaxMana()) {
-                  this.statisticheFinali.setManaCorrenti(this.statisticheFinali.getMaxMana());
-                    }
+    public boolean isPg() {
+        return isPg;
+    }
 
+    public List<Abilita> getListaAbilita() {
+        return Collections.unmodifiableList(listaAbilita);
+    }
 
+    public Map<OggettoConsumabile, Integer> getInventarioConsumabili() {
+        return Collections.unmodifiableMap(inventarioConsumabili); //restituisce una copia non modificabile della mappa
+    }
 
-                   }
-                           }
+    public Map<OggettoEquipaggiabile, Boolean> getInventarioEquipaggiabili() {
+        return Collections.unmodifiableMap(inventarioEquipaggiabili);
+    }
 
+    //utilizzabili solo da Master o se permesso.
+    public void addAbilita(Abilita abilita) {
+        if (abilita == null) return;
+        if (!classe.getAbilitaSbloccabili().contains(abilita)) return; // non appartiene alla classe
+        if (!listaAbilita.contains(abilita)) listaAbilita.add(abilita);
+    }
 
+    public void setPuntiStatistica(int punti) {
+        this.puntiStatistica = punti;
+    }
 
+    public void setStatisticheBase(Statistiche s) {
+        this.statisticheBase = s;
+        aggiornaStatoPG();
+    }
 
+    public void setOro(int oro) {
+        this.oro = oro;
+    }
 
+    public void rimuoviEquipaggiabile(OggettoEquipaggiabile oggetto) {
+        inventarioEquipaggiabili.remove(oggetto);
+    }
 
+    public void rimuoviConsumabile(OggettoConsumabile oggetto, int quantita) {
+        if (inventarioConsumabili.get(oggetto) <= quantita) {
+            inventarioConsumabili.remove(oggetto);
+        } else {
+            inventarioConsumabili.replace(oggetto, inventarioConsumabili.get(oggetto) - quantita);
+        }
+    }
+
+    public void addEquipaggiabile(OggettoEquipaggiabile oggetto) {
+        if (!(inventarioEquipaggiabili.containsKey(oggetto))) {
+            inventarioEquipaggiabili.put(oggetto, false);
+        }
+    }
+
+    public void addConsumabile(OggettoConsumabile oggetto, int quantita) {
+        if (inventarioConsumabili.containsKey(oggetto)) {
+            inventarioConsumabili.replace(oggetto, inventarioConsumabili.get(oggetto) + quantita);
+        } else {
+            inventarioConsumabili.put(oggetto, quantita);
+        }
+    }
+
+    public void ripristinaHP(int valore){
+        if(valore > 0){
+            this.hpCorrenti += valore;
+            if(hpCorrenti > this.getStatisticheFinali().getHpMax()){
+                hpCorrenti = statisticheFinali.getHpMax();
+            }
+        }
+    }
+
+    public void ripristinaMana(int valore){
+        if(valore > 0){
+            this.manaCorrente += valore;
+            if(manaCorrente > this.getStatisticheFinali().getManaMax()){
+                manaCorrente = statisticheFinali.getManaMax();
+            }
+        }
+    }
+
+    //servizio interno alla classe
+    private void calcolaStatisticheFinali() {
+        statisticheFinali = new Statistiche(statisticheBase); //copia delle stat base
+        //entrySet restituisce un insieme iterabile di coppie chiave-valore.
+        for(Map.Entry<OggettoEquipaggiabile, Boolean> entry : inventarioEquipaggiabili.entrySet()){
+            if(entry.getValue()){ //restituisce il valore - controllo se è true, quindi equipaggiato
+                statisticheFinali.aggiungiBonus(entry.getKey().getBonus()); //se equipaggiato aggiunge i bonus
+                //gli oggetti non equipaggiati vengono ignorati.
+            }
+        }
+    }
+
+    private void inizializzaEquipaggiamentoIniziale(Classe classe) {
+        for (Oggetto o : classe.getEquipaggiamentoIniziale()) {
+            if (o instanceof OggettoConsumabile) {
+                inventarioConsumabili.put((OggettoConsumabile) o, 1);
+            } else if (o instanceof OggettoEquipaggiabile) {
+                inventarioEquipaggiabili.put((OggettoEquipaggiabile) o, false);
+            }
+        }
+    }
+
+    private void aggiornaStatoPG() {
+        // de-equipaggia automaticamente se i requisiti non sono più soddisfatti
+        for (Map.Entry<OggettoEquipaggiabile, Boolean> entry : inventarioEquipaggiabili.entrySet()) {
+            if (entry.getValue() && !statisticheBase.soddisfa(entry.getKey().getRequisiti())) {
+                inventarioEquipaggiabili.replace(entry.getKey(), false);
+            }
+        }
+        calcolaStatisticheFinali();
+    }
+
+    @Override
+    public String toString() {
+        return """
+                Personaggio{
+                    nome='$nome', 
+                    statisticheBase=$statisticheBase, 
+                    statisticheFinali=$statisticheFinali, 
+                    hpCorrenti=$hpCorrenti, 
+                    manaCorrente=$manaCorrente, 
+                    classe=$classe, 
+                    razza=$razza, 
+                    puntiStatistica=$puntiStatistica, 
+                    oro=$oro, 
+                    isPg=$isPg
+                }""";
+    }
+}
 

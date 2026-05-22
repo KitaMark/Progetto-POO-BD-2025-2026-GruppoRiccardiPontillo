@@ -1,62 +1,21 @@
 package model;
 
-public class OggettoEquipaggiabile extends Oggetto{
-         private Statistica requisiti;
-         private boolean isEquipaggiato;
-         private Statistica bonus;
+public class OggettoEquipaggiabile extends Oggetto {
+    private Statistiche requisiti;
+    private Statistiche bonus;
 
+    public OggettoEquipaggiabile(String nome, int costo, Statistiche requisiti, Statistiche bonus) {
+        super(costo, nome);
+        this.requisiti = new Statistiche(requisiti);
+        this.bonus = new Statistiche(bonus);
+    }
 
-           public OggettoEquipaggiabile(String nomeOggetto, int costo, Statistica requisiti,  Statistica bonus){
-                      super(nomeOggetto, costo);
-                      this.isEquipaggiato= false;
+    public Statistiche getBonus() { return bonus; }
+    public Statistiche getRequisiti() { return requisiti; }
 
-               this.requisiti = new Statistica(
-                       requisiti.getForza(),
-                       requisiti.getDestrezza(),
-                       requisiti.getCostituzione(),
-                       requisiti.getIntelligenza(),
-                       requisiti.getFede(),
-                       requisiti.getCarisma(),
-                       requisiti.getFortuna()
-               );
-
-               this.bonus= bonus;
-
-
-           }
-
-            public Statistica getBonusStat(){
-                 return this.bonus;
-                       }
-
-              public boolean getIsEquipaggiato(){
-                    return this.isEquipaggiato;
-                  }
-
-             public Statistica getRequisiti() {
-                    return requisiti;
-                      }
-
-               public void setIsEquipaggiato(boolean nuovoIsEquipaggiato){
-                  this.isEquipaggiato= nuovoIsEquipaggiato;
-              }
-
-              public void setBonunStat(Statistica nuovoBonus){
-                       this.bonus= nuovoBonus;
-                     }
-
-            public void setRequisiti(Statistica nuovoRequisiti) {
-                   this.requisiti = nuovoRequisiti;
-                      }
-
-
-              @Override
-               public void controllaEquipaggiamento(Statistica statBasePG) {
-              if ((this.isEquipaggiato==true) && (statBasePG.soddisfaRequisito(this.requisiti) == false)) {
-                this.isEquipaggiato = false;
-                 }
-              }
-
-
-
+    @Override
+    public String toString() {
+        return "Equipaggiabile: " + "\n" + super.toString() +
+                String.format("Requisiti:%n") + requisiti.toString() + ("Bonus:%n") + bonus.toString();
+    }
 }

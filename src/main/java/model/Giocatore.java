@@ -1,42 +1,28 @@
 package model;
-import java.util.ArrayList;
+
+import java.util.HashMap;
+
 public class Giocatore extends Utente{
-       ArrayList<Personaggio> listaPG;
-       ArrayList<Campagna> listaCampagne;
+    private HashMap<Campagna, Personaggio> listaPartecipazioni; //include campagne e pg associato del giocatore.
 
-       public Giocatore(String username, String password, String email){
+    public Giocatore(String nome, String email, String password){
+        super(nome, email, password);
+        listaPartecipazioni = new HashMap<>();
+    }
 
-           super(username,password,email);
-           listaPG = new ArrayList<Personaggio>();
-           listaCampagne = new ArrayList<Campagna>();
-       }
+    public boolean creaPersonaggio(Classe classe, Razza razza, String nome, Campagna campagna){
+        Personaggio pg = new Personaggio(classe, razza, nome, true);
+        if(listaPartecipazioni.containsKey(campagna) && listaPartecipazioni.get(campagna) == null){
+            listaPartecipazioni.replace(campagna, pg);
+            return true;
+        }
+        return false;
+    }
 
-       public void iscrivitiCampagna(Campagna campagna){
-           if(campagna == null){
-               throw new IllegalArgumentException("Campagna non esistente");
-           }
-           else{
-               listaCampagne.add(campagna);
-               campagna.getListaPartecipanti().add(this);
-           }
-       }
+    public void iscrivitiCampagna(Campagna campagna){
+        if(campagna == null) throw new IllegalArgumentException("Campagna selezionata non valida.");
+        listaPartecipazioni.put(campagna, null);
+    }
 
-     @Override
-    public  void creaPersonaggio(String nomePG, Razza razzaScelta, Classe classeScelta, Campagna campagnaGiocante){
-         for (Personaggio pgDaControllare : listaPG) {
-             if (pgDaControllare.getCampagnaPersonaggio().equals(campagnaGiocante)) {
-                 throw new IllegalArgumentException("Un giocatore può creare un solo PG per campagna.");
-             }
-         }
-
-
-           Statistica statsIniziali = new Statistica();
-         Personaggio nuovoPg = new Personaggio(nomePG, razzaScelta, classeScelta, statsIniziali, true, campagnaGiocante);
-
-         this.listaPG.add(nuovoPg);
-
-
-         }
-
-
+    //TODO: da definire se gli altri metodi relativi alle operazioni sono da inserire qui o in controller
 }

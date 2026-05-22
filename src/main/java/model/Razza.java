@@ -1,19 +1,27 @@
 package model;
 
 public class Razza {
-         private Statistica modificatori;
+    private String nome;
+    private Statistiche modificatori;
 
-           public Razza(Statistica modificatori){
-                 this.modificatori= modificatori;
-           }
+    //costruttore per i bonus
+    public Razza(int costituzione, int forza, int destrezza, int intelligenza,
+                 int fede, int carisma, int fortuna, int hpMax, int manaMax, String nome){
+        this.nome = nome;
+        modificatori = new Statistiche(costituzione, forza, destrezza, intelligenza,
+         fede, carisma, fortuna, hpMax, manaMax);
+    }
 
+    public Razza(String nome, Statistiche statistiche){
+        this.nome = nome;
+        this.modificatori = new Statistiche(statistiche);
+    }
 
-           public Statistica getModificatoriRazza(){
-                  return this.modificatori;
-           }
+    public Statistiche getModificatori(){
+        return modificatori;
+    }
 
-           public void setModificatoriRazza( Statistica nuoviModificatori){
-                   this.modificatori= nuoviModificatori;
-           }
-
+    public String getNome() {
+        return nome;
+    }
 }

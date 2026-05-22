@@ -1,42 +1,34 @@
 package model;
 
-public class OggettoConsumabile extends Oggetto{
-      private int quantita;
-      private int ripristinoHp;
-      private int ripristinoMana;
+public class OggettoConsumabile extends Oggetto {
+    private final int ripristinoHP;
+    private final int ripristinoMana;
+    //tolto quantita, la responsabilità è di personaggio.
 
 
-          public OggettoConsumabile(String nomeOggetto, int costo,  int quantita, int ripristinoHp, int ripristinoMana){
-                  super(nomeOggetto, costo);
+    public OggettoConsumabile(int costo, String nome, int hp, int mana){
+        super(costo, nome);
+        ripristinoHP = hp;
+        ripristinoMana = mana;
+    }
 
-                   this.quantita= quantita; //chiedere se quantita da inizializzare a 1
-                   this.ripristinoHp= ripristinoHp;
-                   this.ripristinoMana= ripristinoMana;
-          }
 
-           //vedere se va bene
-           public void usa(Personaggio pg) {
-               Statistica statBase = pg.getStatisticaBase();
-               Statistica statFinali = pg.getStatisticheFinali();
+    public int getRipristinoMana() {
+        return ripristinoMana;
+    }
 
-               int nuoviHp = statBase.getHpCorrenti() + this.ripristinoHp;
-               if (nuoviHp > statFinali.getMaxHp()){
-                   nuoviHp = statFinali.getMaxHp();
-               }
-               statBase.setHpCorrenti(nuoviHp);
+    public int getRipristinoHP() {
+        return ripristinoHP;
+    }
 
-               int nuovoMana = statBase.getManaCorrenti() + this.ripristinoMana;
-               if (nuovoMana > statFinali.getMaxMana()){
-                   nuovoMana = statFinali.getMaxMana();
-               }
-               statBase.setManaCorrenti(nuovoMana);
+    public void usa(Personaggio personaggio) {
+        personaggio.ripristinaHP(ripristinoHP);
+        personaggio.ripristinaMana(ripristinoMana);
+    }
 
-               this.quantita--;
-               if (this.quantita <= 0) {
-                   pg.getInventario().remove(this);
-               }
-
-               pg.aggiornaStatoPG();
-           }
-
+    @Override
+    public String toString() {
+        return "Consumabile: " + "\n" + super.toString() +
+                String.format("Ripristino hp: %d%n Ripristino mana: %d%n", ripristinoHP, ripristinoMana);
+    }
 }

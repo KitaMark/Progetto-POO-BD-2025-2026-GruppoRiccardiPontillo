@@ -1,57 +1,60 @@
 package model;
 
 
+import java.util.Objects;
+
 public abstract class Utente {
-      private String username;
-      private String password;
-      private String email;
+    private String username;
+    private String password;
+    private String email;
 
-      //costruttore, da utilizzare per le sottoclassi.
-          public Utente(String email, String username, String password){
-              this.email = email;
-              this.username = username;
-              this.password = password;
-          }
-      //metodi public
-           public String getUsername(){
-                return this.username;
-           }
+    //costruttore, da utilizzare per le sottoclassi.
+    public Utente(String email, String username, String password){
+        this.email = email;
+        this.username = username;
+        this.password = password;
+    }
+    //metodi public
+    public String getUsername(){
+        return this.username;
+    }
 
-           public String getEmail() {
-               return this.email;
-           }
+    public String getEmail() {
+        return this.email;
+    }
 
-           //sono stati aggiunti metodi setusername e setpassword per futura estensibilità del sistema,
-               // nonostante esuli dalla specifica
-           public void setUsername(String usernameLogin, String passwordLogin, String nuovoUsername) {
-            if(controllaAccesso(usernameLogin, passwordLogin)) {
-                this.username = nuovoUsername;
-            }
-          }
+    //no getPassword per maggiore sicurezza.
 
-            public void setPassword(String usernameLogin, String passwordLogin, String nuovaPassword){
-            if(controllaAccesso(usernameLogin, passwordLogin)){
-                this.password= nuovaPassword;
-            }
-          }
+    //sono stati aggiunti metodi setusername e setpassword per futura estensibilità del sistema,
+    // nonostante esuli dalla specifica
+    public void setUsername(String usernameLogin, String passwordLogin, String nuovoUsername) {
+        if(login(usernameLogin, passwordLogin)) {
+            this.username = nuovoUsername;
+        }
+    }
 
-          @Override
-          public String toString(){
-           return String.format("email: %s%n username: %s%n", this.getEmail(), this.getUsername());
-           }
+    public void setPassword(String usernameLogin, String passwordLogin, String nuovaPassword){
+        if(login(usernameLogin, passwordLogin)){
+            this.password= nuovaPassword;
+        }
+    }
 
-          //servizi interni alla classe
-          protected final boolean controllaAccesso(String username, String password){
-            if(username == null || !(username.equals(this.username))){
-                return false;
-            }
-            if(password == null || !(password.equals(this.password))){
-                return false;
-            }
-            return true;
-          }
 
-         public abstract void creaPersonaggio(String nomePG, Razza razzaScelta, Classe classeScelta, Campagna campagnaGiocante);
+    @Override
+    public String toString(){
+        return String.format("email: %s%n username: %s%n", this.getEmail(), this.getUsername());
+    }
+
+    protected final boolean login(String username, String password){
+        if(!(Objects.equals(this.username, username))){
+            return false;
+        }
+        if(!(Objects.equals(this.password, password))){
+            return false;
+        }
+        return true;
+    }
+
 
 }
 

@@ -1,35 +1,25 @@
 package model;
 
-public class Oggetto {
-       private String nomeOggetto;
-       private int costo;
+public abstract class Oggetto {
+    protected String nome;
+    protected int costo;
 
+    public Oggetto(int costo, String nome){
 
-         public Oggetto(String nomeOggetto, int costo){
-                this.nomeOggetto= nomeOggetto;
-                this.costo= costo;
+        this.costo = costo;
+        this.nome = nome;
+    }
+    //la classe oggetto è modellata per poter operare con polimorfismo sia su
+    // oggetti equipaggiabili che consumabili.
 
-         }
+    public int getCosto() { return costo; }
 
+    public String getNome() {
+        return nome;
+    }
 
-           public String getNomeOggetto(){
-               return this.nomeOggetto;
-           }
-
-           public int getCosto(){
-               return this.costo;
-           }
-
-           public void setNomeOggetto(String nuovoNomeOggetto){
-             this.nomeOggetto= nuovoNomeOggetto;
-           }
-
-           public void setCosto(int nuovoCosto){
-               this.costo= nuovoCosto;
-           }
-
-           public void controllaEquipaggiamento(Statistica statBasePG) {
-               // Gli oggetti generici non fanno nulla, serve per futuro override in ogg equipaggiabile
-
-                }
+    @Override
+    public String toString() {
+        return String.format("Nome: %s%n Costo: %d%n", nome, costo);
+    }
 }
