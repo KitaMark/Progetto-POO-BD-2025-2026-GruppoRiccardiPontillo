@@ -11,6 +11,8 @@ public class Abilita {
         this.classe = classe;
     }
 
+
+    //GETTER
     public String getNome() {
         return nome;
     }
@@ -21,6 +23,19 @@ public class Abilita {
 
     public Classe getClasse() {
         return classe;
+    }
+
+    //SETTER
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public void setDescrizione(String descrizione) {
+        this.descrizione = descrizione;
+    }
+
+    public void setClasse(Classe classe) {
+        this.classe = classe;
     }
 
     @Override

@@ -103,6 +103,44 @@ public class Statistiche {
 
     public int getManaMax() {return manaMax;}
 
+    //metodi setter
+
+    public void setForza(int forza) {
+        this.forza = forza;
+    }
+
+    public void setDestrezza(int destrezza) {
+        this.destrezza = destrezza;
+    }
+
+    public void setCostituzione(int costituzione) {
+        this.costituzione = costituzione;
+    }
+
+    public void setIntelligenza(int intelligenza) {
+        this.intelligenza = intelligenza;
+    }
+
+    public void setFede(int fede) {
+        this.fede = fede;
+    }
+
+    public void setCarisma(int carisma) {
+        this.carisma = carisma;
+    }
+
+    public void setFortuna(int fortuna) {
+        this.fortuna = fortuna;
+    }
+
+    public void setHpMax(int hpMax) {
+        this.hpMax = hpMax;
+    }
+
+    public void setManaMax(int manaMax) {
+        this.manaMax = manaMax;
+    }
+
     public void aggiungiBonus(Statistiche bonus){
         this.forza += bonus.getForza();
         this.destrezza += bonus.getDestrezza();

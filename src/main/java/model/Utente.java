@@ -1,20 +1,18 @@
 package model;
 
-
-import java.util.Objects;
-
 public abstract class Utente {
+    private String email;
     private String username;
     private String password;
-    private String email;
 
-    //costruttore, da utilizzare per le sottoclassi.
+    // Costruttore utilizzato per le sottoclassi
     public Utente(String email, String username, String password){
         this.email = email;
         this.username = username;
         this.password = password;
     }
-    //metodi public
+
+    //GETTER
     public String getUsername(){
         return this.username;
     }
@@ -23,40 +21,25 @@ public abstract class Utente {
         return this.email;
     }
 
-    //no getPassword per maggiore sicurezza.
-
-    //sono stati aggiunti metodi setusername e setpassword per futura estensibilità del sistema,
-    // nonostante esuli dalla specifica
-    public void setUsername(String usernameLogin, String passwordLogin, String nuovoUsername) {
-        if(login(usernameLogin, passwordLogin)) {
-            this.username = nuovoUsername;
-        }
+    public String getPassword() {
+        return this.password;
     }
 
-    public void setPassword(String usernameLogin, String passwordLogin, String nuovaPassword){
-        if(login(usernameLogin, passwordLogin)){
-            this.password= nuovaPassword;
-        }
+    // SETTER (futuri controlli li fa il Controller)
+    public void setUsername(String nuovoUsername) {
+        this.username = nuovoUsername;
     }
 
+    public void setPassword(String nuovaPassword){
+        this.password = nuovaPassword;
+    }
+
+    public void setEmail(String nuovaEmail) {
+        this.email = nuovaEmail;
+    }
 
     @Override
     public String toString(){
-        return String.format("email: %s%n username: %s%n", this.getEmail(), this.getUsername());
+        return String.format("Utente [email: %s, username: %s]", this.email, this.username);
     }
-
-    protected final boolean login(String username, String password){
-        if(!(Objects.equals(this.username, username))){
-            return false;
-        }
-        if(!(Objects.equals(this.password, password))){
-            return false;
-        }
-        return true;
-    }
-
-
 }
-
-
-

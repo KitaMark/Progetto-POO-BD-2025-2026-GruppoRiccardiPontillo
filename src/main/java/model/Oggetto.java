@@ -18,6 +18,14 @@ public abstract class Oggetto {
         return nome;
     }
 
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public void setCosto(int costo) {
+        this.costo = costo;
+    }
+
     @Override
     public String toString() {
         return String.format("Nome: %s%n Costo: %d%n", nome, costo);

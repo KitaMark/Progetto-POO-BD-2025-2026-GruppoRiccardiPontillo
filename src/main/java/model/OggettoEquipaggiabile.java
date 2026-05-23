@@ -13,6 +13,14 @@ public class OggettoEquipaggiabile extends Oggetto {
     public Statistiche getBonus() { return bonus; }
     public Statistiche getRequisiti() { return requisiti; }
 
+    public void setRequisiti(Statistiche requisiti) {
+        this.requisiti = requisiti;
+    }
+
+    public void setBonus(Statistiche bonus) {
+        this.bonus = bonus;
+    }
+
     @Override
     public String toString() {
         return "Equipaggiabile: " + "\n" + super.toString() +

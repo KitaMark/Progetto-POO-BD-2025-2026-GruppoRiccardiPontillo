@@ -24,4 +24,11 @@ public class Razza {
     public String getNome() {
         return nome;
     }
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public void setModificatori(Statistiche modificatori) {
+        this.modificatori = modificatori;
+    }
 }

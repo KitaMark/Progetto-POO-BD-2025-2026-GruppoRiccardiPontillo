@@ -29,7 +29,7 @@ public class Controller {
            // this.utenteAttivo = utenteTrovato;
 
            // return utenteTrovato;
-           return null; // per il momento
+           return new Master("test", "TestUser", "password"); // per il momento
        }
 
        public void registraUtente(String username, String password, String email, boolean isMaster) throws DatiMancantiException{
@@ -168,6 +168,94 @@ public class Controller {
         // Dao controlla se PG esiste e ha abbastanza oro
         System.out.println("Oggetto '" + nomeOggetto + "' acquistato! (Simulazione)");//per ora
     }
+
+    public void creaNuovoPersonaggio(String nome, String razza, String classe, String nomeCampagna) throws NomePgNonValidoException {
+        if (nome == null || nome.isEmpty()) {
+            throw new NomePgNonValidoException("Nome non valido.");
+        }
+
+        // 1. Il DAO recupera l'oggetto 'Razza' e l'oggetto 'Classe' dal database basandosi sui nomi in stringa.
+        // 2. Chiamerai giocatore.creaPersonaggio(classeTrovata, razzaTrovata, nome, campagnaTrovata);
+
+        System.out.println("Creato nuovo PG: " + nome + " | Razza: " + razza + " | Classe: " + classe + " (Simulazione)");//per ora
+    }
+
+    public void creaPnGBase(String nome, String razza, String classe, String nomeCampagna) throws NomeMancantePngException {
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new NomeMancantePngException("Il nome del PnG non può essere vuoto.");
+        }
+        // In futuro  costruttore base Master.creaPersonaggio(classe, razza, nome)
+        System.out.println("Creato PnG BASE: " + nome + " | Razza: " + razza + " | Classe: " + classe);
+    }
+
+    public void creaPnGAvanzato(String nome, String razza, String classe, int oro, int punti, String nomeCampagna) throws NomeMancantePngException {
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new NomeMancantePngException("Il nome del PnG non può essere vuoto.");
+        }
+        // In futuroil costruttore Master.creaPersonaggio(classe, razza, stat, nome, oro, punti)
+        System.out.println("Creato PnG AVANZATO: " + nome + " | Oro: " + oro + " | Punti: " + punti);
+    }
+
+    public void salvaStatisticheModificate(String nomePersonaggio, int forza, int destrezza, int costituzione,
+                                           int intelligenza, int fede, int carisma, int fortuna,
+                                           int hpMax, int manaMax) throws PngNonSelezionatoException {
+
+        if (nomePersonaggio == null || nomePersonaggio.trim().isEmpty()) {
+            throw new PngNonSelezionatoException("Nessun personaggio selezionato.");
+        }
+
+
+        //  Il DAO recupererà l'oggetto Personaggio dal database
+        //  masterLoggato.modificaStatistichePersonaggio(pgTrovato, forza, destrezza, ...);
+
+        System.out.println("Statistiche aggiornate per il PG: " + nomePersonaggio + " (Simulazione)"); //per ora
+    }
+
+
+
+    public void equipaggiaOggetto(String nomeOggetto, String nomeCampagna) throws OggettoNonSelezionatoException {
+        if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
+            throw new OggettoNonSelezionatoException("Seleziona un oggetto da equipaggiare.");
+        }
+        // Dao fa:
+        // boolean successo = pg.equipaggia((OggettoEquipaggiabile) oggetto);
+        // se successo == false, lanceremo un'eccezione "Statistiche insufficienti!"
+
+        System.out.println("Equipaggiato l'oggetto: " + nomeOggetto + " (Simulazione)");//per ora
+    }
+
+    public void rimuoviEquipaggiamento(String nomeOggetto, String nomeCampagna) throws OggettoNonSelezionatoException {
+        if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
+            throw new OggettoNonSelezionatoException("Seleziona un oggetto da rimuovere.");
+        }
+        // In futuro: pg.rimuoviEquipaggiamento((OggettoEquipaggiabile) oggetto);
+
+        System.out.println("Rimosso l'equipaggiamento: " + nomeOggetto + " (Simulazione)");//per ora
+    }
+
+    public void usaConsumabile(String nomeOggetto, String nomeCampagna) throws OggettoNonSelezionatoException {
+        if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
+            throw new OggettoNonSelezionatoException("Seleziona un consumabile da usare.");
+        }
+        // In futuro: pg.usaConsumabile((OggettoConsumabile) oggetto);
+        // Questo ripristinerà HP o Mana
+
+        System.out.println("Hai utilizzato: " + nomeOggetto + " (Simulazione)");//per ora
+    }
+
+    public void vendiOggetto(String nomeOggetto, String nomeCampagna) throws Exception {
+        if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
+            throw new Exception("Seleziona un oggetto da vendere.");
+        }
+        // In futuro: pg.vendiOggetto(oggetto);
+        // Questo rimuoverà l'oggetto e aumenterà l'oro del PG della metà del costo originale.
+
+        System.out.println("Venduto al mercante: " + nomeOggetto + " (Simulazione)");//per ora
+    }
+
+    public void imparaAbilita(String nomeAbilita, String nomeCampagna) {
+           System.out.println("Appresa abilità: " + nomeAbilita);
+       }
 
 
 

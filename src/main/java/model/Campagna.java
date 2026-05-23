@@ -16,61 +16,27 @@ public class Campagna {
         this.nome = nome;
         this.maxGiocatori = maxGiocatori;
         this.master = master;
-        isIniziata = false;
-        partecipanti = new ArrayList<>();
-        listaPG = new ArrayList<>();
-        listaPnG = new ArrayList<>();
+        this.isIniziata = false;
+        this.partecipanti = new ArrayList<>();
+        this.listaPG = new ArrayList<>();
+        this.listaPnG = new ArrayList<>();
     }
 
-    public String getNome() {
-        return nome;
-    }
+    //GETTER
+    public String getNome() { return nome; }
+    public int getMaxGiocatori() { return maxGiocatori; }
+    public boolean isIniziata() { return isIniziata; }
+    public ArrayList<Giocatore> getPartecipanti() { return partecipanti; }
+    public Master getMaster() { return master; }
+    public ArrayList<Personaggio> getListaPG() { return listaPG; }
+    public ArrayList<Personaggio> getListaPnG() { return listaPnG; }
 
-    public int getMaxGiocatori() {
-        return maxGiocatori;
-    }
-
-    public boolean isIniziata() {
-        return isIniziata;
-    }
-
-    public ArrayList<Giocatore> getPartecipanti() {
-        return partecipanti;
-    }
-
-    public String getMaster() {
-        return master.toString(); //vengono ritornate le info in sola lettura per sicurezza.
-    }
-
-    public ArrayList<Personaggio> getListaPG() {
-        return listaPG;
-    }
-
-    public ArrayList<Personaggio> getListaPnG() {
-        return listaPnG;
-    }
-
-    //le operazioni sulle liste si definiscono dentro master
-
-    //setter utilizzabili solo da master:
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public void setMaxGiocatori(int maxGiocatori) {
-        this.maxGiocatori = maxGiocatori;
-    }
-
-    public void setIniziata(boolean iniziata) {
-        isIniziata = iniziata;
-    }
-
-    public void setPartecipanti(ArrayList<Giocatore> partecipanti) {
-        this.partecipanti = partecipanti;
-    }
-
-    public void setListaPG(ArrayList<Personaggio> listaPG) {
-        this.listaPG = listaPG;
-    }
+    //SETTER
+    public void setNome(String nome) { this.nome = nome; }
+    public void setMaxGiocatori(int maxGiocatori) { this.maxGiocatori = maxGiocatori; }
+    public void setIniziata(boolean iniziata) { this.isIniziata = iniziata; }
+    public void setPartecipanti(ArrayList<Giocatore> partecipanti) { this.partecipanti = partecipanti; }
+    public void setListaPG(ArrayList<Personaggio> listaPG) { this.listaPG = listaPG; }
+    public void setMaster(Master master) { this.master = master; }
+    public void setListaPnG(ArrayList<Personaggio> listaPnG) { this.listaPnG = listaPnG; }
 }

@@ -2,27 +2,23 @@ package model;
 
 import java.util.HashMap;
 
-public class Giocatore extends Utente{
-    private HashMap<Campagna, Personaggio> listaPartecipazioni; //include campagne e pg associato del giocatore.
+public class Giocatore extends Utente {
+    private HashMap<Campagna, Personaggio> listaPartecipazioni;
 
-    public Giocatore(String nome, String email, String password){
-        super(nome, email, password);
-        listaPartecipazioni = new HashMap<>();
+
+    public Giocatore(String email, String username, String password) {
+        super(email, username, password);
+        this.listaPartecipazioni = new HashMap<>();
     }
 
-    public boolean creaPersonaggio(Classe classe, Razza razza, String nome, Campagna campagna){
-        Personaggio pg = new Personaggio(classe, razza, nome, true);
-        if(listaPartecipazioni.containsKey(campagna) && listaPartecipazioni.get(campagna) == null){
-            listaPartecipazioni.replace(campagna, pg);
-            return true;
-        }
-        return false;
+    //GETTER
+
+    public HashMap<Campagna, Personaggio> getListaPartecipazioni() {
+        return listaPartecipazioni;
     }
 
-    public void iscrivitiCampagna(Campagna campagna){
-        if(campagna == null) throw new IllegalArgumentException("Campagna selezionata non valida.");
-        listaPartecipazioni.put(campagna, null);
+    //SETTER
+    public void setListaPartecipazioni(HashMap<Campagna, Personaggio> listaPartecipazioni) {
+        this.listaPartecipazioni = listaPartecipazioni;
     }
-
-    //TODO: da definire se gli altri metodi relativi alle operazioni sono da inserire qui o in controller
 }

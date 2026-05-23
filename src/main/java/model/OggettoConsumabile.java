@@ -1,8 +1,8 @@
 package model;
 
 public class OggettoConsumabile extends Oggetto {
-    private final int ripristinoHP;
-    private final int ripristinoMana;
+    private  int ripristinoHP;
+    private  int ripristinoMana;
     //tolto quantita, la responsabilità è di personaggio.
 
 
@@ -21,9 +21,12 @@ public class OggettoConsumabile extends Oggetto {
         return ripristinoHP;
     }
 
-    public void usa(Personaggio personaggio) {
-        personaggio.ripristinaHP(ripristinoHP);
-        personaggio.ripristinaMana(ripristinoMana);
+    public void setRipristinoHP(int ripristinoHP) {
+        this.ripristinoHP = ripristinoHP;
+    }
+
+    public void setRipristinoMana(int ripristinoMana) {
+        this.ripristinoMana = ripristinoMana;
     }
 
     @Override

@@ -9,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class CampagnaGiocatoreGUI {
-    // Variabili generate dal tuo UI Designer
     private JButton tornaAllaSchermataPrecedenteButton;
     private JPanel mainPanel;
     private JPanel indietroButton;
@@ -17,9 +16,19 @@ public class CampagnaGiocatoreGUI {
     private JTable statisticheTable;
     private JPanel buttonPanel;
     private JButton aumentaStatButton;
-    private JTable inventarioTable;
+    private JTable inventarioTable; // Ora è il Negozio
     private JPanel buttonPanel1;
     private JButton acquistaButton;
+
+    private JTable equipaggiamentoTable;
+    private JButton vendiButton;
+    private JButton rimuoviButton;
+    private JButton equipaggiaButton;
+    private JTable consumabiliTable;
+    private JButton vendiButton1;
+    private JButton usaButton;
+    private JTable abilitaTable;
+    private JButton imparaButton;
 
     private Controller controller;
     private Giocatore giocatoreLoggato;
@@ -34,15 +43,12 @@ public class CampagnaGiocatoreGUI {
 
         inizializzaTabelle();
 
-
         tornaAllaSchermataPrecedenteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                frameAttuale.dispose(); // Chiude questa scheda
-
+                frameAttuale.dispose();
                 JFrame giocatoreFrame = new JFrame("Dashboard Giocatore - " + giocatoreLoggato.getUsername());
                 GiocatoreGUI giocatoreGUI = new GiocatoreGUI(controller, giocatoreLoggato, giocatoreFrame);
-
                 giocatoreFrame.setContentPane(giocatoreGUI.getMainPanel());
                 giocatoreFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 giocatoreFrame.setSize(800, 600);
@@ -51,28 +57,20 @@ public class CampagnaGiocatoreGUI {
             }
         });
 
-
         aumentaStatButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int riga = statisticheTable.getSelectedRow();
-
                 if (riga == -1) {
-                    JOptionPane.showMessageDialog(frameAttuale, "Seleziona una statistica dalla tabella per aumentarla.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(frameAttuale, "Seleziona una statistica dalla tabella.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-
                 String nomeStatistica = statisticheTable.getValueAt(riga, 0).toString();
-
-                int conferma = JOptionPane.showConfirmDialog(frameAttuale,
-                        "Vuoi spendere 1 Punto per aumentare " + nomeStatistica + "?",
-                        "Conferma", JOptionPane.YES_NO_OPTION);
-
+                int conferma = JOptionPane.showConfirmDialog(frameAttuale, "Vuoi spendere 1 Punto per aumentare " + nomeStatistica + "?", "Conferma", JOptionPane.YES_NO_OPTION);
                 if (conferma == JOptionPane.YES_OPTION) {
                     try {
                         controller.aumentaStatistica(nomeStatistica);
                         JOptionPane.showMessageDialog(frameAttuale, "Statistica potenziata con successo!");
-                        // In futuro: aggiorneremo il valore numerico nella riga della tabella
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                     }
@@ -80,19 +78,15 @@ public class CampagnaGiocatoreGUI {
             }
         });
 
-
         acquistaButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int riga = inventarioTable.getSelectedRow();
-
                 if (riga == -1) {
                     JOptionPane.showMessageDialog(frameAttuale, "Seleziona un oggetto per comprarlo.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-
                 String nomeOggetto = inventarioTable.getValueAt(riga, 0).toString();
-
                 try {
                     controller.compraOggetto(nomeOggetto);
                     JOptionPane.showMessageDialog(frameAttuale, "Hai acquistato: " + nomeOggetto);
@@ -101,36 +95,172 @@ public class CampagnaGiocatoreGUI {
                 }
             }
         });
+
+
+
+        equipaggiaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int riga = equipaggiamentoTable.getSelectedRow();
+                if (riga == -1) {
+                    JOptionPane.showMessageDialog(frameAttuale, "Seleziona un'arma o armatura da equipaggiare.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                String nomeOggetto = equipaggiamentoTable.getValueAt(riga, 0).toString();
+                try {
+                    controller.equipaggiaOggetto(nomeOggetto, nomeCampagnaAttuale);
+                    JOptionPane.showMessageDialog(frameAttuale, "Hai equipaggiato: " + nomeOggetto);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        rimuoviButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int riga = equipaggiamentoTable.getSelectedRow();
+                if (riga == -1) {
+                    JOptionPane.showMessageDialog(frameAttuale, "Seleziona un oggetto da rimuovere.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                String nomeOggetto = equipaggiamentoTable.getValueAt(riga, 0).toString();
+                try {
+                    controller.rimuoviEquipaggiamento(nomeOggetto, nomeCampagnaAttuale);
+                    JOptionPane.showMessageDialog(frameAttuale, "Hai rimosso: " + nomeOggetto);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        vendiButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int riga = equipaggiamentoTable.getSelectedRow();
+                if (riga == -1) {
+                    JOptionPane.showMessageDialog(frameAttuale, "Seleziona un oggetto da vendere.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                String nomeOggetto = equipaggiamentoTable.getValueAt(riga, 0).toString();
+                try {
+                    controller.vendiOggetto(nomeOggetto, nomeCampagnaAttuale);
+                    JOptionPane.showMessageDialog(frameAttuale, "Hai venduto: " + nomeOggetto);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+
+        usaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int riga = consumabiliTable.getSelectedRow();
+                if (riga == -1) {
+                    JOptionPane.showMessageDialog(frameAttuale, "Seleziona una pozione da usare.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                String nomeOggetto = consumabiliTable.getValueAt(riga, 0).toString();
+                try {
+                    controller.usaConsumabile(nomeOggetto, nomeCampagnaAttuale);
+                    JOptionPane.showMessageDialog(frameAttuale, "Hai utilizzato: " + nomeOggetto);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        vendiButton1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int riga = consumabiliTable.getSelectedRow();
+                if (riga == -1) {
+                    JOptionPane.showMessageDialog(frameAttuale, "Seleziona un consumabile da vendere.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                String nomeOggetto = consumabiliTable.getValueAt(riga, 0).toString();
+                try {
+                    controller.vendiOggetto(nomeOggetto, nomeCampagnaAttuale);
+                    JOptionPane.showMessageDialog(frameAttuale, "Hai venduto: " + nomeOggetto);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+
+        imparaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int riga = abilitaTable.getSelectedRow();
+                if (riga == -1) {
+                    JOptionPane.showMessageDialog(frameAttuale, "Seleziona un'abilità da imparare.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                String nomeAbilita = abilitaTable.getValueAt(riga, 0).toString();
+                try {
+                    controller.imparaAbilita(nomeAbilita, nomeCampagnaAttuale);
+                    JOptionPane.showMessageDialog(frameAttuale, "Hai appreso una nuova abilità: " + nomeAbilita);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
     }
 
-
     private void inizializzaTabelle() {
-        // --- Tabella Statistiche ---
+        // Tabella Statistiche
         String[] colonneStat = {"Statistica", "Valore Attuale"};
         DefaultTableModel modelStat = new DefaultTableModel(null, colonneStat) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; } // Sola lettura
+            public boolean isCellEditable(int row, int column) { return false; }
         };
         statisticheTable.setModel(modelStat);
-
-        // Dati finti provvisori
         modelStat.addRow(new Object[]{"Forza", 15});
         modelStat.addRow(new Object[]{"Destrezza", 12});
 
-        // --- Tabella Inventario ---
-        String[] colonneInv = {"Oggetto", "Tipo", "Costo (Oro)"};
+        //  Tabella Negozio
+        String[] colonneInv = {"Oggetto in Vendita", "Tipo", "Costo (Oro)"};
         DefaultTableModel modelInv = new DefaultTableModel(null, colonneInv) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; } // Sola lettura
+            public boolean isCellEditable(int row, int column) { return false; }
         };
         inventarioTable.setModel(modelInv);
+        modelInv.addRow(new Object[]{"Spada di Ferro", "Equipaggiamento", 50});
+        modelInv.addRow(new Object[]{"Pozione Media", "Consumabile", 15});
 
-        // Dati finti provvisori
-        modelInv.addRow(new Object[]{"Spada Lunga", "Arma", 15});
-        modelInv.addRow(new Object[]{"Pozione di Cura", "Consumabile", 5});
+        //Tabella Equipaggiamento
+        String[] colonneEquip = {"Nome Oggetto", "Bonus", "Equipaggiato"};
+        DefaultTableModel modelEquip = new DefaultTableModel(null, colonneEquip) {
+            @Override
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
+        equipaggiamentoTable.setModel(modelEquip);
+        modelEquip.addRow(new Object[]{"Elmo di Cuoio", "+2 Costituzione", "Sì"});
+        modelEquip.addRow(new Object[]{"Spada Lunga", "+5 Forza", "No"});
+
+        // Tabella Consumabili Personali
+        String[] colonneCons = {"Nome Oggetto", "Ripristina HP", "Ripristina Mana", "Quantità"};
+        DefaultTableModel modelCons = new DefaultTableModel(null, colonneCons) {
+            @Override
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
+        consumabiliTable.setModel(modelCons);
+        modelCons.addRow(new Object[]{"Pozione di Cura", "20", "0", "3"});
+        modelCons.addRow(new Object[]{"Pozione del Mana", "0", "15", "1"});
+
+        //  Tabella Abilità
+        String[] colonneAbilita = {"Nome Abilità", "Descrizione"};
+        DefaultTableModel modelAbilita = new DefaultTableModel(null, colonneAbilita) {
+            @Override
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
+        abilitaTable.setModel(modelAbilita);
+        modelAbilita.addRow(new Object[]{"Attacco Pesante", "Infligge danni bonus basati sulla Forza"});
+        modelAbilita.addRow(new Object[]{"Palla di Fuoco", "Causa danni magici ad area"});
     }
 
-    // Fondamentale per far caricare l'interfaccia nel JFrame
     public JPanel getMainPanel() {
         return mainPanel;
     }

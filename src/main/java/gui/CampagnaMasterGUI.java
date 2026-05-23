@@ -93,14 +93,25 @@ public class CampagnaMasterGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int riga = pgTable.getSelectedRow();
+
                 if (riga == -1) {
-                    JOptionPane.showMessageDialog(frameAttuale, "Seleziona un Personaggio.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(frameAttuale, "Seleziona un Personaggio dalla tabella.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
+
                 String nomePg = pgTable.getValueAt(riga, 0).toString();
+
                 try {
-                    controller.modificaStatistichePG(nomePg);
-                    JOptionPane.showMessageDialog(frameAttuale, "Apertura pannello statistiche per " + nomePg, "Info", JOptionPane.INFORMATION_MESSAGE);
+                    JFrame modificaFrame = new JFrame("Modifica Statistiche - " + nomePg);
+                    ModificaStatisticheGUI modificaGUI = new ModificaStatisticheGUI(controller, nomePg, modificaFrame);
+
+                    modificaFrame.setContentPane(modificaGUI.getMainPanel());
+                    // Usiamo DISPOSE_ON_CLOSE per chiudere solo questo popup e non tutto
+                    modificaFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    modificaFrame.setSize(400, 500);
+                    modificaFrame.setLocationRelativeTo(frameAttuale);
+                    modificaFrame.setVisible(true);
+
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
@@ -138,16 +149,16 @@ public class CampagnaMasterGUI {
         creaPngButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String nomePng = JOptionPane.showInputDialog(frameAttuale, "Inserisci il nome del nuovo PnG:");
-                if (nomePng != null && !nomePng.trim().isEmpty()) {
-                    try {
-                        // Per ora simuliamo razza "Umano"
-                        controller.creaPnG(nomePng, "Umano", 1);
-                        JOptionPane.showMessageDialog(frameAttuale, "PnG Creato: " + nomePng);
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
+                JFrame creaPngFrame = new JFrame("Nuovo PNG - Campagna: " + nomeCampagnaAttuale);
+                CreaPngGUI creaPngGUI = new CreaPngGUI(controller, masterLoggato, nomeCampagnaAttuale, creaPngFrame);
+
+                creaPngFrame.setContentPane(creaPngGUI.getMainPanel());
+                // uso DISPOSE così se il Master chiude questo popup non si chiude l'intero gioco!
+                creaPngFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+                creaPngFrame.setSize(600, 500);
+                creaPngFrame.setLocationRelativeTo(frameAttuale);
+                creaPngFrame.setVisible(true);
             }
         });
 

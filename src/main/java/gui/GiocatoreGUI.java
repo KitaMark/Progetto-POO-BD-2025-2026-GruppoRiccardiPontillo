@@ -86,15 +86,36 @@ public class GiocatoreGUI {
 
                 try {
                     controller.entraNellaCampagna(nomeCampagnaSelezionata);
-                    frameAttuale.dispose();
-                    JFrame campagnaFrame = new JFrame("Scheda Personaggio - Campagna: " + nomeCampagnaSelezionata);
-                    CampagnaGiocatoreGUI campagnaGUI = new CampagnaGiocatoreGUI(controller, giocatoreLoggato, nomeCampagnaSelezionata, campagnaFrame);
+                    frameAttuale.dispose(); // Chiude la dashboard in ogni caso
 
-                    campagnaFrame.setContentPane(campagnaGUI.getMainPanel());
-                    campagnaFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    campagnaFrame.setSize(900, 600); // Dimensione ottimale per le schede del PG
-                    campagnaFrame.setLocationRelativeTo(null); // Centra lo schermo
-                    campagnaFrame.setVisible(true);
+
+                    // CONTROLLO PERSONAGGIO (Simulazione)
+                    // Imposta a 'false' per testare la form di creazione del PG.
+                    // Imposta a 'true' per testare la scheda del PG (CampagnaGiocatoreGUI).
+                    boolean haGiaIlPersonaggio = false;
+
+                    if (!haGiaIlPersonaggio) {
+                        // CASO 1: Il personaggio non esiste -> Apriamo CreaPgGUI
+                        JFrame creaPgFrame = new JFrame("Creazione Personaggio - Campagna: " + nomeCampagnaSelezionata);
+                        CreaPgGUI creaPgGUI = new CreaPgGUI(controller, giocatoreLoggato, nomeCampagnaSelezionata, creaPgFrame);
+
+                        creaPgFrame.setContentPane(creaPgGUI.getMainPanel());
+                        creaPgFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        creaPgFrame.setSize(600, 450);
+                        creaPgFrame.setLocationRelativeTo(null); // Centra lo schermo
+                        creaPgFrame.setVisible(true);
+
+                    } else {
+                        // CASO 2: Il personaggio esiste già -> Va alla scheda di gioco
+                        JFrame campagnaFrame = new JFrame("Scheda Personaggio - Campagna: " + nomeCampagnaSelezionata);
+                        CampagnaGiocatoreGUI campagnaGUI = new CampagnaGiocatoreGUI(controller, giocatoreLoggato, nomeCampagnaSelezionata, campagnaFrame);
+
+                        campagnaFrame.setContentPane(campagnaGUI.getMainPanel());
+                        campagnaFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        campagnaFrame.setSize(900, 600);
+                        campagnaFrame.setLocationRelativeTo(null);
+                        campagnaFrame.setVisible(true);
+                    }
 
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
@@ -102,7 +123,6 @@ public class GiocatoreGUI {
             }
         });
     }
-
 
     //Metodo privato per dare un'intestazione alle colonne della JTable.
     private void inizializzaTabella() {
