@@ -1,23 +1,23 @@
 package model;
 
 public class OggettoEquipaggiabile extends Oggetto {
-    private Statistiche requisiti;
-    private Statistiche bonus;
+    private Statistica requisiti;
+    private Statistica bonus;
 
-    public OggettoEquipaggiabile(String nome, int costo, Statistiche requisiti, Statistiche bonus) {
+    public OggettoEquipaggiabile(String nome, int costo, Statistica requisiti, Statistica bonus) {
         super(costo, nome);
-        this.requisiti = new Statistiche(requisiti);
-        this.bonus = new Statistiche(bonus);
+        this.requisiti = new Statistica(requisiti);
+        this.bonus = new Statistica(bonus);
     }
 
-    public Statistiche getBonus() { return bonus; }
-    public Statistiche getRequisiti() { return requisiti; }
+    public Statistica getBonus() { return bonus; }
+    public Statistica getRequisiti() { return requisiti; }
 
-    public void setRequisiti(Statistiche requisiti) {
+    public void setRequisiti(Statistica requisiti) {
         this.requisiti = requisiti;
     }
 
-    public void setBonus(Statistiche bonus) {
+    public void setBonus(Statistica bonus) {
         this.bonus = bonus;
     }
 

@@ -208,7 +208,7 @@ public class Controller {
         //  Il DAO recupererà l'oggetto Personaggio dal database
         //  masterLoggato.modificaStatistichePersonaggio(pgTrovato, forza, destrezza, ...);
 
-        System.out.println("Statistiche aggiornate per il PG: " + nomePersonaggio + " (Simulazione)"); //per ora
+        System.out.println("Statistica aggiornate per il PG: " + nomePersonaggio + " (Simulazione)"); //per ora
     }
 
 
@@ -219,7 +219,7 @@ public class Controller {
         }
         // Dao fa:
         // boolean successo = pg.equipaggia((OggettoEquipaggiabile) oggetto);
-        // se successo == false, lanceremo un'eccezione "Statistiche insufficienti!"
+        // se successo == false, lanceremo un'eccezione "Statistica insufficienti!"
 
         System.out.println("Equipaggiato l'oggetto: " + nomeOggetto + " (Simulazione)");//per ora
     }

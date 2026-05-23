@@ -58,7 +58,7 @@ public class ModificaStatisticheGUI {
                             fortunaVal, hpMaxVal, manaMaxVal);
 
                     JOptionPane.showMessageDialog(frameAttuale,
-                            "Statistiche di " + nomePersonaggioSelezionato + " aggiornate con successo!",
+                            "Statistica di " + nomePersonaggioSelezionato + " aggiornate con successo!",
                             "Successo", JOptionPane.INFORMATION_MESSAGE);
 
                     frameAttuale.dispose(); // Chiudiamo il popup

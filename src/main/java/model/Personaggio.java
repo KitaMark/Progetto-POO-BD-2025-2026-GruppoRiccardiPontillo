@@ -4,8 +4,8 @@ import java.util.*;
 
 public class Personaggio {
     private String nome;
-    private Statistiche statisticheBase;
-    private Statistiche statisticheFinali;
+    private Statistica statisticaBase;
+    private Statistica statisticaFinali;
     private int hpCorrenti;
     private int manaCorrente;
     private  Classe classe;
@@ -35,15 +35,15 @@ public class Personaggio {
         this.inventarioConsumabili = new HashMap<>();
         this.inventarioEquipaggiabili = new HashMap<>();
         this.listaAbilita = new ArrayList<>();
-        this.statisticheBase = new Statistiche();
-        this.statisticheFinali = new Statistiche();
+        this.statisticaBase = new Statistica();
+        this.statisticaFinali = new Statistica();
     }
 
     // COSTRUTTORE PER LA CREAZIONE DI UN NUOVO PG (GUI)
     public Personaggio(Classe classe, Razza razza, String nome, boolean isPg) {
         this.classe = classe;
         this.razza = razza;
-        this.statisticheBase = new Statistiche();
+        this.statisticaBase = new Statistica();
         this.nome = nome;
         this.isPg = isPg;
         this.puntiStatistica = 0;
@@ -53,19 +53,19 @@ public class Personaggio {
         this.listaAbilita = new ArrayList<>();
 
         inizializzaEquipaggiamentoIniziale(classe);
-        statisticheBase.aggiungiBonus(razza.getModificatori());
+        statisticaBase.aggiungiBonus(razza.getModificatori());
 
-        this.hpCorrenti = statisticheBase.getHpMax();
-        this.manaCorrente = statisticheBase.getManaMax();
+        this.hpCorrenti = statisticaBase.getHpMax();
+        this.manaCorrente = statisticaBase.getManaMax();
         aggiornaStatoPG();
     }
 
     // . COSTRUTTORE PER LA CREAZIONE DI UN NUOVO PNG (GUI MASTER)
-    public Personaggio(Classe classe, Razza razza, Statistiche statisticheBase, String nome,
+    public Personaggio(Classe classe, Razza razza, Statistica statisticaBase, String nome,
                        int oro, int puntiStatistica) {
         this.classe = classe;
         this.razza = razza;
-        this.statisticheBase = statisticheBase;
+        this.statisticaBase = statisticaBase;
         this.nome = nome;
         this.isPg = false;
         this.puntiStatistica = puntiStatistica;
@@ -75,10 +75,10 @@ public class Personaggio {
         this.listaAbilita = new ArrayList<>();
 
         inizializzaEquipaggiamentoIniziale(classe);
-        statisticheBase.aggiungiBonus(razza.getModificatori());
+        statisticaBase.aggiungiBonus(razza.getModificatori());
 
-        this.hpCorrenti = statisticheBase.getHpMax();
-        this.manaCorrente = statisticheBase.getManaMax();
+        this.hpCorrenti = statisticaBase.getHpMax();
+        this.manaCorrente = statisticaBase.getManaMax();
         aggiornaStatoPG();
     }
 
@@ -86,7 +86,7 @@ public class Personaggio {
 
     public void spendipuntiStatistica(int punti, String attributo) {
         if (punti > puntiStatistica || punti < 1) throw new IllegalArgumentException("Valore punti non valido.");
-        statisticheBase.incrementa(attributo, punti);
+        statisticaBase.incrementa(attributo, punti);
         puntiStatistica -= punti;
         aggiornaStatoPG();
     }
@@ -129,7 +129,7 @@ public class Personaggio {
     public boolean equipaggia(OggettoEquipaggiabile equipaggiabile) {
         if (equipaggiabile == null) throw new IllegalArgumentException("Oggetto non valido.");
         if (inventarioEquipaggiabili.containsKey(equipaggiabile)) {
-            if (statisticheBase.soddisfa(equipaggiabile.getRequisiti())) {
+            if (statisticaBase.soddisfa(equipaggiabile.getRequisiti())) {
                 inventarioEquipaggiabili.replace(equipaggiabile, true);
                 aggiornaStatoPG();
                 return true;
@@ -155,8 +155,8 @@ public class Personaggio {
 
     // GETTER
     public String getNome() { return nome; }
-    public Statistiche getStatisticheBase() { return statisticheBase; }
-    public Statistiche getStatisticheFinali() { return statisticheFinali; }
+    public Statistica getStatisticheBase() { return statisticaBase; }
+    public Statistica getStatisticheFinali() { return statisticaFinali; }
     public Classe getClasse() { return classe; }
     public Razza getRazza() { return razza; }
     public int getHpCorrenti() { return hpCorrenti; }
@@ -177,8 +177,8 @@ public class Personaggio {
     public void setManaCorrente(int manaCorrente) { this.manaCorrente = manaCorrente; }
     public void setIsPg(boolean isPg) { this.isPg = isPg; }
     public void setPuntiStatistica(int punti) { this.puntiStatistica = punti; }
-    public void setStatisticheBase(Statistiche s) { this.statisticheBase = s; aggiornaStatoPG(); }
-    public void setStatisticheFinali(Statistiche s) { this.statisticheFinali = s; }
+    public void setStatisticheBase(Statistica s) { this.statisticaBase = s; aggiornaStatoPG(); }
+    public void setStatisticheFinali(Statistica s) { this.statisticaFinali = s; }
     public void setOro(int oro) { this.oro = oro; }
     public void setInventarioConsumabili(HashMap<OggettoConsumabile, Integer> inventarioConsumabili) { this.inventarioConsumabili = inventarioConsumabili; }
     public void setInventarioEquipaggiabili(HashMap<OggettoEquipaggiabile, Boolean> inventarioEquipaggiabili) { this.inventarioEquipaggiabili = inventarioEquipaggiabili; }
@@ -221,7 +221,7 @@ public class Personaggio {
         if(valore > 0){
             this.hpCorrenti += valore;
             if(hpCorrenti > this.getStatisticheFinali().getHpMax()){
-                hpCorrenti = statisticheFinali.getHpMax();
+                hpCorrenti = statisticaFinali.getHpMax();
             }
         }
     }
@@ -230,16 +230,16 @@ public class Personaggio {
         if(valore > 0){
             this.manaCorrente += valore;
             if(manaCorrente > this.getStatisticheFinali().getManaMax()){
-                manaCorrente = statisticheFinali.getManaMax();
+                manaCorrente = statisticaFinali.getManaMax();
             }
         }
     }
 
     private void calcolaStatisticheFinali() {
-        statisticheFinali = new Statistiche(statisticheBase);
+        statisticaFinali = new Statistica(statisticaBase);
         for(Map.Entry<OggettoEquipaggiabile, Boolean> entry : inventarioEquipaggiabili.entrySet()){
             if(entry.getValue()){
-                statisticheFinali.aggiungiBonus(entry.getKey().getBonus());
+                statisticaFinali.aggiungiBonus(entry.getKey().getBonus());
             }
         }
     }
@@ -256,7 +256,7 @@ public class Personaggio {
 
     public void aggiornaStatoPG() {
         for (Map.Entry<OggettoEquipaggiabile, Boolean> entry : inventarioEquipaggiabili.entrySet()) {
-            if (entry.getValue() && !statisticheBase.soddisfa(entry.getKey().getRequisiti())) {
+            if (entry.getValue() && !statisticaBase.soddisfa(entry.getKey().getRequisiti())) {
                 inventarioEquipaggiabili.replace(entry.getKey(), false);
             }
         }

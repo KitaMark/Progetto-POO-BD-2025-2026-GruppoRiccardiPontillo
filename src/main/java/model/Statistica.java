@@ -1,8 +1,8 @@
 package model;
 
-public class Statistiche {
+public class Statistica {
     //si è scelto di modellare hp correnti e mana correnti in Personaggio, poiché descrittivi del suo stato
-    //in relazione alle statistiche.
+    //in relazione alle statistica.
     private int forza;
     private int destrezza;
     private int costituzione;
@@ -13,8 +13,8 @@ public class Statistiche {
     private int hpMax;
     private int manaMax;
 
-    //costruttore statistiche standard per personaggi
-    public Statistiche(){
+    //costruttore statistica standard per personaggi
+    public Statistica(){
         // Inizializzazione a un unico valore standard come richiesto dal documento
         this.forza = 10;
         this.destrezza = 10;
@@ -32,8 +32,8 @@ public class Statistiche {
     //costruttore con valori inizializzati, utile per bonus e per png.
 
 
-    public Statistiche(int costituzione, int forza, int destrezza, int intelligenza,
-                       int fede, int carisma, int fortuna, int hpMax, int manaMax) {
+    public Statistica(int costituzione, int forza, int destrezza, int intelligenza,
+                      int fede, int carisma, int fortuna, int hpMax, int manaMax) {
         this.costituzione = costituzione;
         this.forza = forza;
         this.destrezza = destrezza;
@@ -45,8 +45,8 @@ public class Statistiche {
         this.manaMax = manaMax;
     }
 
-    //crea copia di altre statistiche per manipolazioni sicure
-    public Statistiche(Statistiche daCopiare) {
+    //crea copia di altre statistica per manipolazioni sicure
+    public Statistica(Statistica daCopiare) {
         this.costituzione = daCopiare.getCostituzione();
         this.forza = daCopiare.getForza();
         this.destrezza = daCopiare.getDestrezza();
@@ -141,7 +141,7 @@ public class Statistiche {
         this.manaMax = manaMax;
     }
 
-    public void aggiungiBonus(Statistiche bonus){
+    public void aggiungiBonus(Statistica bonus){
         this.forza += bonus.getForza();
         this.destrezza += bonus.getDestrezza();
         this.costituzione += bonus.getCostituzione();
@@ -153,7 +153,7 @@ public class Statistiche {
         this.manaMax += bonus.getManaMax();
     }
 
-    public boolean soddisfa(Statistiche requisiti) {
+    public boolean soddisfa(Statistica requisiti) {
         return forza >= requisiti.getForza() &&
                 destrezza >= requisiti.getDestrezza() &&
                 costituzione >= requisiti.getCostituzione() &&

@@ -102,7 +102,7 @@ public class CampagnaMasterGUI {
                 String nomePg = pgTable.getValueAt(riga, 0).toString();
 
                 try {
-                    JFrame modificaFrame = new JFrame("Modifica Statistiche - " + nomePg);
+                    JFrame modificaFrame = new JFrame("Modifica Statistica - " + nomePg);
                     ModificaStatisticheGUI modificaGUI = new ModificaStatisticheGUI(controller, nomePg, modificaFrame);
 
                     modificaFrame.setContentPane(modificaGUI.getMainPanel());

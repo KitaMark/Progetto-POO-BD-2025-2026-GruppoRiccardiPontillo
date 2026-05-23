@@ -210,7 +210,7 @@ public class CampagnaGiocatoreGUI {
     }
 
     private void inizializzaTabelle() {
-        // Tabella Statistiche
+        // Tabella Statistica
         String[] colonneStat = {"Statistica", "Valore Attuale"};
         DefaultTableModel modelStat = new DefaultTableModel(null, colonneStat) {
             @Override
