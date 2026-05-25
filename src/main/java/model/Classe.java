@@ -13,6 +13,7 @@ public class Classe {
         equipaggiamentoIniziale = new ArrayList<>();
     }
 
+    //GETTER
     public String getNome() { return nome; }
 
     public ArrayList<Abilita> getAbilitaSbloccabili() { return abilitaSbloccabili; }

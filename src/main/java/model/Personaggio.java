@@ -31,21 +31,23 @@ public class Personaggio {
 
 
     //utile al DB
-    public Personaggio() {
+    /*public Personaggio() {
         this.inventarioConsumabili = new HashMap<>();
         this.inventarioEquipaggiabili = new HashMap<>();
         this.listaAbilita = new ArrayList<>();
         this.statisticaBase = new Statistica();
         this.statisticaFinali = new Statistica();
     }
+    da valutare
+     */
 
-    // COSTRUTTORE PER LA CREAZIONE DI UN NUOVO PG (GUI)
-    public Personaggio(Classe classe, Razza razza, String nome, boolean isPg) {
+    // COSTRUTTORE PER LA CREAZIONE DI UN NUOVO PG (GUI GIOCATORE)
+    public Personaggio(Classe classe, Razza razza, String nome) {
         this.classe = classe;
         this.razza = razza;
         this.statisticaBase = new Statistica();
         this.nome = nome;
-        this.isPg = isPg;
+        this.isPg = true
         this.puntiStatistica = 0;
         this.oro = 0;
         this.inventarioConsumabili = new HashMap<>();
@@ -169,6 +171,7 @@ public class Personaggio {
     public Map<OggettoEquipaggiabile, Boolean> getInventarioEquipaggiabili() { return Collections.unmodifiableMap(inventarioEquipaggiabili); }
 
 
+    /* DA VALUTARE UTILITA
     // SETTER
     public void setNome(String nome) { this.nome = nome; }
     public void setClasse(Classe classe) { this.classe = classe; }
@@ -183,8 +186,10 @@ public class Personaggio {
     public void setInventarioConsumabili(HashMap<OggettoConsumabile, Integer> inventarioConsumabili) { this.inventarioConsumabili = inventarioConsumabili; }
     public void setInventarioEquipaggiabili(HashMap<OggettoEquipaggiabile, Boolean> inventarioEquipaggiabili) { this.inventarioEquipaggiabili = inventarioEquipaggiabili; }
     public void setListaAbilita(ArrayList<Abilita> listaAbilita) { this.listaAbilita = listaAbilita; }
+    */
 
 
+    //utilizzabile se permesso o da master.
     public void addAbilita(Abilita abilita) {
         if (abilita == null) return;
         if (!classe.getAbilitaSbloccabili().contains(abilita)) return;
@@ -263,9 +268,23 @@ public class Personaggio {
         calcolaStatisticheFinali();
     }
 
-    @Override
+  /*  @Override
     public String toString() {
         return "Personaggio{nome='" + nome + "', classe=" + (classe != null ? classe.getNome() : "null") +
                 ", razza=" + (razza != null ? razza.getNome() : "null") + "}";
+    }
+
+   non hanno senso le assegnazioni condizionali, perchè da costruttore razza e classe non possono essere null. Non ha senso creare un pg
+   senza razza e classe inizializzate.
+   */
+
+    @Override
+    public String toString() {
+        return String.format((isPg() ? "PG:%n{%n" : "PnG:%n{%n") + "Nome: %s%nRazza: %s%nClasse: %s%nHP: %d/%d%nMana: %d/%d%n" +
+                        "Forza: %d%nDestrezza: %d%nCostituzione: %d%nIntelligenza: %d%nCarisma: %d%nFede: %d%nFortuna: %d%n" +
+                        "Oro: %d%nPunti statistica: %d%n}", nome, razza, classe, hpCorrenti, statisticheFinali.getHpMax(),
+                manaCorrente, statisticheFinali.getManaMax(), statisticheFinali.getForza(), statisticheFinali.getDestrezza(),
+                statisticheFinali.getCostituzione(), statisticheFinali.getIntelligenza(), statisticheFinali.getCarisma(),
+                statisticheFinali.getFede(), statisticheFinali.getFortuna(), oro, puntiStatistica);
     }
 }

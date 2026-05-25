@@ -24,7 +24,7 @@ public class Home {
     private JFrame frameAttuale;
 
     public static void main(String[] args) {
-        frameHome = new JFrame("Home");
+        frameHome = new JFrame("GestionaleGDRLogin");
         frameHome.setContentPane(new Home(frameHome).mainPanel);
         frameHome.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frameHome.pack();

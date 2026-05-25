@@ -1,8 +1,11 @@
 package model;
 
-public class Statistica {
+public class Statistiche {
     //si è scelto di modellare hp correnti e mana correnti in Personaggio, poiché descrittivi del suo stato
-    //in relazione alle statistica.
+    //in relazione alle statistiche.
+
+    //il nome della classe va al plurale perchè descrittivo di un'insieme di attributi
+    //che formano lo stato interno di un personaggio.
     private int forza;
     private int destrezza;
     private int costituzione;
@@ -13,8 +16,8 @@ public class Statistica {
     private int hpMax;
     private int manaMax;
 
-    //costruttore statistica standard per personaggi
-    public Statistica(){
+    //costruttore statistiche standard per personaggi
+    public Statistiche(){
         // Inizializzazione a un unico valore standard come richiesto dal documento
         this.forza = 10;
         this.destrezza = 10;
@@ -32,7 +35,7 @@ public class Statistica {
     //costruttore con valori inizializzati, utile per bonus e per png.
 
 
-    public Statistica(int costituzione, int forza, int destrezza, int intelligenza,
+    public Statistiche(int costituzione, int forza, int destrezza, int intelligenza,
                       int fede, int carisma, int fortuna, int hpMax, int manaMax) {
         this.costituzione = costituzione;
         this.forza = forza;

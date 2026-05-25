@@ -1,6 +1,8 @@
 package model;
 
 import java.util.HashMap;
+import java.util.Collections;
+import java.util.Map;
 
 public class Giocatore extends Utente {
     private HashMap<Campagna, Personaggio> listaPartecipazioni;
@@ -13,12 +15,14 @@ public class Giocatore extends Utente {
 
     //GETTER
 
-    public HashMap<Campagna, Personaggio> getListaPartecipazioni() {
-        return listaPartecipazioni;
+    public Map<Campagna, Personaggio> getListaPartecipazioni() {
+        return Collections.unmodifiableMap(listaPartecipazioni);
     }
 
-    //SETTER
+   /* //SETTER
     public void setListaPartecipazioni(HashMap<Campagna, Personaggio> listaPartecipazioni) {
         this.listaPartecipazioni = listaPartecipazioni;
-    }
+    }*/ //da eliminare
+
+
 }

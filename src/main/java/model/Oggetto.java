@@ -18,13 +18,15 @@ public abstract class Oggetto {
         return nome;
     }
 
-    public void setNome(String nome) {
+    /*public void setNome(String nome) {
         this.nome = nome;
     }
 
     public void setCosto(int costo) {
         this.costo = costo;
     }
+    da valutare
+     */
 
     @Override
     public String toString() {
