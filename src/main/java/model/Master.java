@@ -4,7 +4,6 @@ public class Master extends Utente {
     private Campagna campagna;
 
 
-    // Costruttore completo
     public Master(String email, String username, String password) {
         super(email, username, password);
         this.campagna = null;

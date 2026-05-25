@@ -47,7 +47,7 @@ public class Personaggio {
         this.razza = razza;
         this.statisticaBase = new Statistica();
         this.nome = nome;
-        this.isPg = true
+        this.isPg = true;
         this.puntiStatistica = 0;
         this.oro = 0;
         this.inventarioConsumabili = new HashMap<>();
@@ -282,9 +282,9 @@ public class Personaggio {
     public String toString() {
         return String.format((isPg() ? "PG:%n{%n" : "PnG:%n{%n") + "Nome: %s%nRazza: %s%nClasse: %s%nHP: %d/%d%nMana: %d/%d%n" +
                         "Forza: %d%nDestrezza: %d%nCostituzione: %d%nIntelligenza: %d%nCarisma: %d%nFede: %d%nFortuna: %d%n" +
-                        "Oro: %d%nPunti statistica: %d%n}", nome, razza, classe, hpCorrenti, statisticheFinali.getHpMax(),
-                manaCorrente, statisticheFinali.getManaMax(), statisticheFinali.getForza(), statisticheFinali.getDestrezza(),
-                statisticheFinali.getCostituzione(), statisticheFinali.getIntelligenza(), statisticheFinali.getCarisma(),
-                statisticheFinali.getFede(), statisticheFinali.getFortuna(), oro, puntiStatistica);
+                        "Oro: %d%nPunti statistica: %d%n}", nome, razza, classe, hpCorrenti, statisticaFinali.getHpMax(),
+                manaCorrente, statisticaFinali.getManaMax(), statisticaFinali.getForza(), statisticaFinali.getDestrezza(),
+                statisticaFinali.getCostituzione(), statisticaFinali.getIntelligenza(), statisticaFinali.getCarisma(),
+                statisticaFinali.getFede(), statisticaFinali.getFortuna(), oro, puntiStatistica);
     }
 }
