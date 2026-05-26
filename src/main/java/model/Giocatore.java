@@ -19,10 +19,6 @@ public class Giocatore extends Utente {
         return Collections.unmodifiableMap(listaPartecipazioni);
     }
 
-   /* //SETTER
-    public void setListaPartecipazioni(HashMap<Campagna, Personaggio> listaPartecipazioni) {
-        this.listaPartecipazioni = listaPartecipazioni;
-    }*/ //da eliminare
 
 
 }

@@ -30,16 +30,6 @@ public class Personaggio {
     //Documentazione Map.Entry: https://docs.oracle.com/javase/8/docs/api/java/util/Map.Entry.html
 
 
-    //utile al DB
-    /*public Personaggio() {
-        this.inventarioConsumabili = new HashMap<>();
-        this.inventarioEquipaggiabili = new HashMap<>();
-        this.listaAbilita = new ArrayList<>();
-        this.statisticaBase = new Statistica();
-        this.statisticaFinali = new Statistica();
-    }
-    da valutare
-     */
 
     // COSTRUTTORE PER LA CREAZIONE DI UN NUOVO PG (GUI GIOCATORE)
     public Personaggio(Classe classe, Razza razza, String nome) {
@@ -47,7 +37,7 @@ public class Personaggio {
         this.razza = razza;
         this.statisticaBase = new Statistica();
         this.nome = nome;
-        this.isPg = true
+        this.isPg = true;
         this.puntiStatistica = 0;
         this.oro = 0;
         this.inventarioConsumabili = new HashMap<>();
@@ -62,7 +52,7 @@ public class Personaggio {
         aggiornaStatoPG();
     }
 
-    // . COSTRUTTORE PER LA CREAZIONE DI UN NUOVO PNG (GUI MASTER)
+    // COSTRUTTORE PER LA CREAZIONE DI UN NUOVO PNG (GUI MASTER)
     public Personaggio(Classe classe, Razza razza, Statistica statisticaBase, String nome,
                        int oro, int puntiStatistica) {
         this.classe = classe;
@@ -171,24 +161,6 @@ public class Personaggio {
     public Map<OggettoEquipaggiabile, Boolean> getInventarioEquipaggiabili() { return Collections.unmodifiableMap(inventarioEquipaggiabili); }
 
 
-    /* DA VALUTARE UTILITA
-    // SETTER
-    public void setNome(String nome) { this.nome = nome; }
-    public void setClasse(Classe classe) { this.classe = classe; }
-    public void setRazza(Razza razza) { this.razza = razza; }
-    public void setHpCorrenti(int hpCorrenti) { this.hpCorrenti = hpCorrenti; }
-    public void setManaCorrente(int manaCorrente) { this.manaCorrente = manaCorrente; }
-    public void setIsPg(boolean isPg) { this.isPg = isPg; }
-    public void setPuntiStatistica(int punti) { this.puntiStatistica = punti; }
-    public void setStatisticheBase(Statistica s) { this.statisticaBase = s; aggiornaStatoPG(); }
-    public void setStatisticheFinali(Statistica s) { this.statisticaFinali = s; }
-    public void setOro(int oro) { this.oro = oro; }
-    public void setInventarioConsumabili(HashMap<OggettoConsumabile, Integer> inventarioConsumabili) { this.inventarioConsumabili = inventarioConsumabili; }
-    public void setInventarioEquipaggiabili(HashMap<OggettoEquipaggiabile, Boolean> inventarioEquipaggiabili) { this.inventarioEquipaggiabili = inventarioEquipaggiabili; }
-    public void setListaAbilita(ArrayList<Abilita> listaAbilita) { this.listaAbilita = listaAbilita; }
-    */
-
-
     //utilizzabile se permesso o da master.
     public void addAbilita(Abilita abilita) {
         if (abilita == null) return;
@@ -268,23 +240,15 @@ public class Personaggio {
         calcolaStatisticheFinali();
     }
 
-  /*  @Override
-    public String toString() {
-        return "Personaggio{nome='" + nome + "', classe=" + (classe != null ? classe.getNome() : "null") +
-                ", razza=" + (razza != null ? razza.getNome() : "null") + "}";
-    }
 
-   non hanno senso le assegnazioni condizionali, perchè da costruttore razza e classe non possono essere null. Non ha senso creare un pg
-   senza razza e classe inizializzate.
-   */
 
     @Override
     public String toString() {
         return String.format((isPg() ? "PG:%n{%n" : "PnG:%n{%n") + "Nome: %s%nRazza: %s%nClasse: %s%nHP: %d/%d%nMana: %d/%d%n" +
                         "Forza: %d%nDestrezza: %d%nCostituzione: %d%nIntelligenza: %d%nCarisma: %d%nFede: %d%nFortuna: %d%n" +
-                        "Oro: %d%nPunti statistica: %d%n}", nome, razza, classe, hpCorrenti, statisticheFinali.getHpMax(),
-                manaCorrente, statisticheFinali.getManaMax(), statisticheFinali.getForza(), statisticheFinali.getDestrezza(),
-                statisticheFinali.getCostituzione(), statisticheFinali.getIntelligenza(), statisticheFinali.getCarisma(),
-                statisticheFinali.getFede(), statisticheFinali.getFortuna(), oro, puntiStatistica);
+                        "Oro: %d%nPunti statistica: %d%n}", nome, razza, classe, hpCorrenti, statisticaFinali.getHpMax(),
+                manaCorrente, statisticaFinali.getManaMax(), statisticaFinali.getForza(), statisticaFinali.getDestrezza(),
+                statisticaFinali.getCostituzione(), statisticaFinali.getIntelligenza(), statisticaFinali.getCarisma(),
+                statisticaFinali.getFede(), statisticaFinali.getFortuna(), oro, puntiStatistica);
     }
 }

@@ -37,6 +37,5 @@ public class Campagna {
     public void setIniziata(boolean iniziata) { this.isIniziata = iniziata; }
     public void setPartecipanti(ArrayList<Giocatore> partecipanti) { this.partecipanti = partecipanti; }
     public void setListaPG(ArrayList<Personaggio> listaPG) { this.listaPG = listaPG; }
-   // public void setMaster(Master master) { this.master = master; } da eliminare, non si dovrebbe poter cambiare il master
     public void setListaPnG(ArrayList<Personaggio> listaPnG) { this.listaPnG = listaPnG; }
 }

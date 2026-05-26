@@ -22,6 +22,8 @@ public class GiocatoreGUI {
     private Giocatore giocatoreLoggato;
     private JFrame frameAttuale;
 
+
+
     public GiocatoreGUI(Controller controller, Giocatore giocatore, JFrame frame) {
         this.controller = controller;
         this.giocatoreLoggato = giocatore;

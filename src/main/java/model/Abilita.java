@@ -24,8 +24,6 @@ public class Abilita {
     public Classe getClasse() {
         return classe;
     }
-
-    /*//SETTER
     public void setNome(String nome) {
         this.nome = nome;
     }
@@ -36,8 +34,7 @@ public class Abilita {
 
     public void setClasse(Classe classe) {
         this.classe = classe;
-    }*/
-    //Considera toglierli, non hanno utilizzo.
+    }
 
     @Override
     public String toString() {

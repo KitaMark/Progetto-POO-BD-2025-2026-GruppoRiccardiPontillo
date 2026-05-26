@@ -1,6 +1,6 @@
 package model;
 
-public class Statistiche {
+public class Statistica {
     //si è scelto di modellare hp correnti e mana correnti in Personaggio, poiché descrittivi del suo stato
     //in relazione alle statistiche.
 
@@ -17,7 +17,7 @@ public class Statistiche {
     private int manaMax;
 
     //costruttore statistiche standard per personaggi
-    public Statistiche(){
+    public Statistica(){
         // Inizializzazione a un unico valore standard come richiesto dal documento
         this.forza = 10;
         this.destrezza = 10;
@@ -35,7 +35,7 @@ public class Statistiche {
     //costruttore con valori inizializzati, utile per bonus e per png.
 
 
-    public Statistiche(int costituzione, int forza, int destrezza, int intelligenza,
+    public Statistica(int costituzione, int forza, int destrezza, int intelligenza,
                       int fede, int carisma, int fortuna, int hpMax, int manaMax) {
         this.costituzione = costituzione;
         this.forza = forza;
@@ -61,15 +61,6 @@ public class Statistiche {
         this.manaMax = daCopiare.getManaMax();
     }
 
-    public int calcolaLivello(){
-        int livello = forza + destrezza + costituzione + intelligenza + fede + carisma + fortuna;
-        livello = livello / 10;
-
-        if(livello < 1){
-            return 1;
-        }
-        return livello;
-    }
 
     //metodi getter
     public int getForza() {

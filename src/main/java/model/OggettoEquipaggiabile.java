@@ -13,17 +13,6 @@ public class OggettoEquipaggiabile extends Oggetto {
     public Statistica getBonus() { return bonus; }
     public Statistica getRequisiti() { return requisiti; }
 
-   // da valutare:
-  /*  public void setRequisiti(Statistica requisiti) {
-
-        this.requisiti = requisiti;
-    }
-
-    public void setBonus(Statistica bonus) {
-        this.bonus = bonus;
-    }
-    */
-
 
 
     @Override

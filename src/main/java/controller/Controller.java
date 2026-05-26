@@ -14,22 +14,9 @@ public class Controller {
                throw new DatiMancantiException("Per favore, inserisci le tue credenziali (username/email e password) per accedere");
            }
 
-           // chiedere DAO di cercare l'utente nel Database.
-
-
-           // Utente utenteTrovato = utenteDAO.autentica(identificativo, password);
-
-           // 3. Simuliamo il controllo sui risultati del DB
-            /*
-              if (utenteTrovato == null) {
-            // Lanciamo un'eccezione generica
-        */
-
-           // 4. Salviamo l'utente attivo nel sistema
-           // this.utenteAttivo = utenteTrovato;
-
-           // return utenteTrovato;
-           return new Master("test", "TestUser", "password"); // per il momento
+           Master testMaster = new Master("test", "TestUser", "password"); // per il momento
+           this.utenteAttivo = testMaster;
+           return  utenteAttivo;
        }
 
        public void registraUtente(String username, String password, String email, boolean isMaster) throws DatiMancantiException{
@@ -89,7 +76,7 @@ public class Controller {
     }
 
     //per popolare la jtable
-    public List<Campagna> getCampagneDelMaster() {
+    public List<Campagna> getCampagne() {
         // DAO cerca solo le campagne associate all'utente attualmente loggato.
         // return campagnaDAO.trovaCampagnePerMaster(utenteAttivo.getUsername());
         return new ArrayList<>();  // per il momento
