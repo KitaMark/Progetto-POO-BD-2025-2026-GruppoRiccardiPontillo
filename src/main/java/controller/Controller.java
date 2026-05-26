@@ -131,7 +131,7 @@ public class Controller {
         System.out.println("PnG rimosso: " + nomePnG + " (Simulazione)"); //per ora
     }
 
-    // --- TAB 3: IMPOSTAZIONI CAMPAGNA ---
+
 
     public void cambiaStatoCampagna(String nomeCampagna, String nuovoStato) throws Exception {
         // Dao cambia o in Corso o Finita
@@ -162,7 +162,7 @@ public class Controller {
         }
 
         // 1. Il DAO recupera l'oggetto 'Razza' e l'oggetto 'Classe' dal database basandosi sui nomi in stringa.
-        // 2. Chiamerai giocatore.creaPersonaggio(classeTrovata, razzaTrovata, nome, campagnaTrovata);
+        // controller fa new personaggio e passa al dao
 
         System.out.println("Creato nuovo PG: " + nome + " | Razza: " + razza + " | Classe: " + classe + " (Simulazione)");//per ora
     }
@@ -193,7 +193,7 @@ public class Controller {
 
 
         //  Il DAO recupererà l'oggetto Personaggio dal database
-        //  masterLoggato.modificaStatistichePersonaggio(pgTrovato, forza, destrezza, ...);
+        //  Controller prende il PG dal DAO, userà i setter e DAO fa l'UPDATE nel database.
 
         System.out.println("Statistica aggiornate per il PG: " + nomePersonaggio + " (Simulazione)"); //per ora
     }
