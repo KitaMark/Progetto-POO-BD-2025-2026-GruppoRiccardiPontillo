@@ -8,6 +8,17 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Rappresenta l'interfaccia grafica principale (Dashboard) riservata agli utenti
+ * con ruolo di {@link Master}.
+ * <p>
+ * Consente al Master di visualizzare l'elenco delle proprie campagne, crearne
+ * di nuove stabilendo un limite di giocatori, eliminarle o accedervi.
+ * </p>
+ *
+ * @author Riccardi Carmine
+ * @author Pontillo Salvatore
+ */
 public class MasterGUI {
     private JLabel benvenutoMaster;
     private JTable tableCampagna;
@@ -17,11 +28,24 @@ public class MasterGUI {
     private JButton entraButton;
     private JPanel mainPanel;
 
-    //riferimenti  Controller, all'utente e alla finestra
+    /** Il Controller di riferimento per delegare le logiche di business e le chiamate al database. */
     private Controller controller;
+
+    /** L'entità dell'utente attualmente loggato che sta visualizzando questa interfaccia. */
     private Master masterLoggato;
+
+    /** Riferimento al frame attuale, necessario per la chiusura (dispose) durante la navigazione. */
     private JFrame frameAttuale;
 
+
+    /**
+     * Costruisce l'interfaccia della Dashboard del Master, inizializzando i componenti
+     * visivi, la tabella delle campagne e configurando gli ascoltatori di eventi.
+     *
+     * @param controller Il {@link Controller} che gestisce le operazioni del sistema.
+     * @param master     L'oggetto {@link Master} corrispondente all'utente autenticato.
+     * @param frame      Il {@link JFrame} all'interno del quale è ospitato questo pannello.
+     */
     public MasterGUI(Controller controller, Master master, JFrame frame) {
         this.controller = controller;
         this.masterLoggato = master;
@@ -132,8 +156,11 @@ public class MasterGUI {
 
 
 
-    //Metodo privato per dare un'intestazione alle colonne della JTable.
-    private void inizializzaTabella() {
+    /**
+     * Metodo privato per impostare l'intestazione e il modello dati
+     * della JTable delle campagne, rendendo le celle non modificabili al doppio clic.
+     */
+       private void inizializzaTabella() {
         String[] colonne = {"Nome Campagna", "Max Giocatori", "Stato"};
 
         // Usiamo un DefaultTableModel per non far modificare il testo all'utente con il doppio clic tramite metodo di Swing
@@ -150,8 +177,13 @@ public class MasterGUI {
         model.addRow(new Object[]{"La Miniera Perduta", 5, "In Corso"});//riga finta finche non implementato DAO
     }
 
-    // Fondamentale per farla visualizzare nel JFrame
-    public JPanel getMainPanel() {
+    /**
+     * Restituisce il pannello principale della Dashboard, fondamentale per
+     * l'inserimento all'interno del {@link JFrame} chiamante.
+     *
+     * @return Il {@link JPanel} contenente l'intera interfaccia.
+     */
+        public JPanel getMainPanel() {
         return mainPanel;
     }
 }

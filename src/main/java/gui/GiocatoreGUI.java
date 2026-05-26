@@ -8,6 +8,20 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Rappresenta l'interfaccia grafica principale (Dashboard) riservata agli utenti
+ * con ruolo di {@link Giocatore}.
+ * <p>
+ * Mostra all'utente l'elenco delle campagne a cui partecipa e gli permette di
+ * iscriversi a nuove avventure. Implementa inoltre una logica di smistamento:
+ * quando un giocatore accede a una campagna, la schermata valuta se egli possiede
+ * già un personaggio. In caso negativo, lo reindirizza alla finestra di creazione
+ * del PG; in caso positivo, apre la scheda di gioco vera e propria.
+ * </p>
+ *
+ * @author Riccardi Carmine
+ * @author Pontillo Salvatore
+ */
 public class GiocatoreGUI {
     // Le tue variabili esatte dell'UI Designer
     private JLabel benvenutoGiocatore;
@@ -18,12 +32,22 @@ public class GiocatoreGUI {
     private JPanel bottoniPanel;
     private JPanel mainPanel; // Aggiungi questo nome al pannello principale (lo sfondo di tutto) nel Designer!
 
+    /** Il Controller di riferimento per delegare le operazioni di business. */
     private Controller controller;
+    /** L'entità del Giocatore attualmente autenticato nel sistema. */
     private Giocatore giocatoreLoggato;
+    /** Riferimento al frame principale, necessario per chiudere la finestra durante la navigazione. */
     private JFrame frameAttuale;
 
 
-
+    /**
+     * Costruisce l'interfaccia della Dashboard del Giocatore, inizializza la tabella
+     * delle campagne e configura gli ascoltatori di eventi per l'interazione.
+     *
+     * @param controller Il {@link Controller} che orchestra le chiamate di sistema.
+     * @param giocatore  L'oggetto {@link Giocatore} che sta visualizzando l'interfaccia.
+     * @param frame      Il {@link JFrame} che ospita questo pannello.
+     */
     public GiocatoreGUI(Controller controller, Giocatore giocatore, JFrame frame) {
         this.controller = controller;
         this.giocatoreLoggato = giocatore;
@@ -126,8 +150,11 @@ public class GiocatoreGUI {
         });
     }
 
-    //Metodo privato per dare un'intestazione alle colonne della JTable.
-    private void inizializzaTabella() {
+    /**
+     * Metodo  privato che definisce l'intestazione della JTable e ne inibisce
+     * la modifica diretta delle celle tramite doppio clic.
+     */
+       private void inizializzaTabella() {
         String[] colonne = {"Nome Campagna", "Max Giocatori", "Stato"};
 
         // Usiamo un DefaultTableModel per non far modificare il testo all'utente con il doppio clic tramite metodo di Swing
@@ -144,8 +171,12 @@ public class GiocatoreGUI {
         model.addRow(new Object[]{"La Miniera Perduta", 5, "In Corso"});//riga finta finche non implementato DAO
     }
 
-    // Fondamentale per farla visualizzare nel JFrame
-    public JPanel getMainPanel() {
+    /**
+     * Restituisce il pannello contenitore principale della Dashboard.
+     *
+     * @return Il {@link JPanel} utilizzato dal frame per visualizzare i contenuti.
+     */
+     public JPanel getMainPanel() {
         return mainPanel;
     }
-}
+      }

@@ -7,6 +7,19 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+
+/**
+ * Interfaccia grafica di popup riservata al {@link Master} per la creazione di un
+ * Personaggio Non Giocante (PnG).
+ * <p>
+ * Offre due modalità di creazione: una di base, che genera il PnG utilizzando
+ * i parametri standard di Razza e Classe, e una avanzata, che consente di
+ * impostare manualmente Oro e Punti Statistica iniziali.
+ * </p>
+ *
+ * @author Riccardi Carmine
+ * @author Pontillo Salvatore
+ */
 public class CreaPngGUI {
     // Variabili del UI Designer
     private JPanel mainPanel;
@@ -23,11 +36,24 @@ public class CreaPngGUI {
     private JSpinner spinner1; // Corrisponde ai Punti Statistica
     private JButton creaButton;
 
+    /** Il Controller di sistema per delegare la logica di creazione e salvataggio nel database. */
     private Controller controller;
+    /** Il Master attualmente loggato che sta effettuando l'operazione. */
     private Master masterLoggato;
+    /** Il nome della campagna in cui il nuovo PnG verrà inserito e salvato. */
     private String nomeCampagnaAttuale;
+    /** Riferimento alla finestra di popup corrente, utilizzato per chiuderla dopo la creazione. */
     private JFrame frameAttuale;
 
+    /**
+     * Costruisce l'interfaccia di creazione del PnG, inizializzando i menu a tendina
+     * e configurando la logica del selettore per sbloccare le opzioni avanzate.
+     *
+     * @param controller   Il {@link Controller} di riferimento.
+     * @param master       L'oggetto {@link Master} che coordina la campagna.
+     * @param nomeCampagna Il nome della campagna a cui associare il personaggio.
+     * @param frame        Il {@link JFrame} (popup) all'interno del quale è ospitato questo pannello.
+     */
     public CreaPngGUI(Controller controller, Master master, String nomeCampagna, JFrame frame) {
         this.controller = controller;
         this.masterLoggato = master;
@@ -83,7 +109,10 @@ public class CreaPngGUI {
         });
     }
 
-    @SuppressWarnings("unchecked")
+    /**
+     * Metodo privato  che popola i menu a tendina (Razze e Classi)
+     * e imposta i limiti e lo stato iniziale dei selettori numerici per le statistiche.
+     */
     private void inizializzaComponenti() {
         // Popoliamo le Razze
         razzaComboBox.addItem("Mostro/Bestia");
@@ -105,6 +134,12 @@ public class CreaPngGUI {
         spinner1.setEnabled(false);
     }
 
+    /**
+     * Restituisce il pannello principale della finestra di creazione, necessario
+     * per il caricamento visivo all'interno del {@link JFrame}.
+     *
+     * @return Il {@link JPanel} contenente i campi di input e i pulsanti.
+     */
     public JPanel getMainPanel() {
         return mainPanel;
     }

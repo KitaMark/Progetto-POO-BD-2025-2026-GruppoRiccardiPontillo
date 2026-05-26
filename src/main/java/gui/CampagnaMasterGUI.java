@@ -8,6 +8,20 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Rappresenta il pannello di controllo dedicato al Master
+ * per la gestione attiva di una singola campagna.
+ * <p>
+ * Traduce visivamente tutti i privilegi amministrativi concessi al Master dal dominio di gioco.
+ * Tramite questa interfaccia, il Master può visualizzare i partecipanti, espellere i Personaggi
+ * Giocanti (PG), alterare arbitrariamente le loro statistiche per necessità narrative, assegnare
+ * punti crescita, generare nuovi Personaggi Non Giocanti (PnG) e modificare lo stato operativo
+ * della campagna.
+ * </p>
+ *
+ * @author Riccardi Carmine
+ * @author Pontillo Salvatore
+ */
 public class CampagnaMasterGUI {
     // Variabili generate dal tuo GUI Designer
     private JPanel mainPanel;
@@ -29,11 +43,25 @@ public class CampagnaMasterGUI {
     private JPanel impostazioniCampagna;
     private JButton statoCampagnaButton;
 
+    /** Il Controller di riferimento per orchestrare tutte le logiche di modifica e gestione della campagna. */
     private Controller controller;
+    /** Il Master attualmente autenticato che esercita la regia su questa campagna. */
     private Master masterLoggato;
+    /** Il nome univoco della campagna attualmente in corso di gestione. */
     private String nomeCampagnaAttuale;
+    /** Il frame corrente che ospita l'interfaccia di regia. */
     private JFrame frameAttuale;
 
+
+    /**
+     * Costruisce l'interfaccia di Regia del Master, inizializzando le etichette di stato,
+     * le tabelle dei personaggi e attivando tutti i Listener per i privilegi amministrativi.
+     *
+     * @param controller   Il {@link Controller} di sistema.
+     * @param master       L'oggetto {@link Master} autenticato.
+     * @param nomeCampagna Il nome della campagna da gestire.
+     * @param frame        Il {@link JFrame} principale che contiene questo pannello.
+     */
     public CampagnaMasterGUI(Controller controller, Master master, String nomeCampagna, JFrame frame) {
         this.controller = controller;
         this.masterLoggato = master;
@@ -205,6 +233,11 @@ public class CampagnaMasterGUI {
         });
     }
 
+
+    /**
+     * Metodo privato che definisce l'intestazione e i modelli dati per le tabelle
+     * dei Personaggi Giocanti (PG) e dei Personaggi Non Giocanti (PnG), inibendone la modifica manuale.
+     */
     private void inizializzaTabelle() {
         // Tabella PG
         String[] colonnePG = {"Nome PG", "Giocatore", "Razza", "Classe", "Livello"};
@@ -225,6 +258,12 @@ public class CampagnaMasterGUI {
         modelPnG.addRow(new Object[]{"Oste Bob", "Umano", 1});
     }
 
+
+    /**
+     * Restituisce il pannello principale dell'interfaccia di regia.
+     *
+     * @return Il {@link JPanel} utilizzato per il rendering visivo dei contenuti.
+     */
     public JPanel getMainPanel() {
         return mainPanel;
     }

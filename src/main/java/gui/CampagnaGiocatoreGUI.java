@@ -8,6 +8,20 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Rappresenta l'interfaccia grafica principale (Scheda Personaggio) dedicata al
+ * {@link Giocatore} durante lo svolgimento di una campagna.
+ * <p>
+ * Mette a disposizione del giocatore tutti gli strumenti necessari per l'interazione
+ * nel mondo di gioco: visualizzazione e potenziamento delle statistiche (tramite la
+ * spesa dei Punti progressione), gestione dell'inventario (equipaggiamento e consumabili),
+ * apprendimento di nuove abilità di classe e l'interazione commerciale con il Negozio
+ * per l'acquisto e la vendita di oggetti.
+ * </p>
+ *
+ * @author Riccardi Carmine
+ * @author Pontillo Salvatore
+ */
 public class CampagnaGiocatoreGUI {
     private JButton tornaAllaSchermataPrecedenteButton;
     private JPanel mainPanel;
@@ -30,11 +44,26 @@ public class CampagnaGiocatoreGUI {
     private JTable abilitaTable;
     private JButton imparaButton;
 
+    /** Il Controller di riferimento per l'orchestrazione delle meccaniche di gioco. */
     private Controller controller;
+    /** Il Giocatore attualmente autenticato che sta visualizzando la scheda del proprio PG. */
     private Giocatore giocatoreLoggato;
+    /** Il nome della campagna in corso. */
     private String nomeCampagnaAttuale;
+    /** Il frame corrente che ospita l'interfaccia della scheda personaggio. */
     private JFrame frameAttuale;
 
+
+    /**
+     * Costruisce l'interfaccia della Scheda Personaggio, inizializzando le tabelle
+     * informative e configurando tutti i Listener per le azioni di gioco (crescita,
+     * equipaggiamento, acquisti, uso di consumabili).
+     *
+     * @param controller   Il {@link Controller} di sistema.
+     * @param giocatore    L'oggetto {@link Giocatore} associato.
+     * @param nomeCampagna Il nome della campagna attualmente visualizzata.
+     * @param frame        Il {@link JFrame} principale che ospita il pannello.
+     */
     public CampagnaGiocatoreGUI(Controller controller, Giocatore giocatore, String nomeCampagna, JFrame frame) {
         this.controller = controller;
         this.giocatoreLoggato = giocatore;
@@ -209,6 +238,11 @@ public class CampagnaGiocatoreGUI {
         });
     }
 
+    /**
+     * Metodo  privato che definisce l'intestazione e i modelli dati per
+     * tutte le tabelle presenti nella scheda (Statistiche, Negozio, Equipaggiamento,
+     * Consumabili, Abilità), rendendole non modificabili direttamente.
+     */
     private void inizializzaTabelle() {
         // Tabella Statistica
         String[] colonneStat = {"Statistica", "Valore Attuale"};
@@ -261,6 +295,11 @@ public class CampagnaGiocatoreGUI {
         modelAbilita.addRow(new Object[]{"Palla di Fuoco", "Causa danni magici ad area"});
     }
 
+    /**
+     * Restituisce il pannello principale della Scheda Personaggio.
+     *
+     * @return Il {@link JPanel} utilizzato per il rendering visivo dell'interfaccia.
+     */
     public JPanel getMainPanel() {
         return mainPanel;
     }

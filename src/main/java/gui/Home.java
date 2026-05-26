@@ -5,7 +5,18 @@ import model.*;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+/**
+ * Rappresenta la finestra principale e il punto di accesso (Entry Point) dell'applicazione.
+ * <p>
+ * Consente agli utenti di registrarsi al sistema specificando il proprio ruolo
+ * ({@link Master} o {@link Giocatore}) e di effettuare il login.
+ * Dopo ad una autenticazione con successo, la classe delega al {@link Controller}
+ * il riconoscimento dell'utente e apre la Dashboard specifica per il ruolo ricoperto.
+ * </p>
+ *
+ * @author Riccardi Carmine
+ * @author Pontillo Salvatore
+ */
 public class Home {
     private JPanel mainPanel;
     private JLabel username;
@@ -19,10 +30,19 @@ public class Home {
     private JButton registrati;
     private JButton Accedi;
     private JPasswordField campoPassword;
+
+    /** Il frame statico principale che contiene questa interfaccia. */
     private static JFrame frameHome;
+
+    /** Il Controller che gestisce la logica applicativa. */
     private Controller controller;
+
+    /** Riferimento al frame attuale, utilizzato per chiudere la finestra dopo il login. */
     private JFrame frameAttuale;
 
+    /**
+     * Inizializza il frame principale della Home e lo rende visibile a schermo.
+     */
     public static void main(String[] args) {
         frameHome = new JFrame("GestionaleGDRLogin");
         frameHome.setContentPane(new Home(frameHome).mainPanel);
@@ -33,6 +53,14 @@ public class Home {
 
     }
 
+
+    /**
+     * Costruisce l'interfaccia della Home, inizializzando il collegamento con il Controller
+     * e configurando gli ascoltatori di eventi (Listener) per i pulsanti di Login e Registrazione.
+     *
+     * @param frame Il {@link JFrame} all'interno del quale è ospitato questo pannello.
+     * Viene passato per permetterne la chiusura (dispose) al momento del login.
+     */
     public Home(JFrame frame) {
         controller = new Controller();
         this.frameAttuale = frame;
