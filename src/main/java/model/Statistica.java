@@ -1,11 +1,11 @@
 package model;
 
+/**
+ * Gestisce i parametri numerici base e i massimali (HP e Mana) di un personaggio.
+ * Non include lo stato corrente delle risorse dinamiche, gestite direttamente in Personaggio.
+ */
 public class Statistica {
-    //si è scelto di modellare hp correnti e mana correnti in Personaggio, poiché descrittivi del suo stato
-    //in relazione alle statistiche.
 
-    //il nome della classe va al plurale perchè descrittivo di un'insieme di attributi
-    //che formano lo stato interno di un personaggio.
     private int forza;
     private int destrezza;
     private int costituzione;
@@ -16,9 +16,10 @@ public class Statistica {
     private int hpMax;
     private int manaMax;
 
-    //costruttore statistiche standard per personaggi
+    /**
+     * Crea un'istanza di Statistica con i valori iniziali predefiniti dal sistema.
+     */
     public Statistica(){
-        // Inizializzazione a un unico valore standard come richiesto dal documento
         this.forza = 10;
         this.destrezza = 10;
         this.costituzione = 10;
@@ -26,15 +27,23 @@ public class Statistica {
         this.fede = 10;
         this.carisma = 10;
         this.fortuna = 10;
-
-        // Valori standard iniziali per risorse vitali e magiche
         this.hpMax = 100;
         this.manaMax = 50;
     }
 
-    //costruttore con valori inizializzati, utile per bonus e per png.
-
-
+    /**
+     * Crea un'istanza di Statistica con valori personalizzati per ciascun parametro.
+     *
+     * @param costituzione il valore di costituzione.
+     * @param forza        il valore di forza.
+     * @param destrezza    il valore di destrezza.
+     * @param intelligenza il valore di intelligenza.
+     * @param fede         il valore di fede.
+     * @param carisma      il valore di carisma.
+     * @param fortuna      il valore di fortuna.
+     * @param hpMax        la soglia massima di punti ferita.
+     * @param manaMax      la riserva massima di punti mana.
+     */
     public Statistica(int costituzione, int forza, int destrezza, int intelligenza,
                       int fede, int carisma, int fortuna, int hpMax, int manaMax) {
         this.costituzione = costituzione;
@@ -48,7 +57,11 @@ public class Statistica {
         this.manaMax = manaMax;
     }
 
-    //crea copia di altre statistica per manipolazioni sicure
+    /**
+     * Costruttore di copia. Crea una nuova istanza duplicando i valori di un'altra Statistica.
+     *
+     * @param daCopiare l'oggetto Statistica da cui copiare i valori.
+     */
     public Statistica(Statistica daCopiare) {
         this.costituzione = daCopiare.getCostituzione();
         this.forza = daCopiare.getForza();
@@ -61,80 +74,101 @@ public class Statistica {
         this.manaMax = daCopiare.getManaMax();
     }
 
-
-    //metodi getter
+    /** @return il punteggio di forza. */
     public int getForza() {
         return forza;
     }
 
+    /** @return il punteggio di destrezza. */
     public int getDestrezza() {
         return destrezza;
     }
 
+    /** @return il punteggio di costituzione. */
     public int getCostituzione() {
         return costituzione;
     }
 
+    /** @return il punteggio di intelligenza. */
     public int getIntelligenza() {
         return intelligenza;
     }
 
+    /** @return il punteggio di fede. */
     public int getFede() {
         return fede;
     }
 
+    /** @return il punteggio di carisma. */
     public int getCarisma() {
         return carisma;
     }
 
+    /** @return il punteggio di fortuna. */
     public int getFortuna() {
         return fortuna;
     }
 
+    /** @return il valore massimo di HP. */
     public int getHpMax() {
         return hpMax;
     }
 
-    public int getManaMax() {return manaMax;}
+    /** @return il valore massimo di mana. */
+    public int getManaMax() {
+        return manaMax;
+    }
 
-    //metodi setter
-
+    /** @param forza il nuovo valore di forza da impostare. */
     public void setForza(int forza) {
         this.forza = forza;
     }
 
+    /** @param destrezza il nuovo valore di destrezza da impostare. */
     public void setDestrezza(int destrezza) {
         this.destrezza = destrezza;
     }
 
+    /** @param costituzione il nuovo valore di costituzione da impostare. */
     public void setCostituzione(int costituzione) {
         this.costituzione = costituzione;
     }
 
+    /** @param intelligenza il nuovo valore di intelligenza da impostare. */
     public void setIntelligenza(int intelligenza) {
         this.intelligenza = intelligenza;
     }
 
+    /** @param fede il nuovo valore di fede da impostare. */
     public void setFede(int fede) {
         this.fede = fede;
     }
 
+    /** @param carisma il nuovo valore di carisma da impostare. */
     public void setCarisma(int carisma) {
         this.carisma = carisma;
     }
 
+    /** @param fortuna il nuovo valore di fortuna da impostare. */
     public void setFortuna(int fortuna) {
         this.fortuna = fortuna;
     }
 
+    /** @param hpMax la nuova soglia massima di HP da impostare. */
     public void setHpMax(int hpMax) {
         this.hpMax = hpMax;
     }
 
+    /** @param manaMax la nuova soglia massima di mana da impostare. */
     public void setManaMax(int manaMax) {
         this.manaMax = manaMax;
     }
 
+    /**
+     * Somma i valori di un secondo oggetto Statistica a quella corrente.
+     *
+     * @param bonus l'oggetto Statistica contenente i modificatori da sommare.
+     */
     public void aggiungiBonus(Statistica bonus){
         this.forza += bonus.getForza();
         this.destrezza += bonus.getDestrezza();
@@ -147,6 +181,13 @@ public class Statistica {
         this.manaMax += bonus.getManaMax();
     }
 
+    /**
+     * Verifica se gli attributi base soddisfano o superano i requisiti specificati.
+     * Il controllo esclude i massimali di HP e Mana.
+     *
+     * @param requisiti i valori minimi richiesti.
+     * @return {@code true} se tutti i requisiti sono soddisfatti, {@code false} altrimenti.
+     */
     public boolean soddisfa(Statistica requisiti) {
         return forza >= requisiti.getForza() &&
                 destrezza >= requisiti.getDestrezza() &&
@@ -157,6 +198,13 @@ public class Statistica {
                 fortuna >= requisiti.getFortuna();
     }
 
+    /**
+     * Incrementa il valore di uno specifico attributo identificato tramite stringa.
+     *
+     * @param attributo il nome della statistica da potenziare.
+     * @param punti     la quantità di punti da aggiungere.
+     * @throws IllegalArgumentException se la stringa non corrisponde a nessun attributo valido.
+     */
     public void incrementa(String attributo, int punti) {
         switch (attributo.toLowerCase()) {
             case "forza" -> forza += punti;
@@ -172,6 +220,11 @@ public class Statistica {
         }
     }
 
+    /**
+     * Restituisce la rappresentazione testuale dei valori delle statistiche.
+     *
+     * @return stringa formattata con l'elenco dei parametri correnti.
+     */
     @Override
     public String toString() {
         return String.format("""
@@ -189,4 +242,3 @@ public class Statistica {
                 carisma, fortuna, hpMax, manaMax);
     }
 }
-

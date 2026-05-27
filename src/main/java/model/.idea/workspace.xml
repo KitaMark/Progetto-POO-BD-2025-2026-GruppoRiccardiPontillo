@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="cbd929f3-48b6-4052-a945-f77ba467d7e5" name="Changes" comment="Modifiche varie">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/model.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Utente.java" beforeDir="false" afterPath="$PROJECT_DIR$/Utente.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../../.." />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;KitaMark&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/KitaMark/Progetto-POO-BD-2025-2026-GruppoRiccardiPontillo.git&quot;,
+    &quot;accountId&quot;: &quot;69549f68-7fe2-4ffe-9b76-5278092f6509&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
+  <component name="ProjectId" id="3DgEaaEEUhrMPqnfQSTkzhIu7GI" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;vcs.Git&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.33514.17" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.33514.17" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="cbd929f3-48b6-4052-a945-f77ba467d7e5" name="Changes" comment="" />
+      <created>1778695377124</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1778695377124</updated>
+      <workItem from="1778695379240" duration="1800000" />
+      <workItem from="1778827381905" duration="2054000" />
+      <workItem from="1778829680764" duration="323000" />
+      <workItem from="1778831271608" duration="224000" />
+      <workItem from="1778853583199" duration="42000" />
+      <workItem from="1778858743558" duration="243000" />
+      <workItem from="1778859012843" duration="10000" />
+      <workItem from="1778859031682" duration="110000" />
+      <workItem from="1778859215943" duration="3500000" />
+      <workItem from="1778953464773" duration="71000" />
+      <workItem from="1779263864732" duration="567000" />
+      <workItem from="1779267007957" duration="5000" />
+      <workItem from="1779267232703" duration="13000" />
+      <workItem from="1779267501968" duration="178000" />
+      <workItem from="1779267857166" duration="46000" />
+      <workItem from="1779267979940" duration="33000" />
+      <workItem from="1779268035511" duration="296000" />
+      <workItem from="1779268697651" duration="2914000" />
+      <workItem from="1779271658808" duration="61000" />
+      <workItem from="1779271987006" duration="15000" />
+      <workItem from="1779275201461" duration="1646000" />
+      <workItem from="1779300743698" duration="292000" />
+      <workItem from="1779381849434" duration="374000" />
+      <workItem from="1779382228439" duration="149000" />
+      <workItem from="1779382391939" duration="2000" />
+      <workItem from="1779466496077" duration="107000" />
+      <workItem from="1779467588516" duration="13000" />
+      <workItem from="1779467777609" duration="40000" />
+      <workItem from="1779468798292" duration="40000" />
+      <workItem from="1779718357678" duration="125000" />
+      <workItem from="1779718514018" duration="224000" />
+      <workItem from="1779721702051" duration="5000" />
+      <workItem from="1779721733476" duration="2036000" />
+      <workItem from="1779723921395" duration="338000" />
+      <workItem from="1779803544931" duration="2548000" />
+      <workItem from="1779873100082" duration="638000" />
+      <workItem from="1779873782035" duration="573000" />
+      <workItem from="1779874456882" duration="585000" />
+      <workItem from="1779875059169" duration="24000" />
+    </task>
+    <task id="LOCAL-00001" summary="Modifiche varie">
+      <option name="closed" value="true" />
+      <created>1778862708231</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1778862708231</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Modifiche varie" />
+    <option name="LAST_COMMIT_MESSAGE" value="Modifiche varie" />
+  </component>
+</project>

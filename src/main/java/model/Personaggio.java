@@ -1,37 +1,41 @@
 package model;
+
 import java.util.*;
 
-
+/**
+ * Rappresenta un personaggio all'interno del sistema di gioco.
+ * Gestisce le statistiche (base e finali), lo stato delle risorse vitali (HP e Mana),
+ * l'oro, le abilità apprese e l'inventario diviso tra oggetti consumabili ed equipaggiabili.
+ * Può essere configurato come Personaggio Giocante (PG) o Non Giocante (PnG).
+ */
 public class Personaggio {
     private String nome;
     private Statistica statisticaBase;
     private Statistica statisticaFinali;
     private int hpCorrenti;
     private int manaCorrente;
-    private  Classe classe;
-    private  Razza razza;
+    private Classe classe;
+    private Razza razza;
     private int puntiStatistica;
     private int oro;
     private boolean isPg;
+
+    /** Mappa dei consumabili posseduti associati alla rispettiva quantità. */
     private HashMap<OggettoConsumabile, Integer> inventarioConsumabili;
+
+    /** Mappa degli equipaggiabili posseduti associati allo stato di equipaggiamento (true se indossato). */
     private HashMap<OggettoEquipaggiabile, Boolean> inventarioEquipaggiabili;
     private ArrayList<Abilita> listaAbilita;
 
-
-    //Per semplicità del sistema si preferisce implementare due HashMap distinte per i consumabili,
-    // associati alla quantità posseduta; poiché per gli equipaggiabili il valore d'interesse del modello è
-    // "isEquipaggiato", le chiavi sono associati a valori boolean che indicano se l'oggetto è equipaggiato.
-    //Per gli equipaggiabili si ritiene superfluo indicarne la quantità.
-
-    //Documentazione di riferimento HashMap: https://docs.oracle.com/javase/8/docs/api/java/util/HashMap.html.
-    //Documentazione Map: https://docs.oracle.com/javase/8/docs/api/java/util/Map.html
-    //Documentazione Collections: https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html
-    //Documentazione Set: https://docs.oracle.com/javase/8/docs/api/java/util/Set.html
-    //Documentazione Map.Entry: https://docs.oracle.com/javase/8/docs/api/java/util/Map.Entry.html
-
-
-
-    // COSTRUTTORE PER LA CREAZIONE DI UN NUOVO PG (GUI GIOCATORE)
+    /**
+     * Costruttore per la creazione di un nuovo Personaggio Giocante (PG).
+     * Inizializza l'oro e i punti statistica a 0, assegna l'equipaggiamento iniziale della classe,
+     * applica i modificatori di razza alle statistiche base e imposta HP e Mana al massimo.
+     *
+     * @param classe la classe iniziale del personaggio.
+     * @param razza  la razza del personaggio con i relativi modificatori.
+     * @param nome   il nome del personaggio.
+     */
     public Personaggio(Classe classe, Razza razza, String nome) {
         this.classe = classe;
         this.razza = razza;
@@ -52,7 +56,17 @@ public class Personaggio {
         aggiornaStatoPG();
     }
 
-    // COSTRUTTORE PER LA CREAZIONE DI UN NUOVO PNG (GUI MASTER)
+    /**
+     * Costruttore per la creazione di un nuovo Personaggio Non Giocante (PnG) da parte del Master.
+     * Permette di definire direttamente statistiche base, oro e punti statistica iniziali.
+     *
+     * @param classe          la classe del PnG.
+     * @param razza           la razza del PnG.
+     * @param statisticaBase  le statistiche base assegnate al PnG.
+     * @param nome            il nome del PnG.
+     * @param oro             l'oro iniziale in dotazione.
+     * @param puntiStatistica i punti statistica spendibili iniziali.
+     */
     public Personaggio(Classe classe, Razza razza, Statistica statisticaBase, String nome,
                        int oro, int puntiStatistica) {
         this.classe = classe;
@@ -74,8 +88,13 @@ public class Personaggio {
         aggiornaStatoPG();
     }
 
-
-
+    /**
+     * Incrementa un attributo base spendendo i punti statistica disponibili.
+     *
+     * @param punti     il numero di punti da assegnare all'attributo.
+     * @param attributo il nome dell'attributo da incrementare.
+     * @throws IllegalArgumentException se i punti richiesti superano quelli disponibili o sono minori di 1.
+     */
     public void spendipuntiStatistica(int punti, String attributo) {
         if (punti > puntiStatistica || punti < 1) throw new IllegalArgumentException("Valore punti non valido.");
         statisticaBase.incrementa(attributo, punti);
@@ -83,6 +102,13 @@ public class Personaggio {
         aggiornaStatoPG();
     }
 
+    /**
+     * Gestisce l'acquisto di un oggetto verificando la disponibilità di oro.
+     * Inserisce l'oggetto nella mappa corretta in base al tipo.
+     *
+     * @param oggetto l'oggetto da acquistare.
+     * @throws IllegalArgumentException se l'oggetto è nullo, l'oro è insufficiente o l'equipaggiabile è già posseduto.
+     */
     public void compraOggetto(Oggetto oggetto) {
         if (oggetto == null) throw new IllegalArgumentException("Seleziona un oggetto valido.");
         if (oro < oggetto.getCosto()) throw new IllegalArgumentException("Oro insufficiente.");
@@ -99,6 +125,12 @@ public class Personaggio {
         }
     }
 
+    /**
+     * Vende un oggetto dall'inventario, aggiungendo all'oro la metà del suo costo di listino.
+     *
+     * @param oggetto l'oggetto da vendere.
+     * @throws IllegalArgumentException se l'oggetto è nullo o non è presente in inventario.
+     */
     public void vendiOggetto(Oggetto oggetto) {
         if (oggetto == null) throw new IllegalArgumentException("Seleziona un oggetto valido.");
         if (oggetto instanceof OggettoEquipaggiabile) {
@@ -118,6 +150,13 @@ public class Personaggio {
         }
     }
 
+    /**
+     * Equipaggia un oggetto se presente in inventario e se sono soddisfatti i requisiti minimi basati sulle statistiche base.
+     *
+     * @param equipaggiabile l'oggetto da equipaggiare.
+     * @return {@code true} se l'oggetto viene equipaggiato, {@code false} se i requisiti non sono soddisfatti.
+     * @throws IllegalArgumentException se l'oggetto è nullo o non è posseduto.
+     */
     public boolean equipaggia(OggettoEquipaggiabile equipaggiabile) {
         if (equipaggiabile == null) throw new IllegalArgumentException("Oggetto non valido.");
         if (inventarioEquipaggiabili.containsKey(equipaggiabile)) {
@@ -129,6 +168,12 @@ public class Personaggio {
         } else throw new IllegalArgumentException("Non possiedi quest'oggetto!");
     }
 
+    /**
+     * Rimuove l'equipaggiamento di un oggetto, riportando il suo stato a non equipaggiato.
+     *
+     * @param equipaggiabile l'oggetto da rimuovere.
+     * @throws IllegalArgumentException se l'oggetto è nullo o non è posseduto.
+     */
     public void rimuoviEquipaggiamento(OggettoEquipaggiabile equipaggiabile) {
         if (equipaggiabile == null) throw new IllegalArgumentException("Oggetto non valido.");
         if (inventarioEquipaggiabili.containsKey(equipaggiabile)) {
@@ -137,6 +182,12 @@ public class Personaggio {
         } else throw new IllegalArgumentException("Non possiedi quest'oggetto!");
     }
 
+    /**
+     * Utilizza un oggetto consumabile, applicando i suoi effetti di ripristino HP/Mana e riducendone la quantità.
+     *
+     * @param oggetto l'oggetto consumabile da usare.
+     * @throws IllegalArgumentException se l'oggetto non è presente in inventario.
+     */
     public void usaConsumabile(OggettoConsumabile oggetto) {
         if (inventarioConsumabili.containsKey(oggetto)) {
             ripristinaHP(oggetto.getRipristinoHP());
@@ -145,33 +196,71 @@ public class Personaggio {
         } else throw new IllegalArgumentException("Non possiedi quest'oggetto!");
     }
 
-    // GETTER
+    /** @return il nome del personaggio. */
     public String getNome() { return nome; }
+
+    /** @return le statistiche base (senza bonus da equipaggiamento). */
     public Statistica getStatisticheBase() { return statisticaBase; }
+
+    /** @return le statistiche finali (comprensive di bonus da oggetti equipaggiati). */
     public Statistica getStatisticheFinali() { return statisticaFinali; }
+
+    /** @return la classe del personaggio. */
     public Classe getClasse() { return classe; }
+
+    /** @return la razza del personaggio. */
     public Razza getRazza() { return razza; }
+
+    /** @return gli HP correnti. */
     public int getHpCorrenti() { return hpCorrenti; }
+
+    /** @return il mana corrente. */
     public int getManaCorrente() { return manaCorrente; }
+
+    /** @return i punti statistica ancora spendibili. */
     public int getPuntiStatistica() { return puntiStatistica; }
+
+    /** @return l'oro posseduto. */
     public int getOro() { return oro; }
+
+    /** @return {@code true} se è un PG, {@code false} se è un PnG. */
     public boolean isPg() { return isPg; }
+
+    /** @return una vista non modificabile della lista delle abilità apprese. */
     public List<Abilita> getListaAbilita() { return Collections.unmodifiableList(listaAbilita); }
+
+    /** @return una vista non modificabile dell'inventario dei consumabili. */
     public Map<OggettoConsumabile, Integer> getInventarioConsumabili() { return Collections.unmodifiableMap(inventarioConsumabili); }
+
+    /** @return una vista non modificabile dell'inventario degli oggetti equipaggiabili. */
     public Map<OggettoEquipaggiabile, Boolean> getInventarioEquipaggiabili() { return Collections.unmodifiableMap(inventarioEquipaggiabili); }
 
-
-    //utilizzabile se permesso o da master.
+    /**
+     * Aggiunge un'abilità alla lista del personaggio se prevista tra quelle sbloccabili dalla classe.
+     *
+     * @param abilita l'abilità da aggiungere.
+     */
     public void addAbilita(Abilita abilita) {
         if (abilita == null) return;
         if (!classe.getAbilitaSbloccabili().contains(abilita)) return;
         if (!listaAbilita.contains(abilita)) listaAbilita.add(abilita);
     }
 
+    /**
+     * Rimuove un oggetto equipaggiabile dall'inventario.
+     *
+     * @param oggetto l'oggetto da rimuovere.
+     */
     public void rimuoviEquipaggiabile(OggettoEquipaggiabile oggetto) {
         inventarioEquipaggiabili.remove(oggetto);
     }
 
+    /**
+     * Riduce la quantità di un oggetto consumabile o lo rimuove se la quantità scende a zero.
+     *
+     * @param oggetto  l'oggetto consumabile da ridurre.
+     * @param quantita la quantità da sottrarre.
+     */
     public void rimuoviConsumabile(OggettoConsumabile oggetto, int quantita) {
         if (inventarioConsumabili.get(oggetto) <= quantita) {
             inventarioConsumabili.remove(oggetto);
@@ -180,12 +269,23 @@ public class Personaggio {
         }
     }
 
+    /**
+     * Aggiunge un oggetto equipaggiabile all'inventario impostandolo come non equipaggiato.
+     *
+     * @param oggetto l'oggetto da inserire.
+     */
     public void addEquipaggiabile(OggettoEquipaggiabile oggetto) {
         if (!(inventarioEquipaggiabili.containsKey(oggetto))) {
             inventarioEquipaggiabili.put(oggetto, false);
         }
     }
 
+    /**
+     * Incrementa la quantità di un oggetto consumabile o lo inserisce se non presente.
+     *
+     * @param oggetto  l'oggetto consumabile da aggiungere o incrementare.
+     * @param quantita il numero di unità da inserire.
+     */
     public void addConsumabile(OggettoConsumabile oggetto, int quantita) {
         if (inventarioConsumabili.containsKey(oggetto)) {
             inventarioConsumabili.replace(oggetto, inventarioConsumabili.get(oggetto) + quantita);
@@ -194,6 +294,11 @@ public class Personaggio {
         }
     }
 
+    /**
+     * Ripristina gli HP del personaggio senza superare il valore massimo delle statistiche finali.
+     *
+     * @param valore la quantità di HP da ripristinare.
+     */
     public void ripristinaHP(int valore){
         if(valore > 0){
             this.hpCorrenti += valore;
@@ -203,6 +308,11 @@ public class Personaggio {
         }
     }
 
+    /**
+     * Ripristina il mana del personaggio senza superare il valore massimo delle statistiche finali.
+     *
+     * @param valore la quantità di mana da ripristinare.
+     */
     public void ripristinaMana(int valore){
         if(valore > 0){
             this.manaCorrente += valore;
@@ -212,6 +322,9 @@ public class Personaggio {
         }
     }
 
+    /**
+     * Ricalcola le statistiche finali sommando alle statistiche base i bonus degli oggetti attualmente equipaggiati.
+     */
     private void calcolaStatisticheFinali() {
         statisticaFinali = new Statistica(statisticaBase);
         for(Map.Entry<OggettoEquipaggiabile, Boolean> entry : inventarioEquipaggiabili.entrySet()){
@@ -221,6 +334,9 @@ public class Personaggio {
         }
     }
 
+    /**
+     * Inserisce in inventario gli oggetti previsti come equipaggiamento iniziale dalla classe.
+     */
     private void inizializzaEquipaggiamentoIniziale(Classe classe) {
         for (Oggetto o : classe.getEquipaggiamentoIniziale()) {
             if (o instanceof OggettoConsumabile) {
@@ -231,6 +347,10 @@ public class Personaggio {
         }
     }
 
+    /**
+     * Aggiorna lo stato del personaggio: rimuove l'equipaggiamento degli oggetti i cui requisiti
+     * non sono più soddisfatti dalle statistiche base e ricalcola le statistiche finali.
+     */
     public void aggiornaStatoPG() {
         for (Map.Entry<OggettoEquipaggiabile, Boolean> entry : inventarioEquipaggiabili.entrySet()) {
             if (entry.getValue() && !statisticaBase.soddisfa(entry.getKey().getRequisiti())) {
@@ -240,8 +360,11 @@ public class Personaggio {
         calcolaStatisticheFinali();
     }
 
-
-
+    /**
+     * Restituisce una stringa formattata contenente i dati e le statistiche del personaggio.
+     *
+     * @return la rappresentazione testuale del personaggio.
+     */
     @Override
     public String toString() {
         return String.format((isPg() ? "PG:%n{%n" : "PnG:%n{%n") + "Nome: %s%nRazza: %s%nClasse: %s%nHP: %d/%d%nMana: %d/%d%n" +
