@@ -246,6 +246,8 @@ public class CampagnaMasterGUI {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         pgTable.setModel(modelPG);
+        pgTable.getTableHeader().setReorderingAllowed(false);
+        pgTable.getTableHeader().setResizingAllowed(false);
         modelPG.addRow(new Object[]{"Legolas", "Player1", "Elfo", "Cacciatore", 3});
 
         // Tabella PnG
@@ -255,6 +257,8 @@ public class CampagnaMasterGUI {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         pngTable.setModel(modelPnG);
+        pngTable.getTableHeader().setReorderingAllowed(false);
+        pngTable.getTableHeader().setResizingAllowed(false);
         modelPnG.addRow(new Object[]{"Oste Bob", "Umano", 1});
     }
 

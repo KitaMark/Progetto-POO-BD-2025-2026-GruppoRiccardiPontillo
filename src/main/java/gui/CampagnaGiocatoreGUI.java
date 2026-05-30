@@ -251,6 +251,8 @@ public class CampagnaGiocatoreGUI {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         statisticheTable.setModel(modelStat);
+        statisticheTable.getTableHeader().setReorderingAllowed(false);
+        statisticheTable.getTableHeader().setResizingAllowed(false);
         modelStat.addRow(new Object[]{"Forza", 15});
         modelStat.addRow(new Object[]{"Destrezza", 12});
 
@@ -261,6 +263,8 @@ public class CampagnaGiocatoreGUI {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         inventarioTable.setModel(modelInv);
+        inventarioTable.getTableHeader().setReorderingAllowed(false);
+        inventarioTable.getTableHeader().setResizingAllowed(false);
         modelInv.addRow(new Object[]{"Spada di Ferro", "Equipaggiamento", 50});
         modelInv.addRow(new Object[]{"Pozione Media", "Consumabile", 15});
 
@@ -271,6 +275,8 @@ public class CampagnaGiocatoreGUI {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         equipaggiamentoTable.setModel(modelEquip);
+        equipaggiamentoTable.getTableHeader().setReorderingAllowed(false);
+        equipaggiamentoTable.getTableHeader().setResizingAllowed(false);
         modelEquip.addRow(new Object[]{"Elmo di Cuoio", "+2 Costituzione", "Sì"});
         modelEquip.addRow(new Object[]{"Spada Lunga", "+5 Forza", "No"});
 
@@ -281,6 +287,8 @@ public class CampagnaGiocatoreGUI {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         consumabiliTable.setModel(modelCons);
+        consumabiliTable.getTableHeader().setReorderingAllowed(false);
+        consumabiliTable.getTableHeader().setResizingAllowed(false);
         modelCons.addRow(new Object[]{"Pozione di Cura", "20", "0", "3"});
         modelCons.addRow(new Object[]{"Pozione del Mana", "0", "15", "1"});
 
@@ -291,6 +299,8 @@ public class CampagnaGiocatoreGUI {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         abilitaTable.setModel(modelAbilita);
+        abilitaTable.getTableHeader().setReorderingAllowed(false);
+        abilitaTable.getTableHeader().setResizingAllowed(false);
         modelAbilita.addRow(new Object[]{"Attacco Pesante", "Infligge danni bonus basati sulla Forza"});
         modelAbilita.addRow(new Object[]{"Palla di Fuoco", "Causa danni magici ad area"});
     }

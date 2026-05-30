@@ -166,6 +166,8 @@ public class GiocatoreGUI {
         };
 
         tableCampagnaGiocatore.setModel(model);
+        tableCampagnaGiocatore.getTableHeader().setReorderingAllowed(false);
+        tableCampagnaGiocatore.getTableHeader().setResizingAllowed(false);
 
 
         model.addRow(new Object[]{"La Miniera Perduta", 5, "In Corso"});//riga finta finche non implementato DAO
