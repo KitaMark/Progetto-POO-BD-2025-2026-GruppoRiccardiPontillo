@@ -1,8 +1,11 @@
 package controller;
+import dao.*;
 import exception.*;
+import implementazionePostgresDAO.*;
 import model.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Objects;
 
 
 /**
@@ -13,31 +16,42 @@ import java.util.ArrayList;
  * @author Pontillo Salvatore
  */
 public class Controller {
-    /** * L'utente (Giocatore o Master) attualmente autenticato nel sistema.
+    /**
+     * L'utente (Giocatore o Master) attualmente autenticato nel sistema.
      * Mantiene la sessione attiva durante l'utilizzo dell'applicazione.
      */
     private Utente utenteAttivo; //tenere traccia utente nel sistema
+    private ArrayList<Utente> listaUtenti; //qui vengono copiati i dati ad ogni avvio dal db, per poter elaborarli più velocemente
+    private UtenteDAO utenteDAO;
 
+    public Controller() {
+        utenteAttivo = null;
+        listaUtenti = new ArrayList<>();
+        utenteDAO = new ImplementazionePostgresUtente();
+        utenteDAO.leggiUtenti(listaUtenti);
+        //eventualmente da inserire altro in seguito
+    }
 
     /**
      * Autentica un utente nel sistema verificandone le credenziali.
      *
-     * @param identificativo L'username o l'indirizzo email dell'utente (a seconda di un controllo che capisce quale campo
-     * l'utente ha riempito).
-     *
-     * @param password       La password di accesso.
+     * @param username L'username dell'utente.
+     * @param email    L'email associata all'account.
+     * @param password La password di accesso.
      * @return L'istanza dell'{@link Utente} (strutturata come Master o Giocatore) recuperata dal sistema.
-     * @throws DatiMancantiException Se uno dei campi di testo risulta vuoto.
+     * @throws DatiMancantiException Se uno dei campi di testo risulta vuoto o se le credenziali non sono valide.
      */
-    public Utente faiLogin(String identificativo, String password) throws DatiMancantiException {
-           if(identificativo.isEmpty() || password.isEmpty()){
-               throw new DatiMancantiException("Per favore, inserisci le tue credenziali (username/email e password) per accedere");
-           }
-
-           Master testMaster = new Master("test", "TestUser", "password"); // per il momento
-           this.utenteAttivo = testMaster;
-           return  utenteAttivo;
-       }
+    public Utente faiLogin(String username, String email, String password, boolean isMaster) throws DatiMancantiException {
+        if (username.trim().isEmpty() || email.trim().isEmpty() || password.trim().isEmpty()) {
+            throw new DatiMancantiException("Per favore, inserisci le tue credenziali (username, email e password) per accedere");
+        }
+        Utente utenteTrovato = cercaUtente(username, email, password);
+        if (utenteTrovato == null) throw new DatiMancantiException("Credenziali non valide.");
+        if(isMaster && utenteTrovato instanceof Giocatore) throw new AutenticazioneException("L'account è registrato come Giocatore!");
+        if(!isMaster && utenteTrovato instanceof Master) throw new AutenticazioneException("L'account è registrato come Master!");
+        this.utenteAttivo = utenteTrovato;
+        return this.utenteAttivo;
+    }
 
     /**
      * Registra un nuovo account utente all'interno del sistema, definendone il ruolo.
@@ -48,25 +62,28 @@ public class Controller {
      * @param isMaster {@code true} se l'utente si sta registrando come Master, {@code false} come Giocatore.
      * @throws DatiMancantiException Se uno dei parametri di registrazione è vuoto.
      */
-    public void registraUtente(String username, String password, String email, boolean isMaster) throws DatiMancantiException{
-           if (username.isEmpty() || password.isEmpty() || email.isEmpty()) {
-               throw new DatiMancantiException("Tutti i campi sono obbligatori.");
-           }
+    public void registraUtente(String username, String password, String email, boolean isMaster) throws DatiMancantiException, AutenticazioneException {
+        if (username.trim().isEmpty() || password.trim().isEmpty() || email.trim().isEmpty()) {
+            throw new DatiMancantiException("Tutti i campi sono obbligatori.");
+        }
 
-           //inserire poi un controllo che dal dao veda se l'utente è gia registrato e presente, se lo è lancia eccezione
+        for(Utente utente : listaUtenti) {
+            if (Objects.equals(utente.getUsername(), username)){
+                throw new AutenticazioneException("Username già in uso.");
+            } else if(Objects.equals(utente.getEmail(), email)){
+                throw new AutenticazioneException("Email già in uso.");
+            }
+        }
 
-           Utente nuovoUtente;
-           if (isMaster) {
-               nuovoUtente = new Master(email, username, password);
-           } else {
-               nuovoUtente = new Giocatore(email, username, password);
-           }
-
-           //Diciamo al DAO di salvarlo nel database
-           //utenteDAO.salvaUtente(nuovoUtente);
-
-
-       }
+        Utente nuovoUtente;
+        if (isMaster) {
+            nuovoUtente = new Master(email, username, password);
+        } else {
+            nuovoUtente = new Giocatore(email, username, password);
+        }
+        utenteDAO.aggiungiUtente(nuovoUtente); //salva il dato
+        listaUtenti.add(nuovoUtente); //dato transiente per accesso rapido
+    }
 
     /**
      * Restituisce l'utente attualmente loggato e attivo nella sessione.
@@ -86,7 +103,7 @@ public class Controller {
      * @throws NomeMancanteCampagnaException    Se il nome della campagna è nullo o vuoto.
      */
     public void creaCampagna(String nomeCampagna, int maxGiocatori) throws CampagnaAttivaEsistenteException, NomeMancanteCampagnaException {
-        if(nomeCampagna == null || nomeCampagna.trim().isEmpty()) {
+        if (nomeCampagna == null || nomeCampagna.trim().isEmpty()) {
             throw new NomeMancanteCampagnaException("Il nome della campagna non può essere vuoto.");
         }
 
@@ -150,7 +167,7 @@ public class Controller {
      * @param nomeCampagna Il nome della campagna a cui partecipare.
      * @throws NomeMancanteCampagnaException Se il nome fornito non è valido.
      */
-    public void iscrivitiCampagna(String nomeCampagna) throws NomeMancanteCampagnaException{
+    public void iscrivitiCampagna(String nomeCampagna) throws NomeMancanteCampagnaException {
         if (nomeCampagna == null || nomeCampagna.trim().isEmpty()) {
             throw new NomeMancanteCampagnaException("Nome della campagna non valido.");
         }
@@ -378,7 +395,7 @@ public class Controller {
     }
 
     /**
-     /**
+     * /**
      * Rimuove un oggetto dall'equipaggiamento attivo del personaggio,
      * riponendolo nell'inventario.
      *
@@ -435,10 +452,22 @@ public class Controller {
      * @param nomeCampagna La campagna in cui avviene l'azione.
      */
     public void imparaAbilita(String nomeAbilita, String nomeCampagna) {
-           System.out.println("Appresa abilità: " + nomeAbilita);
-       }
+        System.out.println("Appresa abilità: " + nomeAbilita);
+    }
 
-
-
-
+    public Utente cercaUtente(String username, String email, String password){
+        Utente utenteTrovato = null;
+        for(Utente utente : listaUtenti) {
+            if (Objects.equals(utente.getUsername(), username) &&
+                    Objects.equals(utente.getEmail(), email) &&
+                    Objects.equals(utente.getPassword(), password)) {
+                utenteTrovato = utente;
+            }
+        }
+        return utenteTrovato;
+    }
 }
+
+
+
+

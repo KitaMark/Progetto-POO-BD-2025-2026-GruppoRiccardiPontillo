@@ -1,8 +1,10 @@
 package gui;
 
+import com.formdev.flatlaf.FlatDarkLaf;
 import controller.Controller;
 import model.*;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 /**
@@ -30,6 +32,7 @@ public class Home {
     private JButton registrati;
     private JButton Accedi;
     private JPasswordField campoPassword;
+    private JPanel buttonPanel;
 
     /** Il frame statico principale che contiene questa interfaccia. */
     private static JFrame frameHome;
@@ -44,9 +47,16 @@ public class Home {
      * Inizializza il frame principale della Home e lo rende visibile a schermo.
      */
     public static void main(String[] args) {
+        FlatDarkLaf.setup(); //aggiunto libreria flatlaf per estetica. Aggiunta anche in maven.
+        // Imposta gli angoli molto arrotondati per i pulsanti (es. valore 10 o 15)
+        UIManager.put("Button.arc", 15);
+        // Arrotonda anche i campi di testo per coerenza grafico-visiva
+        UIManager.put( "TextComponent.arc", 15 );
+        UIManager.put("Button.background", new Color(50, 130, 195));
         frameHome = new JFrame("GestionaleGDRLogin");
         frameHome.setContentPane(new Home(frameHome).mainPanel);
         frameHome.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frameHome.setResizable(false); //giusto per evitare che si sfancula tutto
         frameHome.pack();
         frameHome.setVisible(true);
 
@@ -71,19 +81,18 @@ public class Home {
                 String username = campoUsername.getText().trim();
                 String email = campoEmail.getText().trim();
                 String password = new String(campoPassword.getPassword());
+                boolean isMaster= masterRadioButton.isSelected();
 
-                String identificativo = "";
-
-                //visto che per accedere basta o la mail o l'username con il controllo diciamo
-                // all'identificativo che campo usare
-                if (username.isEmpty() == false) {
-                    identificativo = username;
-                } else if (email.isEmpty() == false) {
-                    identificativo = email;
+                //necessario, perchè prima si poteva accedere anche senza selezionare niente
+                if ((!masterRadioButton.isSelected()) && (!giocatoreRadioButton.isSelected())) {
+                    JOptionPane.showMessageDialog(null, "Seleziona un tipo di utente (Master o Giocatore) per accedere.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return; // Blocca l'esecuzione
                 }
 
+               //per evitare bug ho reso sia email che username obbligatori, altrimenti si complicano troppo controller e accessi vari
+
                 try {
-                    Utente utenteLoggato = controller.faiLogin(identificativo, password);
+                    Utente utenteLoggato = controller.faiLogin(username, email, password, isMaster);
                     JOptionPane.showMessageDialog(null, "Benvenuto, " + utenteLoggato.getUsername() + "!", "Login avvenuto con successo", JOptionPane.INFORMATION_MESSAGE);
 
                     frameAttuale.dispose(); //vedere se distruggere completamente o renderlo invisibile per poi riaprirlo
@@ -124,7 +133,7 @@ public class Home {
 
                 boolean isMaster= masterRadioButton.isSelected();
 
-                if ((masterRadioButton.isSelected() ==false) && (giocatoreRadioButton.isSelected() ==false)) {
+                if ((!masterRadioButton.isSelected()) && (!giocatoreRadioButton.isSelected())) {
                     JOptionPane.showMessageDialog(null, "Seleziona un tipo di utente (Master o Giocatore) per registrarti.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return; // Blocca l'esecuzione
                 }
