@@ -113,12 +113,11 @@ public class Controller {
         if (nomeCampagna == null || nomeCampagna.trim().isEmpty()) {
             throw new NomeMancanteCampagnaException("Il nome della campagna non può essere vuoto.");
         }
-
-        // chiedere Dao se master ha campagna attiva
-        // Se sì  throw new CampagnaAttivaEsistenteException("Hai già una campagna attiva. Concludila prima di crearne una nuova.");
-
-        // Creazione e salvataggio nel DB (da implementare col DAO)
-        System.out.println("Campagna '" + nomeCampagna + "' creata con successo! (Simulazione)");
+        if(listaCampagne.containsValue((Master) utenteAttivo)) throw new CampagnaAttivaEsistenteException("Hai già una campagna attiva. Concludila prima di crearne una nuova.");
+        Campagna campagna = new Campagna(nomeCampagna, maxGiocatori, (Master) utenteAttivo);
+        listaCampagne.put(campagna, (Master) utenteAttivo);
+        //per ora salviamo subito nel db. Rivedere in futuro.
+        masterDAO.creaCampagna(campagna);
     }
 
 

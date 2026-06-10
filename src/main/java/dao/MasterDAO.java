@@ -1,7 +1,9 @@
 package dao;
 
+import model.Campagna;
+
 public interface MasterDAO{
-    void creaCampagna();
+    void creaCampagna(Campagna campagna);
     void eliminaCampagna();
     //void visualizzaCampagna();
     //per il momento

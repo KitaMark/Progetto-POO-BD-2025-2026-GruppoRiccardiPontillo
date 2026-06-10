@@ -6,6 +6,7 @@ import model.Master;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -86,6 +87,8 @@ public class MasterGUI {
                         controller.creaCampagna(nomeCampagna, 5); // per ora
                         JOptionPane.showMessageDialog(frameAttuale, "Campagna creata con successo!", "Successo", JOptionPane.INFORMATION_MESSAGE);
                         // ricarica table per farla comparire
+                        DefaultTableModel model = (DefaultTableModel) tableCampagna.getModel();
+                        model.addRow(new Object[] {nomeCampagna, 5, "Non iniziata"});
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore Creazione", JOptionPane.ERROR_MESSAGE);
                     }
@@ -143,7 +146,6 @@ public class MasterGUI {
                 }
 
                 String nomeCampagnaSelezionata = tableCampagna.getValueAt(rigaSelezionata, 0).toString();
-
                 try {
                     controller.entraNellaCampagna(nomeCampagnaSelezionata); //setta la campagna, se la trova, come campagna attiva
                     JFrame campagnaFrame = new JFrame("Regia Campagna: " + nomeCampagnaSelezionata);
