@@ -3,9 +3,8 @@ import dao.*;
 import exception.*;
 import implementazionePostgresDAO.*;
 import model.*;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Objects;
+
+import java.util.*;
 
 
 /**
@@ -23,12 +22,20 @@ public class Controller {
     private Utente utenteAttivo; //tenere traccia utente nel sistema
     private ArrayList<Utente> listaUtenti; //qui vengono copiati i dati ad ogni avvio dal db, per poter elaborarli più velocemente
     private UtenteDAO utenteDAO;
+    private HashMap<Campagna, Master> listaCampagne;
+    private MasterDAO masterDAO;
+    private CampagnaDAO campagnaDAO;
+    private Campagna campagnaAttiva; //la campagna con cui si sta interagendo.
 
     public Controller() {
         utenteAttivo = null;
         listaUtenti = new ArrayList<>();
         utenteDAO = new ImplementazionePostgresUtente();
         utenteDAO.leggiUtenti(listaUtenti);
+        listaCampagne = new HashMap<>();
+        masterDAO = new ImplementazionePostgresMaster();
+        campagnaDAO = new ImplementazionePostgresCampagna();
+        campagnaDAO.leggiCampagne(listaCampagne);
         //eventualmente da inserire altro in seguito
     }
 
@@ -81,7 +88,7 @@ public class Controller {
         } else {
             nuovoUtente = new Giocatore(email, username, password);
         }
-        utenteDAO.aggiungiUtente(nuovoUtente); //salva il dato
+        utenteDAO.aggiungiUtente(nuovoUtente); //salva il dato, considerare rimuovere quest'istruzione e salvare alla fine.
         listaUtenti.add(nuovoUtente); //dato transiente per accesso rapido
     }
 
@@ -121,9 +128,12 @@ public class Controller {
      * @param nomeCampagna Il nome della campagna da rimuovere.
      * @throws Exception Se si verifica un errore durante l'eliminazione dal database.
      */
-    public void eliminaCampagna(String nomeCampagna) throws Exception {
-        // Dao elimina campagna selezionata
-        System.out.println("Campagna '" + nomeCampagna + "' eliminata! (Simulazione)"); // per il momento
+    public boolean eliminaCampagna(String nomeCampagna) throws DatiMancantiException {
+        Campagna campagnaTarget = cercaCampagna(nomeCampagna);
+        if(campagnaTarget == null) throw new DatiMancantiException("Campagna non esistente.");
+        listaCampagne.remove(campagnaTarget);
+        campagnaDAO.rimuoviCampagna(campagnaTarget);
+        return true;
     }
 
     /**
@@ -138,15 +148,15 @@ public class Controller {
      * Entra nell'unica campagna da lui gestita (Master), visualizza le campagne a cui è iscritto (Giocatore).
      *
      * @param nomeCampagna Il nome della campagna in cui entrare.
-     * @throws NomeMancanteCampagnaException Se il nome fornito non è valido.
+     * @throws DatiMancantiException Se il nome fornito non è valido.
+     * @throws RuntimeException Se non è possibile accedere alla campagna.
      */
-    public void entraNellaCampagna(String nomeCampagna) throws NomeMancanteCampagnaException {
+    public void entraNellaCampagna(String nomeCampagna) throws DatiMancantiException {
         if (nomeCampagna == null || nomeCampagna.trim().isEmpty()) {
-            throw new NomeMancanteCampagnaException("Nome della campagna non valido.");
+            throw new DatiMancantiException("Nome della campagna non valido.");
         }
-
-        // In futuro: this.campagnaAttiva = campagnaDAO.trovaCampagna(nomeCampagna);
-        System.out.println("Accesso in corso alla campagna: '" + nomeCampagna + "' (Simulazione)"); // per il momento
+        this.campagnaAttiva = cercaCampagna(nomeCampagna);
+        if(campagnaAttiva == null) throw new RuntimeException("Campagna non esistente.");
     }
 
     /**
@@ -155,7 +165,7 @@ public class Controller {
      * @return Una lista di oggetti {@link Campagna}. Ritorna una lista vuota se nessuna campagna è trovata.
      */
     public List<Campagna> getCampagne() {
-        // DAO cerca solo le campagne associate all'utente attualmente loggato.
+        // DAO cerca solo le campagne associate al giocatore attualmente loggato.
         // return campagnaDAO.trovaCampagnePerMaster(utenteAttivo.getUsername());
         return new ArrayList<>();  // per il momento
     }
@@ -465,6 +475,29 @@ public class Controller {
             }
         }
         return utenteTrovato;
+    }
+
+    public Map<Campagna, Master> getListaCampagne() {
+        return Collections.unmodifiableMap(listaCampagne);
+    }
+
+    public void leggiListaCampagne() {
+        campagnaDAO.leggiCampagne(listaCampagne);
+    }
+
+    public Campagna cercaCampagna(String nomeCampagna){
+        Campagna campagnaTrovata = null;
+        for(Campagna campagna : listaCampagne.keySet()){
+            if(Objects.equals(nomeCampagna, campagna.getNome())){
+                campagnaTrovata = campagna;
+                break;
+            }
+        }
+        return campagnaTrovata;
+    }
+
+    public Campagna getCampagnaAttiva() {
+        return campagnaAttiva;
     }
 }
 

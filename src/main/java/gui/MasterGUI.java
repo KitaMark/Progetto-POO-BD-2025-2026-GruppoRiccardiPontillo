@@ -1,6 +1,7 @@
 package gui;
 
 import controller.Controller;
+import model.Campagna;
 import model.Master;
 
 import javax.swing.*;
@@ -80,7 +81,7 @@ public class MasterGUI {
                 String nomeCampagna = JOptionPane.showInputDialog(frameAttuale, "Inserisci il nome della nuova Campagna:");
 
                 // Controllo per evitare che l'utente clicchi 'Annulla' o inserisca campi vuoti
-                if ((nomeCampagna != null) && (nomeCampagna.trim().isEmpty() == false)) {
+                if ((nomeCampagna != null) && (!nomeCampagna.trim().isEmpty())) {
                     try {
                         controller.creaCampagna(nomeCampagna, 5); // per ora
                         JOptionPane.showMessageDialog(frameAttuale, "Campagna creata con successo!", "Successo", JOptionPane.INFORMATION_MESSAGE);
@@ -113,10 +114,19 @@ public class MasterGUI {
 
                 if (conferma == JOptionPane.YES_OPTION) {
                     try {
-                        controller.eliminaCampagna(nomeDaEliminare);
+                        //controlla se il master loggato corrisponde al master della campagna che si vuole eliminare
+                        if(!controllaPrivilegiMaster(controller.cercaCampagna(nomeDaEliminare))){
+                            JOptionPane.showMessageDialog(frameAttuale, "Non hai i permessi per eliminare la campagna.",
+                                    "Errore", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        if(controller.eliminaCampagna(nomeDaEliminare)){
+                            DefaultTableModel model = (DefaultTableModel)tableCampagna.getModel();
+                            model.removeRow(rigaSelezionata);
+                        }
                         JOptionPane.showMessageDialog(frameAttuale, "Campagna eliminata con successo.");
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(frameAttuale, "Errore durante l'eliminazione.", "Errore", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(frameAttuale, "Errore durante l'eliminazione: "+ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -135,11 +145,10 @@ public class MasterGUI {
                 String nomeCampagnaSelezionata = tableCampagna.getValueAt(rigaSelezionata, 0).toString();
 
                 try {
-                    controller.entraNellaCampagna(nomeCampagnaSelezionata);
-                    frameAttuale.dispose();
+                    controller.entraNellaCampagna(nomeCampagnaSelezionata); //setta la campagna, se la trova, come campagna attiva
                     JFrame campagnaFrame = new JFrame("Regia Campagna: " + nomeCampagnaSelezionata);
-                    CampagnaMasterGUI regiaGUI = new CampagnaMasterGUI(controller, masterLoggato, nomeCampagnaSelezionata, campagnaFrame);
-
+                    CampagnaMasterGUI regiaGUI = new CampagnaMasterGUI(controller, masterLoggato, controller.getCampagnaAttiva(), frameAttuale);
+                    frameAttuale.dispose();
                     campagnaFrame.setContentPane(regiaGUI.getMainPanel());
                     campagnaFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -175,8 +184,11 @@ public class MasterGUI {
         tableCampagna.getTableHeader().setReorderingAllowed(false);
         tableCampagna.getTableHeader().setResizingAllowed(false);
 
-
-        model.addRow(new Object[]{"La Miniera Perduta", 5, "In Corso"});//riga finta finche non implementato DAO
+        for(Campagna campagna : controller.getListaCampagne().keySet()) {
+            String stato = campagna.isIniziata() ? "In corso" : "Non iniziata";
+            model.addRow(new Object[]{campagna.getNome(), campagna.getMaxGiocatori(), stato});
+        }
+        //model.addRow(new Object[]{"La Miniera Perduta", 5, "In Corso"});//riga finta finche non implementato DAO
     }
 
     /**
@@ -187,5 +199,14 @@ public class MasterGUI {
      */
         public JPanel getMainPanel() {
         return mainPanel;
+    }
+
+    /**
+     * Controlla se l'utente loggato è master della campagna passata come parametro.
+     * @param campagna la {@link Campagna} da controllare
+     * @return {@code true} se è il master della campagna, altrimenti {@code false}.
+     */
+    private boolean controllaPrivilegiMaster(Campagna campagna){
+            return masterLoggato.equals((controller.getListaCampagne().get(campagna)));
     }
 }

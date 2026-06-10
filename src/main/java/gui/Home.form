@@ -84,6 +84,7 @@
           </grid>
         </constraints>
         <properties>
+          <font size="14"/>
           <text value="Master"/>
         </properties>
       </component>
@@ -94,6 +95,7 @@
           </grid>
         </constraints>
         <properties>
+          <font size="14"/>
           <text value="Giocatore"/>
         </properties>
       </component>
@@ -113,8 +115,9 @@
               </grid>
             </constraints>
             <properties>
+              <font/>
               <text value="Accedi"/>
-              <toolTipText value="Per accedere basta inserire o l'username o la email"/>
+              <toolTipText value=""/>
             </properties>
           </component>
           <component id="1b54e" class="javax.swing.JButton" binding="registrati">

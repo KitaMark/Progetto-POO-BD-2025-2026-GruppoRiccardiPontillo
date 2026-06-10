@@ -1,5 +1,7 @@
 package model;
 
+import java.util.Objects;
+
 /**
  * Classe astratta base per la rappresentazione di un utente nel sistema.
  * Gestisce le credenziali di accesso di base (email, username e password).
@@ -62,5 +64,17 @@ public abstract class Utente {
     @Override
     public String toString(){
         return String.format("Utente [email: %s, username: %s]", this.email, this.username);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Utente utente = (Utente) o;
+        return Objects.equals(email, utente.email) && Objects.equals(username, utente.username) && Objects.equals(password, utente.password);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(email, username, password);
     }
 }

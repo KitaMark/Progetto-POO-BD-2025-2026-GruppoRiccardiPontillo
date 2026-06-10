@@ -1,5 +1,7 @@
 package model;
 
+import java.util.Objects;
+
 /**
  * Rappresenta un utente con privilegi di Master.
  * Ha la responsabilità di creare, moderare e gestire una singola campagna di gioco attiva.
