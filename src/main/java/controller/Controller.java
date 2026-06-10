@@ -109,7 +109,7 @@ public class Controller {
      * @throws CampagnaAttivaEsistenteException Se il Master ha già una campagna in corso.
      * @throws NomeMancanteCampagnaException    Se il nome della campagna è nullo o vuoto.
      */
-    public void creaCampagna(String nomeCampagna, int maxGiocatori) throws CampagnaAttivaEsistenteException, NomeMancanteCampagnaException {
+    public void creaCampagna(String nomeCampagna, int maxGiocatori) throws CampagnaAttivaEsistenteException, NomeMancanteCampagnaException,NomeCampagnaInUsoException {
         if (nomeCampagna == null || nomeCampagna.trim().isEmpty()) {
             throw new NomeMancanteCampagnaException("Il nome della campagna non può essere vuoto.");
         }

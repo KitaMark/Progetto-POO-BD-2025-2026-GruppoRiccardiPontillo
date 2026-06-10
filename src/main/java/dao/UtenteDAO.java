@@ -1,9 +1,11 @@
 package dao;
 
+import exception.AutenticazioneException;
 import model.Utente;
 import java.util.List;
 
 public interface UtenteDAO {
-    void leggiUtenti(List<Utente> utenti);
-    void aggiungiUtente(Utente utente);
+    void leggiUtenti(List<Utente> utenti) ;
+    void aggiungiUtente(Utente utente) throws AutenticazioneException;
+    Utente autenticaUtente(String username, String password)throws AutenticazioneException;
 }
