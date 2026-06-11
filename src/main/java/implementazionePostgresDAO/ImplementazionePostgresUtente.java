@@ -56,55 +56,6 @@ public class ImplementazionePostgresUtente implements UtenteDAO {
         }
     }
 
-    //non credo ci serva, perchè all'inizio del programma il controller si scarica subito la lista utenti dal db.
-    //Poi i controlli per l'autenticazione vengono fatti in locale tramite la lista utenti (dati transienti).
-   /* /**
-     * Verifica le credenziali di accesso fornite interrogando il database.
-     * L'utente può scegliere di autenticarsi inserendo il proprio Username OPPURE la propria Email.
-     *
-     * @param usernameOEmail Lo pseudonimo o l'indirizzo email dell'utente.
-     * @param password       La password associata all'account.
-     * @return L'istanza dell'{@link Utente} (strutturata dinamicamente come {@link Master} o {@link Giocatore}).
-     * @throws AutenticazioneException Se le credenziali sono errate o il login fallisce.
-     */
-  /*  @Override
-    public Utente autenticaUtente(String usernameOEmail, String password) throws AutenticazioneException {
-        Utente utenteTrovato = null;
-
-        String query = "SELECT * FROM UTENTE WHERE (Username = ? OR Email = ?) AND Password = ?";
-
-        try {
-            Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement stmt = conn.prepareStatement(query);
-
-            stmt.setString(1, usernameOEmail);
-            stmt.setString(2, usernameOEmail);
-            stmt.setString(3, password);
-
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                String usernameDb = rs.getString("Username");
-                String emailDb = rs.getString("Email");
-                String ruoloDb = rs.getString("Ruolo");
-
-                if ("Master".equals(ruoloDb)) {
-                    utenteTrovato = new Master(emailDb, usernameDb, password);
-                } else {
-                    utenteTrovato = new Giocatore(emailDb, usernameDb, password);
-                }
-            } else {
-                // L'utente non esiste o ha sbagliato password
-                throw new AutenticazioneException("Credenziali non valide: username/email o password errati.");
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new AutenticazioneException("Errore di sistema: impossibile comunicare con il database.");
-        }
-
-        return utenteTrovato;
-    }*/
 
     /**
      * Recupera tutti i record dalla tabella UTENTE e popola una lista fornita in input.
