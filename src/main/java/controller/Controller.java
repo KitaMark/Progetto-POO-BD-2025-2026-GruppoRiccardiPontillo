@@ -117,7 +117,7 @@ public class Controller {
         Campagna campagna = new Campagna(nomeCampagna, maxGiocatori, (Master) utenteAttivo);
         listaCampagne.put(campagna, (Master) utenteAttivo);
         //per ora salviamo subito nel db. Rivedere in futuro.
-        masterDAO.creaCampagna(campagna);
+        campagnaDAO.creaCampagna(campagna);
     }
 
 
@@ -131,7 +131,7 @@ public class Controller {
         Campagna campagnaTarget = cercaCampagna(nomeCampagna);
         if(campagnaTarget == null) throw new DatiMancantiException("Campagna non esistente.");
         listaCampagne.remove(campagnaTarget);
-        campagnaDAO.rimuoviCampagna(campagnaTarget);
+        campagnaDAO.eliminaCampagna(campagnaTarget);
         return true;
     }
 

@@ -34,9 +34,9 @@ public class ImplementazionePostgresUtente implements UtenteDAO {
     public void aggiungiUtente(Utente utente) throws AutenticazioneException {
         String query = "INSERT INTO UTENTE (Username, Email, Password, Ruolo) VALUES (?, ?, ?, ?)";
 
-        try {
-            Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement stmt = conn.prepareStatement(query);
+        try(Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement stmt = conn.prepareStatement(query);) {
+
 
             stmt.setString(1, utente.getUsername());
             stmt.setString(2, utente.getEmail());
@@ -56,7 +56,9 @@ public class ImplementazionePostgresUtente implements UtenteDAO {
         }
     }
 
-    /**
+    //non credo ci serva, perchè all'inizio del programma il controller si scarica subito la lista utenti dal db.
+    //Poi i controlli per l'autenticazione vengono fatti in locale tramite la lista utenti (dati transienti).
+   /* /**
      * Verifica le credenziali di accesso fornite interrogando il database.
      * L'utente può scegliere di autenticarsi inserendo il proprio Username OPPURE la propria Email.
      *
@@ -65,7 +67,7 @@ public class ImplementazionePostgresUtente implements UtenteDAO {
      * @return L'istanza dell'{@link Utente} (strutturata dinamicamente come {@link Master} o {@link Giocatore}).
      * @throws AutenticazioneException Se le credenziali sono errate o il login fallisce.
      */
-    @Override
+  /*  @Override
     public Utente autenticaUtente(String usernameOEmail, String password) throws AutenticazioneException {
         Utente utenteTrovato = null;
 
@@ -102,7 +104,7 @@ public class ImplementazionePostgresUtente implements UtenteDAO {
         }
 
         return utenteTrovato;
-    }
+    }*/
 
     /**
      * Recupera tutti i record dalla tabella UTENTE e popola una lista fornita in input.
@@ -113,10 +115,10 @@ public class ImplementazionePostgresUtente implements UtenteDAO {
     public void leggiUtenti(List<Utente> utenti) {
         String query = "SELECT * FROM UTENTE";
 
-        try {
-            Connection conn = ConnessioneDatabase.getInstance().connection;
+        try(Connection conn = ConnessioneDatabase.getInstance().connection;
             PreparedStatement stmt = conn.prepareStatement(query);
-            ResultSet rs = stmt.executeQuery();
+            ResultSet rs = stmt.executeQuery();) {
+
 
             while (rs.next()) {
                 String usernameDb = rs.getString("Username");

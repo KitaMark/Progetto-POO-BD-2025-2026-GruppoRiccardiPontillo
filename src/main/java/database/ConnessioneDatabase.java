@@ -24,15 +24,13 @@ public class ConnessioneDatabase {
 			System.out.println("Connessione al database stabilita con successo!");
 
 		} catch (ClassNotFoundException ex) {
-			System.out.println("Database Connection Creation Failed : " + ex.getMessage());
+			System.out.println("Connessione al database fallita: " + ex.getMessage());
 			ex.printStackTrace();
 		}
 	}
 
 	public static ConnessioneDatabase getInstance() throws SQLException {
-		if (instance == null) {
-			instance = new ConnessioneDatabase();
-		} else if (instance.connection.isClosed()) {
+		if (instance == null || instance.connection.isClosed()) {
 			instance = new ConnessioneDatabase();
 		}
 		return instance;
