@@ -155,6 +155,9 @@ public class Controller {
             throw new DatiMancantiException("Nome della campagna non valido.");
         }
         this.campagnaAttiva = cercaCampagna(nomeCampagna);
+        campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPG(), true);
+        campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPnG(), false);
+        campagnaDAO.leggiGiocatori(campagnaAttiva.getPartecipanti());
         if(campagnaAttiva == null) throw new RuntimeException("Campagna non esistente.");
     }
 
@@ -497,6 +500,15 @@ public class Controller {
 
     public Campagna getCampagnaAttiva() {
         return campagnaAttiva;
+    }
+
+    /**
+     * Controlla se l'utente loggato è master della campagna passata come parametro.
+     * @param campagna la {@link Campagna} da controllare
+     * @return {@code true} se è il master della campagna, altrimenti {@code false}.
+     */
+    public boolean controllaPrivilegiMaster(Campagna campagna){
+        return utenteAttivo.equals((listaCampagne.get(campagna)));
     }
 }
 

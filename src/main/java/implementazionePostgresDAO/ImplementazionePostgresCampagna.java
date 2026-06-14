@@ -1,17 +1,21 @@
 package implementazionePostgresDAO;
 
 import dao.CampagnaDAO;
+import database.ConnessioneDatabase;
 import exception.NomeCampagnaInUsoException;
 import model.Campagna;
+import model.Giocatore;
 import model.Master;
 import database.ConnessioneDatabase;
 import exception.DatiMancantiException;
+import model.Personaggio;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Implementazione concreta dell'interfaccia {@link CampagnaDAO} per il database PostgreSQL.
@@ -36,7 +40,7 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
         try (Connection conn = ConnessioneDatabase.getInstance().connection;
              PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery();){
+             ResultSet rs = stmt.executeQuery()){
 
 
             while (rs.next()) {
@@ -134,5 +138,17 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
             e.printStackTrace();
             throw new RuntimeException("Errore critico durante l'eliminazione della campagna.");
         }
+    }
+
+    @Override
+    public void leggiListaPersonaggi(List<Personaggio> listaPersonaggi, boolean isPg){
+        //TODO: implementare
+        //pensavo di fare assegnazione condizionale per la query, tipo:
+        //String query = isPg()? //qui scrivi la query per cercare tra i PG : //qui scrivi la query per i PnG
+    }
+
+    @Override
+    public void leggiGiocatori(List<Giocatore> partecipanti) {
+        //TODO: implementare
     }
 }

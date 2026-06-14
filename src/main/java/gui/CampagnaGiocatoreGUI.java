@@ -77,7 +77,7 @@ public class CampagnaGiocatoreGUI {
             public void actionPerformed(ActionEvent e) {
                 frameAttuale.dispose();
                 JFrame giocatoreFrame = new JFrame("Dashboard Giocatore - " + giocatoreLoggato.getUsername());
-                GiocatoreGUI giocatoreGUI = new GiocatoreGUI(controller, giocatoreLoggato, giocatoreFrame);
+                GiocatoreGUI giocatoreGUI = new GiocatoreGUI(controller);
                 giocatoreFrame.setContentPane(giocatoreGUI.getMainPanel());
                 giocatoreFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 giocatoreFrame.setSize(800, 600);

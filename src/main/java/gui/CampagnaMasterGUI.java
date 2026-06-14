@@ -2,7 +2,9 @@ package gui;
 
 import controller.Controller;
 import model.Campagna;
+import model.Giocatore;
 import model.Master;
+import model.Personaggio;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -44,15 +46,25 @@ public class CampagnaMasterGUI {
     private JPanel impostazioniCampagna;
     private JButton statoCampagnaButton;
 
-    /** Il Controller di riferimento per orchestrare tutte le logiche di modifica e gestione della campagna. */
+    /**
+     * Il Controller di riferimento per orchestrare tutte le logiche di modifica e gestione della campagna.
+     */
     private Controller controller;
-    /** Il Master attualmente autenticato che esercita la regia su questa campagna. */
+    /**
+     * Il Master attualmente autenticato che esercita la regia su questa campagna.
+     */
     private Master masterLoggato;
-    /** La Campagna su cui effettuare le elaborazioni. */
+    /**
+     * La Campagna su cui effettuare le elaborazioni.
+     */
     private Campagna campagnaAttiva;
-    /** Il nome univoco della campagna attualmente in corso di gestione. */
+    /**
+     * Il nome univoco della campagna attualmente in corso di gestione.
+     */
     private String nomeCampagnaAttuale;
-    /** Riferimento al frame attuale */
+    /**
+     * Riferimento al frame attuale
+     */
     private JFrame frameHome;
 
 
@@ -60,20 +72,22 @@ public class CampagnaMasterGUI {
      * Costruisce l'interfaccia di Regia del Master, inizializzando le etichette di stato,
      * le tabelle dei personaggi e attivando tutti i Listener per i privilegi amministrativi.
      *
-     * @param controller   Il {@link Controller} di sistema.
-     * @param master       L'oggetto {@link Master} autenticato.
+     * @param controller     Il {@link Controller} di sistema.
+     * @param master         L'oggetto {@link Master} autenticato.
      * @param campagnaAttiva La {@link Campagna} da gestire.
-     * @param frame        Il {@link JFrame} principale che contiene questo pannello.
+     * @param frame          Il {@link JFrame} principale che contiene questo pannello.
      */
     public CampagnaMasterGUI(Controller controller, Master master, Campagna campagnaAttiva, JFrame frame) {
         this.controller = controller;
         this.masterLoggato = master;
         this.campagnaAttiva = campagnaAttiva;
         this.frameHome = frame;
-        this.nomeCampagna.setText("Campagna: " + nomeCampagnaAttuale);
-        this.statoCampagna.setText("Stato: Non Iniziata"); // In futuro lo leggeremo dal DB
+        this.nomeCampagna.setText("Campagna: " + campagnaAttiva.getNome());
+        String stato = campagnaAttiva.isIniziata() ? "In corso" : "Non iniziata";
+        this.statoCampagna.setText(stato);
 
-        inizializzaTabelle();
+        inizializzaTabellaPG();
+        inizializzaTabellaPnG();
 
 
         indietroButton.addActionListener(new ActionListener() {
@@ -83,7 +97,7 @@ public class CampagnaMasterGUI {
 
                 // Riapre la Dashboard del Master
                 JFrame masterFrame = new JFrame("Dashboard Master - " + masterLoggato.getUsername());
-                MasterGUI masterGUI = new MasterGUI(controller, masterLoggato, masterFrame);
+                MasterGUI masterGUI = new MasterGUI(controller);
                 masterFrame.setContentPane(masterGUI.getMainPanel());
                 masterFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 masterFrame.setSize(800, 600);
@@ -91,7 +105,6 @@ public class CampagnaMasterGUI {
                 masterFrame.setVisible(true);
             }
         });
-
 
 
         rimuovoPgButton.addActionListener(new ActionListener() {
@@ -116,7 +129,6 @@ public class CampagnaMasterGUI {
                 }
             }
         });
-
 
 
         modificaStatisticaButton.addActionListener(new ActionListener() {
@@ -147,7 +159,6 @@ public class CampagnaMasterGUI {
                 }
             }
         });
-
 
 
         assegnaPuntiButton.addActionListener(new ActionListener() {
@@ -240,28 +251,47 @@ public class CampagnaMasterGUI {
      * Metodo privato che definisce l'intestazione e i modelli dati per le tabelle
      * dei Personaggi Giocanti (PG) e dei Personaggi Non Giocanti (PnG), inibendone la modifica manuale.
      */
-    private void inizializzaTabelle() {
+    private void inizializzaTabellaPG() {
         // Tabella PG
-        String[] colonnePG = {"Nome PG", "Giocatore", "Razza", "Classe", "Livello"};
+        String[] colonnePG = {"Nome", "Giocatore", "Razza", "Classe"}; //eliminato livello perchè non l'abbiamo piu inserito in Personaggio
         DefaultTableModel modelPG = new DefaultTableModel(null, colonnePG) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
         pgTable.setModel(modelPG);
         pgTable.getTableHeader().setReorderingAllowed(false);
         pgTable.getTableHeader().setResizingAllowed(false);
-        modelPG.addRow(new Object[]{"Legolas", "Player1", "Elfo", "Cacciatore", 3});
+        if (campagnaAttiva.getListaPG().isEmpty()) return;
+        for (Personaggio pg : campagnaAttiva.getListaPG()) {
+            String nomeProprietario = "Sconosciuto"; //valore di sicurezza per evitare problemi
+            for (Giocatore giocatore : campagnaAttiva.getPartecipanti()) {
+                if (giocatore.getListaPartecipazioni().containsValue(pg)) {
+                    nomeProprietario = giocatore.getUsername();
+                    break;
+                }
+            }
+            modelPG.addRow(new Object[]{pg.getNome(), nomeProprietario,
+                    pg.getRazza().getNome(), pg.getClasse().getNome()});
+        }
+    }
 
+    private void inizializzaTabellaPnG() {
         // Tabella PnG
-        String[] colonnePnG = {"Nome PnG", "Ruolo/Razza", "Livello"};
+        String[] colonnePnG = {"Nome", "Razza", "Classe"};
         DefaultTableModel modelPnG = new DefaultTableModel(null, colonnePnG) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
         pngTable.setModel(modelPnG);
         pngTable.getTableHeader().setReorderingAllowed(false);
         pngTable.getTableHeader().setResizingAllowed(false);
-        modelPnG.addRow(new Object[]{"Oste Bob", "Umano", 1});
+        for(Personaggio png : campagnaAttiva.getListaPnG()){
+            modelPnG.addRow(new Object[]{png.getNome(), png.getRazza(), png.getClasse()});
+        }
     }
 
 

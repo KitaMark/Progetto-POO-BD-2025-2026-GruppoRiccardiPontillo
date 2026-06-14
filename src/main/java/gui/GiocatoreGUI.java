@@ -34,27 +34,24 @@ public class GiocatoreGUI {
 
     /** Il Controller di riferimento per delegare le operazioni di business. */
     private Controller controller;
-    /** L'entità del Giocatore attualmente autenticato nel sistema. */
-    private Giocatore giocatoreLoggato;
-    /** Riferimento al frame principale, necessario per chiudere la finestra durante la navigazione. */
-    private JFrame frameAttuale;
-
 
     /**
      * Costruisce l'interfaccia della Dashboard del Giocatore, inizializza la tabella
      * delle campagne e configura gli ascoltatori di eventi per l'interazione.
      *
      * @param controller Il {@link Controller} che orchestra le chiamate di sistema.
-     * @param giocatore  L'oggetto {@link Giocatore} che sta visualizzando l'interfaccia.
-     * @param frame      Il {@link JFrame} che ospita questo pannello.
      */
-    public GiocatoreGUI(Controller controller, Giocatore giocatore, JFrame frame) {
+    public GiocatoreGUI(Controller controller) {
         this.controller = controller;
-        this.giocatoreLoggato = giocatore;
-        this.frameAttuale = frame;
+        JFrame frame = new JFrame("Dashboard Giocatore - " + controller.getUtenteAttivo().getUsername());
+        frame.setContentPane(getMainPanel());
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true); // Rende visibile la finestra
 
 
-        benvenutoGiocatore.setText("Benvenuto Giocatore, [" + giocatoreLoggato.getUsername() + "]");
+
+        benvenutoGiocatore.setText("Benvenuto, "+controller.getUtenteAttivo().getUsername()+"! [Giocatore]");
 
         // tabella campagna (segue un po la stessa logica per il master)
         inizializzaTabella();
@@ -63,13 +60,13 @@ public class GiocatoreGUI {
         LogoutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int conferma = JOptionPane.showConfirmDialog(frameAttuale,
+                int conferma = JOptionPane.showConfirmDialog(frame,
                         "Vuoi davvero effettuare il logout?", "Conferma Uscita",
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
                 if (conferma == JOptionPane.YES_OPTION) {
                     controller.logout();
-                    frameAttuale.dispose(); // Chiude la dashboard del giocatore
+                    frame.dispose(); // Chiude la dashboard del giocatore
                     Home.main(null); // Riapre la schermata di login
                 }
             }
@@ -78,19 +75,19 @@ public class GiocatoreGUI {
         iscrivitiButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String nomeCampagna = JOptionPane.showInputDialog(frameAttuale,
+                String nomeCampagna = JOptionPane.showInputDialog(frame,
                         "Inserisci il nome della Campagna a cui vuoi unirti:");
 
                 // Controlliamo che l'utente non abbia premuto 'Annulla' o inserito testo vuoto
                 if (nomeCampagna != null && !nomeCampagna.trim().isEmpty()) {
                     try {
                         controller.iscrivitiCampagna(nomeCampagna);
-                        JOptionPane.showMessageDialog(frameAttuale,
+                        JOptionPane.showMessageDialog(frame,
                                 "Ti sei iscritto con successo alla campagna!",
                                 "Successo", JOptionPane.INFORMATION_MESSAGE);
                         // In futuro: aggiornare la tabella per far comparire la nuova iscrizione
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(frameAttuale,
+                        JOptionPane.showMessageDialog(frame,
                                 ex.getMessage(), "Errore Iscrizione", JOptionPane.ERROR_MESSAGE);
                     }
                 }
@@ -104,7 +101,7 @@ public class GiocatoreGUI {
 
                 // controllo per gestire caso in cui il giocatore dimentichi di selezionare la campagna in cui entrare
                 if (rigaSelezionata == -1) {
-                    JOptionPane.showMessageDialog(frameAttuale, "Seleziona una campagna per entrarvi.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Seleziona una campagna per entrarvi.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return; // Blocca tutto
                 }
 
@@ -112,7 +109,7 @@ public class GiocatoreGUI {
 
                 try {
                     controller.entraNellaCampagna(nomeCampagnaSelezionata);
-                    frameAttuale.dispose(); // Chiude la dashboard in ogni caso
+                    frame.dispose(); // Chiude la dashboard in ogni caso
 
 
                     // CONTROLLO PERSONAGGIO (Simulazione)
@@ -123,7 +120,7 @@ public class GiocatoreGUI {
                     if (!haGiaIlPersonaggio) {
                         // CASO 1: Il personaggio non esiste -> Apriamo CreaPgGUI
                         JFrame creaPgFrame = new JFrame("Creazione Personaggio - Campagna: " + nomeCampagnaSelezionata);
-                        CreaPgGUI creaPgGUI = new CreaPgGUI(controller, giocatoreLoggato, nomeCampagnaSelezionata, creaPgFrame);
+                        CreaPgGUI creaPgGUI = new CreaPgGUI(controller, (Giocatore)controller.getUtenteAttivo(), nomeCampagnaSelezionata, creaPgFrame);
 
                         creaPgFrame.setContentPane(creaPgGUI.getMainPanel());
                         creaPgFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -134,7 +131,7 @@ public class GiocatoreGUI {
                     } else {
                         // CASO 2: Il personaggio esiste già -> Va alla scheda di gioco
                         JFrame campagnaFrame = new JFrame("Scheda Personaggio - Campagna: " + nomeCampagnaSelezionata);
-                        CampagnaGiocatoreGUI campagnaGUI = new CampagnaGiocatoreGUI(controller, giocatoreLoggato, nomeCampagnaSelezionata, campagnaFrame);
+                        CampagnaGiocatoreGUI campagnaGUI = new CampagnaGiocatoreGUI(controller, (Giocatore)controller.getUtenteAttivo(), nomeCampagnaSelezionata, campagnaFrame);
 
                         campagnaFrame.setContentPane(campagnaGUI.getMainPanel());
                         campagnaFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -144,7 +141,7 @@ public class GiocatoreGUI {
                     }
 
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });

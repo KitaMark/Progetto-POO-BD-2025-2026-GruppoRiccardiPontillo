@@ -83,38 +83,22 @@ public class Home {
                 String password = new String(campoPassword.getPassword());
                 boolean isMaster= masterRadioButton.isSelected();
 
-                //necessario, perchè prima si poteva accedere anche senza selezionare niente
                 if ((!masterRadioButton.isSelected()) && (!giocatoreRadioButton.isSelected())) {
                     JOptionPane.showMessageDialog(null, "Seleziona un tipo di utente (Master o Giocatore) per accedere.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return; // Blocca l'esecuzione
                 }
 
-               //per evitare bug ho reso sia email che username obbligatori, altrimenti si complicano troppo controller e accessi vari
-
                 try {
                     Utente utenteLoggato = controller.faiLogin(username, email, password, isMaster);
                     JOptionPane.showMessageDialog(null, "Benvenuto, " + utenteLoggato.getUsername() + "!", "Login avvenuto con successo", JOptionPane.INFORMATION_MESSAGE);
 
-                    frameAttuale.dispose(); //vedere se distruggere completamente o renderlo invisibile per poi riaprirlo
-
+                    frameAttuale.dispose();
 
                     if (utenteLoggato instanceof Master) {
-                        JFrame masterFrame = new JFrame("Dashboard Master - " + utenteLoggato.getUsername());
-                        MasterGUI masterGUI = new MasterGUI(controller, (Master) utenteLoggato, masterFrame);
 
-                        masterFrame.setContentPane(masterGUI.getMainPanel());
-                        masterFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                        masterFrame.setSize(800, 600); // Imposta una grandezza iniziale comoda
-                        masterFrame.setLocationRelativeTo(null); // Centra sullo schermo
-                        masterFrame.setVisible(true);
+                        MasterGUI masterGUI = new MasterGUI(controller);
                     } else {
-                        JFrame giocatoreFrame = new JFrame("Dashboard Giocatore - " + utenteLoggato.getUsername());
-                        GiocatoreGUI giocatoreGUI = new GiocatoreGUI(controller, (Giocatore) utenteLoggato, giocatoreFrame);
-                        giocatoreFrame.setContentPane(giocatoreGUI.getMainPanel());
-                        giocatoreFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                        giocatoreFrame.setSize(800, 600);
-                        giocatoreFrame.setLocationRelativeTo(null); // Centra lo schermo
-                        giocatoreFrame.setVisible(true); // Rende visibile la finestra                    }
+                        GiocatoreGUI giocatoreGUI = new GiocatoreGUI(controller);
                     }
 
                 } catch (Exception ex) {

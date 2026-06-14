@@ -11,18 +11,15 @@ public class ConnessioneDatabase {
 	private static ConnessioneDatabase instance;
 	public Connection connection = null;
 	private String nome = "postgres";
-	private String password = "password";
-	private String url = "jdbc:postgresql://localhost:5432/GestioneCampagnGDR";
+	private String password = "mHgvB17ld1906CG0204!?@#asd!";
+	private String url = "jdbc:postgresql://localhost:5432/gdr_db";
 	private String driver = "org.postgresql.Driver";
 
 	// COSTRUTTORE
 	private ConnessioneDatabase() throws SQLException {
 		try {
 			Class.forName(driver);
-
 			connection = DriverManager.getConnection(url, nome, password);
-			System.out.println("Connessione al database stabilita con successo!");
-
 		} catch (ClassNotFoundException ex) {
 			System.out.println("Connessione al database fallita: " + ex.getMessage());
 			ex.printStackTrace();
