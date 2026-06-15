@@ -9,7 +9,9 @@ import model.Master;
 import database.ConnessioneDatabase;
 import exception.DatiMancantiException;
 import model.Personaggio;
-
+import model.Statistica;
+import model.Razza;
+import model.Classe;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -141,14 +143,97 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
     }
 
     @Override
-    public void leggiListaPersonaggi(List<Personaggio> listaPersonaggi, boolean isPg){
-        //TODO: implementare
-        //pensavo di fare assegnazione condizionale per la query, tipo:
-        //String query = isPg()? //qui scrivi la query per cercare tra i PG : //qui scrivi la query per i PnG
+    public void leggiListaPersonaggi(List<Personaggio> listaPersonaggi, boolean isPg) throws DatiMancantiException {
+         //ho fatto solo una query poichè presente nel db attributo che controlla se il personaggio è png o pg
+        String query = "SELECT p.CodPersonaggio, p.Nome, p.Oro, p.IsPG, " +
+                "c.Nome AS nome_classe, " +
+                "r.Nome AS nome_razza, " +
+                "sp.HpAttuali, sp.ManaAttuali, sp.PuntiSpendere, " +
+                "sp.Forza AS forza_base, sp.Destrezza AS destrezza_base, sp.Costituzione AS costituzione_base, sp.Intelligenza AS intelligenza_base, sp.Fede AS fede_base, sp.Carisma AS carisma_base, sp.Fortuna AS fortuna_base, " +
+                "sr.Forza AS mod_forza, sr.Destrezza AS mod_destrezza, sr.Costituzione AS mod_costituzione, sr.Intelligenza AS mod_intelligenza, sr.Fede AS mod_fede, sr.Carisma AS mod_carisma, sr.Fortuna AS mod_fortuna " +
+                "FROM PERSONAGGIO p " +
+                "JOIN CLASSE c ON p.CodClasse = c.CodClasse " +
+                "JOIN RAZZA r ON p.CodRazza = r.CodRazza " +
+                "LEFT JOIN STATISTICA sp ON sp.CodPersonaggio = p.CodPersonaggio " +
+                "LEFT JOIN STATISTICA sr ON sr.CodRazza = r.CodRazza " +
+                "WHERE p.IsPG = ?";
+
+        // Il try-with-resources chiude automaticamente pstmt e ResultSet
+        try (Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setBoolean(1, isPg);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    // Dati PG
+                    int id = rs.getInt("CodPersonaggio");
+                    String nome = rs.getString("Nome");
+                    int hpCorrenti = rs.getInt("HpAttuali");
+                    int manaCorrente = rs.getInt("ManaAttuali");
+                    int oro = rs.getInt("Oro");
+                    int puntiStatistica = rs.getInt("PuntiSpendere");
+
+                    // Statistiche base del personaggio
+                    Statistica statBase = new Statistica();
+                    statBase.setForza(rs.getInt("forza_base"));
+                    statBase.setDestrezza(rs.getInt("destrezza_base"));
+                    statBase.setCostituzione(rs.getInt("costituzione_base"));
+                    statBase.setIntelligenza(rs.getInt("intelligenza_base"));
+                    statBase.setFede(rs.getInt("fede_base"));
+                    statBase.setCarisma(rs.getInt("carisma_base"));
+                    statBase.setFortuna(rs.getInt("fortuna_base"));
+
+                    // Modificatori provenienti dalla razza
+                    Statistica modRazza = new Statistica();
+                    modRazza.setForza(rs.getInt("mod_forza"));
+                    modRazza.setDestrezza(rs.getInt("mod_destrezza"));
+                    modRazza.setCostituzione(rs.getInt("mod_costituzione"));
+                    modRazza.setIntelligenza(rs.getInt("mod_intelligenza"));
+                    modRazza.setFede(rs.getInt("mod_fede"));
+                    modRazza.setCarisma(rs.getInt("mod_carisma"));
+                    modRazza.setFortuna(rs.getInt("mod_fortuna"));
+
+                    Razza razza = new Razza(rs.getString("nome_razza"), modRazza);
+                    Classe classe = new Classe(rs.getString("nome_classe"));
+
+                    // Applichiamo i modificatori
+                    statBase.aggiungiBonus(modRazza);
+
+                    //per implementare tutto al meglio ho sovuto creare un costruttore apposito per il dao nel model
+                    //di personaggio
+                    Personaggio pg = new Personaggio(id, nome, classe, razza, statBase, hpCorrenti, manaCorrente, oro, puntiStatistica, isPg);
+
+                    listaPersonaggi.add(pg);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new DatiMancantiException("Errore critico durante il caricamento dei personaggi: " + e.getMessage());
+        }
     }
 
     @Override
-    public void leggiGiocatori(List<Giocatore> partecipanti) {
-        //TODO: implementare
+    public void leggiGiocatori(List<Giocatore> partecipanti) throws DatiMancantiException {
+
+        String query = "SELECT Username, Email, Password FROM UTENTE WHERE Ruolo = 'Giocatore'";
+
+        try (Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                String username = rs.getString("Username");
+                String email = rs.getString("Email");
+                String password = rs.getString("Password");
+
+                Giocatore giocatore = new Giocatore(username, email, password);
+                partecipanti.add(giocatore);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new DatiMancantiException("Errore critico durante il caricamento dei giocatori: " + e.getMessage());
+        }
     }
 }
