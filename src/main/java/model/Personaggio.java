@@ -9,6 +9,7 @@ import java.util.*;
  * Può essere configurato come Personaggio Giocante (PG) o Non Giocante (PnG).
  */
 public class Personaggio {
+    private int id; // Identificativo univoco del database
     private String nome;
     private Statistica statisticaBase;
     private Statistica statisticaFinali;
@@ -87,6 +88,47 @@ public class Personaggio {
         this.manaCorrente = statisticaBase.getManaMax();
         aggiornaStatoPG();
     }
+
+
+    /**
+     * Costruttore per il Dao.
+     * Ricostruisce lo stato esatto salvato senza applicare bonus iniziali o equipaggiamento di default.
+     * Le collezioni (inventari, abilità) vengono inizializzate vuote e dovranno essere popolate
+     * successivamente con query dedicate.
+     *
+     * @param id              l'identificativo univoco del personaggio nel database.
+     * @param nome            il nome del personaggio.
+     * @param classe          la classe del personaggio.
+     * @param razza           la razza del personaggio.
+     * @param statisticaBase  le statistiche base caricate dal database.
+     * @param hpCorrenti      gli HP correnti salvati al momento dell'ultimo salvataggio.
+     * @param manaCorrente    il mana corrente salvato al momento dell'ultimo salvataggio.
+     * @param oro             l'oro posseduto nel database.
+     * @param puntiStatistica i punti statistica non ancora spesi.
+     * @param isPg            true se è un Personaggio Giocante, false se è un PnG.
+     */
+    public Personaggio(int id, String nome, Classe classe, Razza razza, Statistica statisticaBase,
+                       int hpCorrenti, int manaCorrente, int oro, int puntiStatistica, boolean isPg) {
+        this.id = id;
+        this.nome = nome;
+        this.classe = classe;
+        this.razza = razza;
+        this.statisticaBase = statisticaBase;
+        this.hpCorrenti = hpCorrenti;
+        this.manaCorrente = manaCorrente;
+        this.oro = oro;
+        this.puntiStatistica = puntiStatistica;
+        this.isPg = isPg;
+
+        this.inventarioConsumabili = new HashMap<>();
+        this.inventarioEquipaggiabili = new HashMap<>();
+        this.listaAbilita = new ArrayList<>();
+
+        calcolaStatisticheFinali();
+    }
+
+
+
 
     /**
      * Incrementa un attributo base spendendo i punti statistica disponibili.
@@ -195,6 +237,10 @@ public class Personaggio {
             rimuoviConsumabile(oggetto, 1);
         } else throw new IllegalArgumentException("Non possiedi quest'oggetto!");
     }
+
+
+    /** @return l'identificativo univoco del personaggio. */
+    public int getId() { return id; }
 
     /** @return il nome del personaggio. */
     public String getNome() { return nome; }
