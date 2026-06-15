@@ -71,4 +71,17 @@ public class Campagna {
 
     /** @param listaPnG la nuova lista di personaggi non giocanti. */
     public void setListaPnG(ArrayList<Personaggio> listaPnG) { this.listaPnG = listaPnG; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Campagna campagna = (Campagna) o;
+        return nome != null ? nome.equalsIgnoreCase(campagna.nome) : campagna.nome == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return nome != null ? nome.toLowerCase().hashCode() : 0;
+    }
 }

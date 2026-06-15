@@ -143,30 +143,32 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
     }
 
     @Override
-    public void leggiListaPersonaggi(List<Personaggio> listaPersonaggi, boolean isPg) throws DatiMancantiException {
-         //ho fatto solo una query poichè presente nel db attributo che controlla se il personaggio è png o pg
+    public void leggiListaPersonaggi(List<Personaggio> listaPersonaggi, boolean isPg, String nomeCampagna) throws DatiMancantiException {
+        listaPersonaggi.clear();
+
+        // Query modificata: aggiunta la JOIN con CAMPAGNA per filtrare tramite il Nome della campagna
         String query = "SELECT p.CodPersonaggio, p.Nome, p.Oro, p.IsPG, " +
                 "c.Nome AS nome_classe, " +
                 "r.Nome AS nome_razza, " +
                 "sp.HpAttuali, sp.ManaAttuali, sp.PuntiSpendere, " +
-                "sp.Forza AS forza_base, sp.Destrezza AS destrezza_base, sp.Costituzione AS costituzione_base, sp.Intelligenza AS intelligenza_base, sp.Fede AS fede_base, sp.Carisma AS carisma_base, sp.Fortuna AS fortuna_base, " +
-                "sr.Forza AS mod_forza, sr.Destrezza AS mod_destrezza, sr.Costituzione AS mod_costituzione, sr.Intelligenza AS mod_intelligenza, sr.Fede AS mod_fede, sr.Carisma AS mod_carisma, sr.Fortuna AS mod_fortuna " +
+                "sp.Forza AS forza_base, sp.Destrezza AS destrezza_base, sp.Costituzione AS costituzione_base, " +
+                "sp.Intelligenza AS intelligenza_base, sp.Fede AS fede_base, sp.Carisma AS carisma_base, sp.Fortuna AS fortuna_base, " +
+                "r.ModForza, r.ModDestrezza, r.ModCostituzione, r.ModIntelligenza, r.ModFede, r.ModCarisma, r.ModFortuna " +
                 "FROM PERSONAGGIO p " +
                 "JOIN CLASSE c ON p.CodClasse = c.CodClasse " +
                 "JOIN RAZZA r ON p.CodRazza = r.CodRazza " +
+                "JOIN CAMPAGNA cam ON p.CodCampagna = cam.CodCampagna " + // Nuova JOIN
                 "LEFT JOIN STATISTICA sp ON sp.CodPersonaggio = p.CodPersonaggio " +
-                "LEFT JOIN STATISTICA sr ON sr.CodRazza = r.CodRazza " +
-                "WHERE p.IsPG = ?";
+                "WHERE p.IsPG = ? AND cam.Nome = ?"; // Filtro sul nome della campagna
 
-        // Il try-with-resources chiude automaticamente pstmt e ResultSet
         try (Connection conn = ConnessioneDatabase.getInstance().connection;
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setBoolean(1, isPg);
+            pstmt.setString(2, nomeCampagna); // Impostiamo la stringa del nome campagna
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    // Dati PG
                     int id = rs.getInt("CodPersonaggio");
                     String nome = rs.getString("Nome");
                     int hpCorrenti = rs.getInt("HpAttuali");
@@ -174,61 +176,90 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                     int oro = rs.getInt("Oro");
                     int puntiStatistica = rs.getInt("PuntiSpendere");
 
-                    // Statistiche base del personaggio
-                    Statistica statBase = new Statistica();
-                    statBase.setForza(rs.getInt("forza_base"));
-                    statBase.setDestrezza(rs.getInt("destrezza_base"));
-                    statBase.setCostituzione(rs.getInt("costituzione_base"));
-                    statBase.setIntelligenza(rs.getInt("intelligenza_base"));
-                    statBase.setFede(rs.getInt("fede_base"));
-                    statBase.setCarisma(rs.getInt("carisma_base"));
-                    statBase.setFortuna(rs.getInt("fortuna_base"));
+                    Statistica statBase = new Statistica(
+                            rs.getInt("costituzione_base"),
+                            rs.getInt("forza_base"),
+                            rs.getInt("destrezza_base"),
+                            rs.getInt("intelligenza_base"),
+                            rs.getInt("fede_base"),
+                            rs.getInt("carisma_base"),
+                            rs.getInt("fortuna_base"),
+                            0, 0
+                    );
 
-                    // Modificatori provenienti dalla razza
-                    Statistica modRazza = new Statistica();
-                    modRazza.setForza(rs.getInt("mod_forza"));
-                    modRazza.setDestrezza(rs.getInt("mod_destrezza"));
-                    modRazza.setCostituzione(rs.getInt("mod_costituzione"));
-                    modRazza.setIntelligenza(rs.getInt("mod_intelligenza"));
-                    modRazza.setFede(rs.getInt("mod_fede"));
-                    modRazza.setCarisma(rs.getInt("mod_carisma"));
-                    modRazza.setFortuna(rs.getInt("mod_fortuna"));
+                    Statistica modRazza = new Statistica(
+                            rs.getInt("ModCostituzione"),
+                            rs.getInt("ModForza"),
+                            rs.getInt("ModDestrezza"),
+                            rs.getInt("ModIntelligenza"),
+                            rs.getInt("ModFede"),
+                            rs.getInt("ModCarisma"),
+                            rs.getInt("ModFortuna"),
+                            0, 0
+                    );
 
                     Razza razza = new Razza(rs.getString("nome_razza"), modRazza);
                     Classe classe = new Classe(rs.getString("nome_classe"));
 
-                    // Applichiamo i modificatori
-                    statBase.aggiungiBonus(modRazza);
-
-                    //per implementare tutto al meglio ho sovuto creare un costruttore apposito per il dao nel model
-                    //di personaggio
                     Personaggio pg = new Personaggio(id, nome, classe, razza, statBase, hpCorrenti, manaCorrente, oro, puntiStatistica, isPg);
-
                     listaPersonaggi.add(pg);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new DatiMancantiException("Errore critico durante il caricamento dei personaggi: " + e.getMessage());
+            throw new DatiMancantiException("Errore nel caricamento dei personaggi: " + e.getMessage());
         }
     }
 
     @Override
-    public void leggiGiocatori(List<Giocatore> partecipanti) throws DatiMancantiException {
-
-        String query = "SELECT Username, Email, Password FROM UTENTE WHERE Ruolo = 'Giocatore'";
+    public void leggiGiocatori(List<Giocatore> partecipanti, String nomeCampagna) throws DatiMancantiException {
+        // Svuotiamo la lista per evitare duplicati in caso di chiamate ripetute
+        partecipanti.clear();
+        // Query con JOIN per prendere solo i giocatori iscritti a QUELLA campagna
+        // e per estrarre anche il codice del personaggio che possiedono in quella sessione
+        String query = "SELECT u.Username, u.Email, u.Password, p.CodPersonaggio " +
+                "FROM UTENTE u " +
+                "JOIN ISCRIZIONE i ON u.CodUtente = i.CodUtente " +
+                "JOIN CAMPAGNA c ON i.CodCampagna = c.CodCampagna " +
+                "LEFT JOIN PERSONAGGIO p ON (p.CodUtente = u.CodUtente AND p.CodCampagna = c.CodCampagna) " +
+                "WHERE u.Ruolo = 'Giocatore' AND c.Nome = ?";
 
         try (Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement pstmt = conn.prepareStatement(query);
-             ResultSet rs = pstmt.executeQuery()) {
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
 
-            while (rs.next()) {
-                String username = rs.getString("Username");
-                String email = rs.getString("Email");
-                String password = rs.getString("Password");
+            pstmt.setString(1, nomeCampagna);
 
-                Giocatore giocatore = new Giocatore(username, email, password);
-                partecipanti.add(giocatore);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    String username = rs.getString("Username");
+                    String email = rs.getString("Email");
+                    String password = rs.getString("Password");
+                    int idPersonaggio = rs.getInt("CodPersonaggio");
+
+                    // 1. Creiamo il giocatore
+                    Giocatore giocatore = new Giocatore(email, username, password);
+
+                    // 2. Risolviamo il problema di "Sconosciuto":
+                    // Se il giocatore ha un personaggio in questa campagna (idPersonaggio != 0),
+                    // dobbiamo inserirlo nella sua mappa delle partecipazioni!
+                    if (idPersonaggio != 0) {
+                        // Creiamo un oggetto Personaggio fittizio (o "proxy") che ha lo stesso ID.
+                        // Grazie all'override di .equals() basato sull'ID che hai messo in Personaggio,
+                        // Java lo riconoscerà come IDENTICO a quello caricato da leggiListaPersonaggi!
+                        Personaggio pgFittizio = new Personaggio(idPersonaggio, null, null, null, null, 0, 0, 0, 0, true);
+
+                        // Creiamo un oggetto Campagna fittizio con lo stesso nome per fare da chiave
+                        Campagna campagnaFittizia = new Campagna(nomeCampagna, 0, null);
+
+                        // Per aggirare l'unmodifiableMap del getter, dobbiamo inserire il dato
+                        // sfruttando la logica di inizializzazione dell'oggetto, oppure se hai un metodo
+                        // addPartecipazione(Campagna, Personaggio) dentro Giocatore usa quello.
+                        // Se non hai quel metodo, inserisci questo trucco di riflessione o un metodo d'appoggio:
+                        giocatore.addPartecipazioneDati(campagnaFittizia, pgFittizio);
+                    }
+
+                    partecipanti.add(giocatore);
+                }
             }
 
         } catch (SQLException e) {

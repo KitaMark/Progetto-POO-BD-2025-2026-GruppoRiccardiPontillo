@@ -158,9 +158,9 @@ public class Controller {
         }
         this.campagnaAttiva = cercaCampagna(nomeCampagna);
         if(campagnaAttiva == null) throw new RuntimeException("Campagna non esistente.");
-        campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPG(), true);
-        campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPnG(), false);
-        campagnaDAO.leggiGiocatori(campagnaAttiva.getPartecipanti());
+        campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPG(), true, campagnaAttiva.getNome());
+        campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPnG(), false, campagnaAttiva.getNome());
+        campagnaDAO.leggiGiocatori(campagnaAttiva.getPartecipanti(), campagnaAttiva.getNome());
 
     }
 

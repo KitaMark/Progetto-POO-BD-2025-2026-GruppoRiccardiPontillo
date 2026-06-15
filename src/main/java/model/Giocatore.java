@@ -27,4 +27,32 @@ public class Giocatore extends Utente {
     public Map<Campagna, Personaggio> getListaPartecipazioni() {
         return Collections.unmodifiableMap(listaPartecipazioni);
     }
+
+    public void setListaPartecipazioni(HashMap<Campagna, Personaggio> listaPartecipazioni) {
+        this.listaPartecipazioni = listaPartecipazioni;
+    }
+
+    /**
+     * Recupera il personaggio associato a una specifica campagna.
+     * @param nomeCampagna Il nome della campagna da cercare.
+     * @return Il Personaggio associato, oppure null se non trovato.
+     */
+    public Personaggio getPersonaggioInCampagna(String nomeCampagna) {
+        for (Map.Entry<Campagna, Personaggio> entry : listaPartecipazioni.entrySet()) {
+            if (entry.getKey().getNome().equalsIgnoreCase(nomeCampagna)) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Metodo di utilità per il DAO per associare una campagna e il relativo personaggio.
+     */
+    public void addPartecipazioneDati(Campagna campagna, Personaggio personaggio) {
+        if (this.listaPartecipazioni == null) {
+            this.listaPartecipazioni = new HashMap<>();
+        }
+        this.listaPartecipazioni.put(campagna, personaggio);
+    }
 }

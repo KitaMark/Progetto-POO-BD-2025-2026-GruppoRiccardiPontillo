@@ -372,6 +372,10 @@ public class Personaggio {
      * Ricalcola le statistiche finali sommando alle statistiche base i bonus degli oggetti attualmente equipaggiati.
      */
     private void calcolaStatisticheFinali() {
+        if (statisticaBase == null) {
+            this.statisticaFinali = null;
+            return;
+        }
         statisticaFinali = new Statistica(statisticaBase);
         for(Map.Entry<OggettoEquipaggiabile, Boolean> entry : inventarioEquipaggiabili.entrySet()){
             if(entry.getValue()){
@@ -419,5 +423,18 @@ public class Personaggio {
                 manaCorrente, statisticaFinali.getManaMax(), statisticaFinali.getForza(), statisticaFinali.getDestrezza(),
                 statisticaFinali.getCostituzione(), statisticaFinali.getIntelligenza(), statisticaFinali.getCarisma(),
                 statisticaFinali.getFede(), statisticaFinali.getFortuna(), oro, puntiStatistica);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Personaggio that = (Personaggio) o;
+        return this.id == that.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

@@ -103,6 +103,7 @@ public class CampagnaMasterGUI {
                 if (conferma == JOptionPane.YES_OPTION) {
                     try {
                         controller.rimuoviPGdaCampagna(nomePg, proprietarioPg);
+                        inizializzaTabellaPG();
                         JOptionPane.showMessageDialog(frame, "Hai rimosso "+nomePg+".");
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
