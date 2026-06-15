@@ -108,7 +108,7 @@ public class GiocatoreGUI {
                 String nomeCampagnaSelezionata = tableCampagnaGiocatore.getValueAt(rigaSelezionata, 0).toString();
 
                 try {
-                    controller.entraNellaCampagna(nomeCampagnaSelezionata);
+                    controller.visualizzaCampagna(nomeCampagnaSelezionata);
                     frame.dispose(); // Chiude la dashboard in ogni caso
 
 

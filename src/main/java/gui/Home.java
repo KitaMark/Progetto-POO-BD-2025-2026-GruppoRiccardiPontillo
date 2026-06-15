@@ -56,7 +56,7 @@ public class Home {
         frameHome = new JFrame("GestionaleGDRLogin");
         frameHome.setContentPane(new Home(frameHome).mainPanel);
         frameHome.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frameHome.setResizable(false); //giusto per evitare che si sfancula tutto
+        frameHome.setResizable(false);
         frameHome.pack();
         frameHome.setVisible(true);
 

@@ -4,7 +4,6 @@ import exception.*;
 import implementazionePostgresDAO.*;
 import model.*;
 
-import java.sql.SQLException;
 import java.util.*;
 
 
@@ -126,11 +125,13 @@ public class Controller {
      * Elimina definitivamente una campagna dal sistema.
      *
      * @param nomeCampagna Il nome della campagna da rimuovere.
-     * @throws Exception Se si verifica un errore durante l'eliminazione dal database.
+     * @throws DatiMancantiException Se si verifica un errore durante l'eliminazione dal database.
+     * @return {@code true} se viene eliminata correttamente.
      */
-    public boolean eliminaCampagna(String nomeCampagna) throws DatiMancantiException {
+    public boolean eliminaCampagna(String nomeCampagna) throws DatiMancantiException, Exception {
         Campagna campagnaTarget = cercaCampagna(nomeCampagna);
         if(campagnaTarget == null) throw new DatiMancantiException("Campagna non esistente.");
+        if(!controllaPrivilegiMaster(campagnaTarget)) throw new Exception("Operazione non autorizzata: non sei il proprietario di questa campagna.");
         listaCampagne.remove(campagnaTarget);
         campagnaDAO.eliminaCampagna(campagnaTarget);
         return true;
@@ -151,15 +152,16 @@ public class Controller {
      * @throws DatiMancantiException Se il nome fornito non è valido.
      * @throws RuntimeException Se non è possibile accedere alla campagna.
      */
-    public void entraNellaCampagna(String nomeCampagna) throws DatiMancantiException {
+    public void visualizzaCampagna(String nomeCampagna) throws DatiMancantiException {
         if (nomeCampagna == null || nomeCampagna.trim().isEmpty()) {
             throw new DatiMancantiException("Nome della campagna non valido.");
         }
         this.campagnaAttiva = cercaCampagna(nomeCampagna);
+        if(campagnaAttiva == null) throw new RuntimeException("Campagna non esistente.");
         campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPG(), true);
         campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPnG(), false);
         campagnaDAO.leggiGiocatori(campagnaAttiva.getPartecipanti());
-        if(campagnaAttiva == null) throw new RuntimeException("Campagna non esistente.");
+
     }
 
     /**
@@ -198,14 +200,15 @@ public class Controller {
      * @param nomePersonaggio Il nome del PG da rimuovere.
      * @param nomeProprietario Il nome del Giocatore che interpreta il PG.
      * @throws DatiMancantiException Se non viene specificato alcun personaggio o proprietario.
-     * @throws Exception Se la ricerca del PG fallisce.
+     * @throws PersonaggioNonTrovatoException Se la ricerca del PG fallisce.
      */
     public void rimuoviPGdaCampagna(String nomePersonaggio, String nomeProprietario) throws PersonaggioNonTrovatoException, DatiMancantiException {
         if (nomePersonaggio == null || nomePersonaggio.trim().isEmpty()) {
             throw new DatiMancantiException("Seleziona un personaggio da rimuovere.");
         }
         //non dovrebbe mai entrare in questa condizione
-        if(nomeProprietario == null || nomeProprietario.trim().isEmpty()) throw new DatiMancantiException("ATTENZIONE: personaggio non associato a nessun giocatore.");
+        if(nomeProprietario == null || nomeProprietario.trim().isEmpty()
+                || Objects.equals(nomeProprietario, "Sconosciuto")) throw new DatiMancantiException("ATTENZIONE: personaggio non associato a nessun giocatore.");
 
         Personaggio daRimuovere = cercaPg(nomePersonaggio, nomeProprietario);
         if(daRimuovere == null) throw new PersonaggioNonTrovatoException("Personaggio non trovato.");
