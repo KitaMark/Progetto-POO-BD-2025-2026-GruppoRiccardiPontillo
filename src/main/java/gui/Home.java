@@ -92,7 +92,7 @@ public class Home {
                     Utente utenteLoggato = controller.faiLogin(username, email, password, isMaster);
                     JOptionPane.showMessageDialog(null, "Benvenuto, " + utenteLoggato.getUsername() + "!", "Login avvenuto con successo", JOptionPane.INFORMATION_MESSAGE);
 
-                    frameAttuale.dispose();
+
 
                     if (utenteLoggato instanceof Master) {
 
@@ -100,6 +100,7 @@ public class Home {
                     } else {
                         GiocatoreGUI giocatoreGUI = new GiocatoreGUI(controller);
                     }
+                    frameAttuale.dispose();
 
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(null, ex.getMessage(), "Errore di Accesso", JOptionPane.ERROR_MESSAGE);

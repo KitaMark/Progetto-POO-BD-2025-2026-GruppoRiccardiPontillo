@@ -1,7 +1,6 @@
 package gui;
 
 import controller.Controller;
-import model.Campagna;
 import model.Giocatore;
 import model.Master;
 import model.Personaggio;
@@ -35,7 +34,7 @@ public class CampagnaMasterGUI {
     private JTable pgTable;
     private JButton assegnaPuntiButton;
     private JButton modificaStatisticaButton;
-    private JButton rimuovoPgButton;
+    private JButton rimuoviPgButton;
     private JTable pngTable;
     private JPanel panelPgButton;
     private JPanel panelPngButton;
@@ -51,21 +50,10 @@ public class CampagnaMasterGUI {
      */
     private Controller controller;
     /**
-     * Il Master attualmente autenticato che esercita la regia su questa campagna.
+     * Il riferimento al {@link JFrame} chiamante per poter tornare alla schermata precedente.
      */
-    private Master masterLoggato;
-    /**
-     * La Campagna su cui effettuare le elaborazioni.
-     */
-    private Campagna campagnaAttiva;
-    /**
-     * Il nome univoco della campagna attualmente in corso di gestione.
-     */
-    private String nomeCampagnaAttuale;
-    /**
-     * Riferimento al frame attuale
-     */
-    private JFrame frameHome;
+    private JFrame frameChiamante;
+
 
 
     /**
@@ -73,17 +61,17 @@ public class CampagnaMasterGUI {
      * le tabelle dei personaggi e attivando tutti i Listener per i privilegi amministrativi.
      *
      * @param controller     Il {@link Controller} di sistema.
-     * @param master         L'oggetto {@link Master} autenticato.
-     * @param campagnaAttiva La {@link Campagna} da gestire.
-     * @param frame          Il {@link JFrame} principale che contiene questo pannello.
      */
-    public CampagnaMasterGUI(Controller controller, Master master, Campagna campagnaAttiva, JFrame frame) {
+    public CampagnaMasterGUI(Controller controller, JFrame frameChiamante) {
         this.controller = controller;
-        this.masterLoggato = master;
-        this.campagnaAttiva = campagnaAttiva;
-        this.frameHome = frame;
-        this.nomeCampagna.setText("Campagna: " + campagnaAttiva.getNome());
-        String stato = campagnaAttiva.isIniziata() ? "In corso" : "Non iniziata";
+        JFrame frame = new JFrame(controller.getCampagnaAttiva().getNome());
+        frame.setContentPane(getMainPanel());
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
+
+        this.nomeCampagna.setText("Campagna: " + controller.getCampagnaAttiva().getNome());
+        String stato = controller.getCampagnaAttiva().isIniziata() ? "In corso" : "Non iniziata";
         this.statoCampagna.setText(stato);
 
         inizializzaTabellaPG();
@@ -93,38 +81,31 @@ public class CampagnaMasterGUI {
         indietroButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                frameHome.dispose(); // Chiude la gestione della campagna
-
-                // Riapre la Dashboard del Master
-                JFrame masterFrame = new JFrame("Dashboard Master - " + masterLoggato.getUsername());
-                MasterGUI masterGUI = new MasterGUI(controller);
-                masterFrame.setContentPane(masterGUI.getMainPanel());
-                masterFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                masterFrame.setSize(800, 600);
-                masterFrame.setLocationRelativeTo(null);
-                masterFrame.setVisible(true);
+                frame.dispose(); // Chiude la gestione della campagna
+                frameChiamante.setVisible(true);
             }
         });
 
 
-        rimuovoPgButton.addActionListener(new ActionListener() {
+        rimuoviPgButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int riga = pgTable.getSelectedRow();
 
                 if (riga == -1) {
-                    JOptionPane.showMessageDialog(frameHome, "Seleziona un Personaggio da rimuovere.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Seleziona un Personaggio da rimuovere.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
                 String nomePg = pgTable.getValueAt(riga, 0).toString();
+                String proprietarioPg = pgTable.getValueAt(riga, 1).toString();
 
-                int conferma = JOptionPane.showConfirmDialog(frameHome, "Rimuovere definitivamente " + nomePg + "?", "Conferma", JOptionPane.YES_NO_OPTION);
+                int conferma = JOptionPane.showConfirmDialog(frame, "Rimuovere definitivamente " + nomePg + "?", "Conferma", JOptionPane.YES_NO_OPTION);
                 if (conferma == JOptionPane.YES_OPTION) {
                     try {
-                        controller.rimuoviPGdaCampagna(nomePg);
-                        JOptionPane.showMessageDialog(frameHome, "Personaggio rimosso.");
+                        controller.rimuoviPGdaCampagna(nomePg, proprietarioPg);
+                        JOptionPane.showMessageDialog(frame, "Hai rimosso "+nomePg+".");
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(frameHome, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -137,7 +118,7 @@ public class CampagnaMasterGUI {
                 int riga = pgTable.getSelectedRow();
 
                 if (riga == -1) {
-                    JOptionPane.showMessageDialog(frameHome, "Seleziona un Personaggio dalla tabella.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Seleziona un Personaggio dalla tabella.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
 
@@ -151,11 +132,11 @@ public class CampagnaMasterGUI {
                     // Usiamo DISPOSE_ON_CLOSE per chiudere solo questo popup e non tutto
                     modificaFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                     modificaFrame.setSize(400, 500);
-                    modificaFrame.setLocationRelativeTo(frameHome);
+                    modificaFrame.setLocationRelativeTo(frame);
                     modificaFrame.setVisible(true);
 
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frameHome, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -166,21 +147,21 @@ public class CampagnaMasterGUI {
             public void actionPerformed(ActionEvent e) {
                 int riga = pgTable.getSelectedRow();
                 if (riga == -1) {
-                    JOptionPane.showMessageDialog(frameHome, "Seleziona un Personaggio.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Seleziona un personaggio.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
                 String nomePg = pgTable.getValueAt(riga, 0).toString();
-                String input = JOptionPane.showInputDialog(frameHome, "Quanti punti vuoi assegnare a " + nomePg + "?");
+                String input = JOptionPane.showInputDialog(frame, "Quanti punti vuoi assegnare a " + nomePg + "?");
 
                 if (input != null && !input.trim().isEmpty()) {
                     try {
                         int punti = Integer.parseInt(input);
                         controller.assegnaPuntiStatistica(nomePg, punti);
-                        JOptionPane.showMessageDialog(frameHome, "Punti assegnati con successo!");
+                        JOptionPane.showMessageDialog(frame, "Punti assegnati con successo!");
                     } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(frameHome, "Inserisci un numero valido.", "Errore", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(frame, "Inserisci un numero valido.", "Errore", JOptionPane.ERROR_MESSAGE);
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(frameHome, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -190,15 +171,16 @@ public class CampagnaMasterGUI {
         creaPngButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JFrame creaPngFrame = new JFrame("Nuovo PNG - Campagna: " + nomeCampagnaAttuale);
-                CreaPngGUI creaPngGUI = new CreaPngGUI(controller, masterLoggato, nomeCampagnaAttuale, creaPngFrame);
+                JFrame creaPngFrame = new JFrame("Nuovo PNG - Campagna: " + controller.getCampagnaAttiva().getNome());
+                CreaPngGUI creaPngGUI = new CreaPngGUI(controller, (Master)controller.getUtenteAttivo(),
+                        controller.getCampagnaAttiva().getNome(), creaPngFrame);
 
                 creaPngFrame.setContentPane(creaPngGUI.getMainPanel());
                 // uso DISPOSE così se il Master chiude questo popup non si chiude l'intero gioco!
                 creaPngFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
                 creaPngFrame.setSize(600, 500);
-                creaPngFrame.setLocationRelativeTo(frameHome);
+                creaPngFrame.setLocationRelativeTo(frame);
                 creaPngFrame.setVisible(true);
             }
         });
@@ -209,15 +191,15 @@ public class CampagnaMasterGUI {
             public void actionPerformed(ActionEvent e) {
                 int riga = pngTable.getSelectedRow();
                 if (riga == -1) {
-                    JOptionPane.showMessageDialog(frameHome, "Seleziona un PnG da rimuovere.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Seleziona un PnG da rimuovere.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
                 String nomePng = pngTable.getValueAt(riga, 0).toString();
                 try {
                     controller.rimuoviPnG(nomePng);
-                    JOptionPane.showMessageDialog(frameHome, "PnG rimosso con successo.");
+                    JOptionPane.showMessageDialog(frame, "PnG rimosso con successo.");
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frameHome, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -227,7 +209,7 @@ public class CampagnaMasterGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String[] opzioni = {"In Corso", "Conclusa"};
-                int scelta = JOptionPane.showOptionDialog(frameHome,
+                int scelta = JOptionPane.showOptionDialog(frame,
                         "Scegli il nuovo stato della campagna:", "Cambia Stato",
                         JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
                         null, opzioni, opzioni[0]);
@@ -235,11 +217,11 @@ public class CampagnaMasterGUI {
                 //fa il cambio stato campagna solo se il master ha premuto il pulsante
                 if (scelta != -1) {
                     try {
-                        controller.cambiaStatoCampagna(nomeCampagnaAttuale, opzioni[scelta]);
+                        controller.cambiaStatoCampagna(controller.getCampagnaAttiva().getNome(), opzioni[scelta]);
                         statoCampagna.setText("Stato: " + opzioni[scelta]); // Aggiorna l'etichetta in alto!
-                        JOptionPane.showMessageDialog(frameHome, "Stato aggiornato a: " + opzioni[scelta]);
+                        JOptionPane.showMessageDialog(frame, "Stato aggiornato a: " + opzioni[scelta]);
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(frameHome, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -263,10 +245,10 @@ public class CampagnaMasterGUI {
         pgTable.setModel(modelPG);
         pgTable.getTableHeader().setReorderingAllowed(false);
         pgTable.getTableHeader().setResizingAllowed(false);
-        if (campagnaAttiva.getListaPG().isEmpty()) return;
-        for (Personaggio pg : campagnaAttiva.getListaPG()) {
+        if (controller.getCampagnaAttiva().getListaPG().isEmpty()) return;
+        for (Personaggio pg : controller.getCampagnaAttiva().getListaPG()) {
             String nomeProprietario = "Sconosciuto"; //valore di sicurezza per evitare problemi
-            for (Giocatore giocatore : campagnaAttiva.getPartecipanti()) {
+            for (Giocatore giocatore : controller.getCampagnaAttiva().getPartecipanti()) {
                 if (giocatore.getListaPartecipazioni().containsValue(pg)) {
                     nomeProprietario = giocatore.getUsername();
                     break;
@@ -289,7 +271,7 @@ public class CampagnaMasterGUI {
         pngTable.setModel(modelPnG);
         pngTable.getTableHeader().setReorderingAllowed(false);
         pngTable.getTableHeader().setResizingAllowed(false);
-        for(Personaggio png : campagnaAttiva.getListaPnG()){
+        for(Personaggio png : controller.getCampagnaAttiva().getListaPnG()){
             modelPnG.addRow(new Object[]{png.getNome(), png.getRazza(), png.getClasse()});
         }
     }

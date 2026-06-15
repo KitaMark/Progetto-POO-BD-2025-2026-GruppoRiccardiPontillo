@@ -4,6 +4,7 @@ import exception.*;
 import implementazionePostgresDAO.*;
 import model.*;
 
+import java.sql.SQLException;
 import java.util.*;
 
 
@@ -194,15 +195,42 @@ public class Controller {
     /**
      * Rimuove un Personaggio Giocante (PG) dalla Campagna gestita dal Master.
      *
-     * @param nomePersonaggio Il nome del PG da espellere o rimuovere.
-     * @throws PgNonSelezionatoException Se non viene specificato alcun personaggio.
+     * @param nomePersonaggio Il nome del PG da rimuovere.
+     * @param nomeProprietario Il nome del Giocatore che interpreta il PG.
+     * @throws DatiMancantiException Se non viene specificato alcun personaggio o proprietario.
+     * @throws Exception Se la ricerca del PG fallisce.
      */
-    public void rimuoviPGdaCampagna(String nomePersonaggio) throws PgNonSelezionatoException {
+    public void rimuoviPGdaCampagna(String nomePersonaggio, String nomeProprietario) throws PersonaggioNonTrovatoException, DatiMancantiException {
         if (nomePersonaggio == null || nomePersonaggio.trim().isEmpty()) {
-            throw new PgNonSelezionatoException("Seleziona un personaggio da rimuovere.");
+            throw new DatiMancantiException("Seleziona un personaggio da rimuovere.");
         }
-        // in futuro diremo al DAO di eliminarlo
-        System.out.println("Personaggio rimosso: " + nomePersonaggio + " (Simulazione)"); //per ora
+        //non dovrebbe mai entrare in questa condizione
+        if(nomeProprietario == null || nomeProprietario.trim().isEmpty()) throw new DatiMancantiException("ATTENZIONE: personaggio non associato a nessun giocatore.");
+
+        Personaggio daRimuovere = cercaPg(nomePersonaggio, nomeProprietario);
+        if(daRimuovere == null) throw new PersonaggioNonTrovatoException("Personaggio non trovato.");
+
+        masterDAO.rimuoviPersonaggio(daRimuovere);
+        campagnaAttiva.getListaPG().remove(daRimuovere);
+    }
+
+    private Personaggio cercaPg(String nomePersonaggio, String nomeProprietario) {
+        Giocatore proprietario = null;
+        for(Giocatore giocatore : campagnaAttiva.getPartecipanti()){
+            if(Objects.equals(giocatore.getUsername(), nomeProprietario)){
+                proprietario = giocatore;
+                break;
+            }
+        }
+        if(proprietario == null) return null;
+
+        for(Personaggio pg : campagnaAttiva.getListaPG()){
+            if(Objects.equals(pg.getNome(), nomePersonaggio)
+               && pg.equals(proprietario.getListaPartecipazioni().get(campagnaAttiva))){
+                return pg;
+            }
+        }
+        return null;
     }
 
     /**

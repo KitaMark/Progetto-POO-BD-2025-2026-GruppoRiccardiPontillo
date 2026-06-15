@@ -1,9 +1,9 @@
 package dao;
 
-import model.Campagna;
-import exception.DatiMancantiException;
-import exception.NomeCampagnaInUsoException;
+import model.Personaggio;
+
 public interface MasterDAO{
+    void rimuoviPersonaggio(Personaggio pg);
     //void visualizzaCampagna();
     //per il momento
 }

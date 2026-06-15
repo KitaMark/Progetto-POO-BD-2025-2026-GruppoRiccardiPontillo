@@ -45,13 +45,12 @@ public class MasterGUI {
         this.controller = controller;
 
         JFrame frame = new JFrame("Dashboard Master - " + controller.getUtenteAttivo().getUsername());
+        benvenutoMaster.setText("Benvenuto, "+controller.getUtenteAttivo().getUsername()+"! [Master]");
+        inizializzaTabella();
         frame.setContentPane(getMainPanel());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
-
-        benvenutoMaster.setText("Benvenuto, "+controller.getUtenteAttivo().getUsername()+"! [Master]");
-        inizializzaTabella();
 
         logoutButton.addActionListener(new ActionListener() {
 
@@ -144,17 +143,8 @@ public class MasterGUI {
 
                 try {
                     controller.entraNellaCampagna(nomeCampagnaSelezionata); //setta la campagna, se la trova, come campagna attiva
-                    JFrame campagnaFrame = new JFrame(nomeCampagnaSelezionata);
-                    CampagnaMasterGUI regiaGUI = new CampagnaMasterGUI(controller, (Master)controller.getUtenteAttivo(), controller.getCampagnaAttiva(), frame);
-                    frame.dispose();
-
-                    campagnaFrame.setContentPane(regiaGUI.getMainPanel());
-                    campagnaFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                    campagnaFrame.setSize(1000, 700);
-                    campagnaFrame.setLocationRelativeTo(null);
-                    campagnaFrame.setVisible(true);
-
+                    frame.setVisible(false); //oppure dispose
+                    CampagnaMasterGUI regiaGUI = new CampagnaMasterGUI(controller, frame);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
@@ -184,10 +174,13 @@ public class MasterGUI {
         tableCampagna.getTableHeader().setReorderingAllowed(false);
         tableCampagna.getTableHeader().setResizingAllowed(false);
 
-        if(controller.getListaCampagne().containsValue((Master)controller.getUtenteAttivo())) {
-            String stato = controller.getCampagnaAttiva().isIniziata() ? "In corso" : "Non iniziata";
-            model.addRow(new Object[]{controller.getCampagnaAttiva().getNome(),
-                    controller.getCampagnaAttiva().getMaxGiocatori(), stato});
+        for(Campagna campagna : controller.getListaCampagne().keySet()){
+            if(controller.getListaCampagne().get(campagna).equals(controller.getUtenteAttivo())){
+                String stato = campagna.isIniziata() ? "In corso" : "Non iniziata";
+                model.addRow(new Object[]{campagna.getNome(),
+                        campagna.getMaxGiocatori(), stato});
+                break;
+            }
         }
 
     }
