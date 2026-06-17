@@ -22,5 +22,11 @@ public class ImplementazionePostgresMaster implements MasterDAO {
     @Override
     public void rimuoviPersonaggio(Personaggio pg) {
     }
+
+    @Override
+    public void assegnaPuntiStatistica(Personaggio personaggio, int quantitaPunti) {
+
+    }
+
     //vuota per ora
 }

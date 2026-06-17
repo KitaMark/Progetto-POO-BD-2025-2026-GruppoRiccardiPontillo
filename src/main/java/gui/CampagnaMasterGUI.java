@@ -44,6 +44,8 @@ public class CampagnaMasterGUI {
     private JPanel PNG;
     private JPanel impostazioniCampagna;
     private JButton statoCampagnaButton;
+    private JScrollPane pgScrollPane;
+    private JScrollPane pngScrollPane;
 
     /**
      * Il Controller di riferimento per orchestrare tutte le logiche di modifica e gestione della campagna.
@@ -71,8 +73,10 @@ public class CampagnaMasterGUI {
         frame.setVisible(true);
 
         this.nomeCampagna.setText("Campagna: " + controller.getCampagnaAttiva().getNome());
-        String stato = controller.getCampagnaAttiva().isIniziata() ? "In corso" : "Non iniziata";
+        String stato = controller.getCampagnaAttiva().isIniziata() ? "Stato: In corso" : "Stato: Non iniziata";
         this.statoCampagna.setText(stato);
+        String testoStato = controller.getCampagnaAttiva().isIniziata()? "Concludi" : "Inizia campagna";
+        statoCampagnaButton.setText(testoStato);
 
         inizializzaTabellaPG();
         inizializzaTabellaPnG();
@@ -83,6 +87,7 @@ public class CampagnaMasterGUI {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose(); // Chiude la gestione della campagna
                 frameChiamante.setVisible(true);
+                //TODO: modificare mastergui ed eliminare lo stato della campagna dalla tabella.
             }
         });
 
@@ -126,7 +131,7 @@ public class CampagnaMasterGUI {
                 String nomePg = pgTable.getValueAt(riga, 0).toString();
 
                 try {
-                    JFrame modificaFrame = new JFrame("Modifica Statistica - " + nomePg);
+                    JFrame modificaFrame = new JFrame("Modifica Statistiche - " + nomePg);
                     ModificaStatisticheGUI modificaGUI = new ModificaStatisticheGUI(controller, nomePg, modificaFrame);
 
                     modificaFrame.setContentPane(modificaGUI.getMainPanel());
@@ -152,12 +157,13 @@ public class CampagnaMasterGUI {
                     return;
                 }
                 String nomePg = pgTable.getValueAt(riga, 0).toString();
+                String nomeProprietario = pgTable.getValueAt(riga, 1).toString(); //identifica il pg tramite il suo giocatore
                 String input = JOptionPane.showInputDialog(frame, "Quanti punti vuoi assegnare a " + nomePg + "?");
 
                 if (input != null && !input.trim().isEmpty()) {
                     try {
                         int punti = Integer.parseInt(input);
-                        controller.assegnaPuntiStatistica(nomePg, punti);
+                        controller.assegnaPuntiStatistica(nomePg, nomeProprietario, punti);
                         JOptionPane.showMessageDialog(frame, "Punti assegnati con successo!");
                     } catch (NumberFormatException ex) {
                         JOptionPane.showMessageDialog(frame, "Inserisci un numero valido.", "Errore", JOptionPane.ERROR_MESSAGE);

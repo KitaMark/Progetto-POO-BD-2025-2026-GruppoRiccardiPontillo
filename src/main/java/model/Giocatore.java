@@ -34,16 +34,11 @@ public class Giocatore extends Utente {
 
     /**
      * Recupera il personaggio associato a una specifica campagna.
-     * @param nomeCampagna Il nome della campagna da cercare.
+     * @param campagna la campagna in cui cercare.
      * @return Il Personaggio associato, oppure null se non trovato.
      */
-    public Personaggio getPersonaggioInCampagna(String nomeCampagna) {
-        for (Map.Entry<Campagna, Personaggio> entry : listaPartecipazioni.entrySet()) {
-            if (entry.getKey().getNome().equalsIgnoreCase(nomeCampagna)) {
-                return entry.getValue();
-            }
-        }
-        return null;
+    public Personaggio getPersonaggioInCampagna(Campagna campagna) {
+        return listaPartecipazioni.get(campagna);
     }
 
     /**

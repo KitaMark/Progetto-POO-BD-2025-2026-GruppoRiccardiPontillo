@@ -211,29 +211,21 @@ public class Controller {
                 || Objects.equals(nomeProprietario, "Sconosciuto")) throw new DatiMancantiException("ATTENZIONE: personaggio non associato a nessun giocatore.");
 
         Personaggio daRimuovere = cercaPg(nomePersonaggio, nomeProprietario);
-        if(daRimuovere == null) throw new PersonaggioNonTrovatoException("Personaggio non trovato.");
 
         masterDAO.rimuoviPersonaggio(daRimuovere);
         campagnaAttiva.getListaPG().remove(daRimuovere);
     }
 
-    private Personaggio cercaPg(String nomePersonaggio, String nomeProprietario) {
-        Giocatore proprietario = null;
-        for(Giocatore giocatore : campagnaAttiva.getPartecipanti()){
-            if(Objects.equals(giocatore.getUsername(), nomeProprietario)){
-                proprietario = giocatore;
+    private Personaggio cercaPg(String nomePersonaggio, String nomeProprietario) throws PersonaggioNonTrovatoException {
+        Personaggio personaggio = null;
+        for (Giocatore giocatore : campagnaAttiva.getPartecipanti()) {
+            if (giocatore.getUsername().equals(nomeProprietario)) {
+                personaggio = giocatore.getPersonaggioInCampagna(campagnaAttiva);
                 break;
             }
         }
-        if(proprietario == null) return null;
-
-        for(Personaggio pg : campagnaAttiva.getListaPG()){
-            if(Objects.equals(pg.getNome(), nomePersonaggio)
-               && pg.equals(proprietario.getListaPartecipazioni().get(campagnaAttiva))){
-                return pg;
-            }
-        }
-        return null;
+        if (personaggio == null) throw new PersonaggioNonTrovatoException("personaggio non esistente.");
+        return personaggio;
     }
 
     /**
@@ -250,13 +242,15 @@ public class Controller {
     /**
      * Assegna punti statistica spendibili a un Personaggio Giocante.
      *
-     * @param nomePersonaggio Il nome del personaggio destinatario.
+     * @param nomeProprietario Il nome del giocatore che identifica il personaggio.
      * @param quantitaPunti   La quantità di punti da assegnare.
-     * @throws Exception Se si verifica un errore.
+     * @throws RuntimeException Se si verifica un errore.
      */
-    public void assegnaPuntiStatistica(String nomePersonaggio, int quantitaPunti) throws Exception {
-        // In futuro: aggiorneremo il saldo dei punti spendibili del PG nel DB
-        System.out.println("Assegnati " + quantitaPunti + " punti a " + nomePersonaggio + " (Simulazione)"); //per ora
+    public void assegnaPuntiStatistica(String nomePersonaggio, String nomeProprietario, int quantitaPunti) throws PersonaggioNonTrovatoException, RuntimeException {
+        if(quantitaPunti < 0) throw new RuntimeException("Non è possibile assegnare valori negativi.");
+        Personaggio personaggio = cercaPg(nomePersonaggio, nomeProprietario);
+        personaggio.addPuntiStatistica(quantitaPunti);
+        masterDAO.assegnaPuntiStatistica(personaggio, quantitaPunti);
     }
 
 
@@ -285,7 +279,9 @@ public class Controller {
         if (nomePnG == null || nomePnG.trim().isEmpty()) {
             throw new PngNonSelezionatoException("Seleziona un PnG da rimuovere.");
         }
-        System.out.println("PnG rimosso: " + nomePnG + " (Simulazione)"); //per ora
+        //TODO: implementare
+        //da fare utilizzando l'id del personaggio per evitare di eliminare eventuali png con lo stesso nome.
+        //modificare model tabellaPnG nella GUI per avere una colonna invisibile "ID". Ridefinire metodi correlati per leggerlo da db.
     }
 
 

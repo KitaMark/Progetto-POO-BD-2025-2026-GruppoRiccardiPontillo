@@ -340,6 +340,14 @@ public class Personaggio {
         }
     }
 
+    /**Incrementa i punti statistica del personaggio
+     *
+     * @param quantita i punti da assegnare
+     */
+    public void addPuntiStatistica(int quantita){
+        puntiStatistica += quantita;
+    }
+
     /**
      * Ripristina gli HP del personaggio senza superare il valore massimo delle statistiche finali.
      *
