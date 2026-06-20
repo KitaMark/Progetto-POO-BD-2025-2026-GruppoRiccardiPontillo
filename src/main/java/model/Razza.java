@@ -5,6 +5,7 @@ package model;
  * Determina i modificatori attitudinali innati applicati permanentemente alle statistiche base.
  */
 public class Razza {
+    private int id; // Identificativo nel DB
     private String nome;
     private Statistica modificatori;
 
@@ -39,6 +40,20 @@ public class Razza {
         this.nome = nome;
         this.modificatori = new Statistica(statistica);
     }
+
+    /** Costruttore di appoggio per il DAO */
+    public Razza(String nome) {
+        this.nome = nome;
+    }
+
+    /** Costruttore di appoggio per il DAO */
+    public Razza(int id,String nome) {
+        this.id= id;
+        this.nome = nome;
+    }
+
+    /** @return l'id della razza. */
+    public int getId() { return id; }
 
     /** @return i modificatori statistici innati associati alla razza. */
     public Statistica getModificatori(){

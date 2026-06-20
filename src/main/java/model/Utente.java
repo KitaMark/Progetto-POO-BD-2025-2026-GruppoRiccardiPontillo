@@ -9,6 +9,7 @@ import java.util.Objects;
  * @see Master
  */
 public abstract class Utente {
+    private int id; //identificativo univoco del db
     private String email;
     private String username;
     private String password;
@@ -24,6 +25,28 @@ public abstract class Utente {
         this.email = email;
         this.username = username;
         this.password = password;
+    }
+
+
+    /**
+     * Costruttore creato appositamente per il dao
+     *
+     * @param id identificativo univoco dell'utente nel database
+     * @param email    l'indirizzo email dell'utente.
+     * @param username lo username dell'utente.
+     * @param password la password di accesso.
+     */
+    public Utente(int id, String email, String username, String password){
+        this.id=id;
+        this.email = email;
+        this.username = username;
+        this.password = password;
+    }
+
+
+    /** @return l'identificativo dell'utente */
+    public int getId(){
+        return this.id;
     }
 
     /** @return lo username dell'utente. */

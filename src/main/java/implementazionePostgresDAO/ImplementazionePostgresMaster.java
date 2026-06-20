@@ -23,13 +23,15 @@ public class ImplementazionePostgresMaster implements MasterDAO {
     public void rimuoviPersonaggio(Personaggio pg) {
         String query = "DELETE FROM PERSONAGGIO WHERE CodPersonaggio = ?";
 
-        try (Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try{
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement stmt = conn.prepareStatement(query);
 
             stmt.setInt(1, pg.getId());
             stmt.executeUpdate();
 
         } catch (SQLException e) {
+            e.printStackTrace();
             throw new RuntimeException("Errore durante l'eliminazione del personaggio: " + e.getMessage());
         }
     }
@@ -38,14 +40,16 @@ public class ImplementazionePostgresMaster implements MasterDAO {
     public void assegnaPuntiStatistica(Personaggio personaggio, int quantitaPunti) {
         String query = "UPDATE STATISTICA SET PuntiSpendere = PuntiSpendere + ? WHERE CodPersonaggio = ?";
 
-        try (Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try {
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement stmt = conn.prepareStatement(query);
 
             stmt.setInt(1, quantitaPunti);
             stmt.setInt(2, personaggio.getId());
             stmt.executeUpdate();
 
         } catch (SQLException e) {
+            e.printStackTrace();
             throw new RuntimeException("Errore durante l'aggiornamento dei punti: " + e.getMessage());
         }
     }

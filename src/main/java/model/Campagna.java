@@ -8,6 +8,7 @@ import java.util.ArrayList;
  * e le liste dei personaggi giocanti (PG) e non giocanti (PnG).
  */
 public class Campagna {
+    private int id; //identificativo della campagna nel db
     private String nome;
     private int maxGiocatori;
     private boolean isIniziata;
@@ -32,6 +33,29 @@ public class Campagna {
         this.listaPG = new ArrayList<>();
         this.listaPnG = new ArrayList<>();
     }
+
+    /**
+     * Crea una nuova campagna di gioco in stato non iniziata.
+     *
+     * @param id l'identificativo univoco della campagna nel db
+     * @param nome         il nome della campagna.
+     * @param maxGiocatori il numero massimo di giocatori ammessi.
+     * @param master       il Master che gestisce la campagna.
+     */
+
+    public Campagna(int id, String nome, int maxGiocatori, boolean isIniziata, Master master) {
+        this.id = id;
+        this.nome = nome;
+        this.maxGiocatori = maxGiocatori;
+        this.isIniziata = isIniziata;
+        this.master = master;
+        this.partecipanti = new ArrayList<>();
+        this.listaPG = new ArrayList<>();
+        this.listaPnG = new ArrayList<>();
+    }
+
+    /** @return l'identificativo della campagna nel database. */
+    public int getId() { return id; }
 
     /** @return il nome della campagna. */
     public String getNome() { return nome; }

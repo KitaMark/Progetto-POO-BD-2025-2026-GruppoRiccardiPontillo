@@ -6,6 +6,7 @@ import exception.NomeCampagnaInUsoException;
 import model.Campagna;
 import model.Giocatore;
 import model.Master;
+import model.Abilita;
 import database.ConnessioneDatabase;
 import exception.DatiMancantiException;
 import model.Personaggio;
@@ -267,4 +268,6 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
             throw new DatiMancantiException("Errore critico durante il caricamento dei giocatori: " + e.getMessage());
         }
     }
+
+
 }

@@ -7,6 +7,7 @@ import java.util.ArrayList;
  * Definisce l'equipaggiamento iniziale e l'insieme di abilità sbloccabili.
  */
 public class Classe {
+    private int id; // Identificativo nel DB
     private String nome;
     private ArrayList<Abilita> abilitaSbloccabili;
     private ArrayList<Oggetto> equipaggiamentoIniziale;
@@ -21,6 +22,20 @@ public class Classe {
         this.abilitaSbloccabili = new ArrayList<>();
         this.equipaggiamentoIniziale = new ArrayList<>();
     }
+
+    /**
+     *  Costruttore di appoggio per il DAO
+     */
+    public Classe(int id, String nome) {
+        this.id = id;
+        this.nome = nome;
+        this.abilitaSbloccabili = new ArrayList<>();
+        this.equipaggiamentoIniziale = new ArrayList<>();
+    }
+
+    /** @return l'id della classe. */
+    public int getId() { return id; }
+
 
     /** @return il nome della classe. */
     public String getNome() { return nome; }

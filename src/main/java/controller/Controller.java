@@ -26,6 +26,9 @@ public class Controller {
     private MasterDAO masterDAO;
     private CampagnaDAO campagnaDAO;
     private Campagna campagnaAttiva; //la campagna con cui si sta interagendo.
+    private GiocatoreDao giocatoreDAO;
+    private InventarioDao inventarioDAO;
+    private AbilitaDao abilitaDao;
 
     public Controller() {
         utenteAttivo = null;
@@ -36,6 +39,9 @@ public class Controller {
         masterDAO = new ImplementazionePostgresMaster();
         campagnaDAO = new ImplementazionePostgresCampagna();
         campagnaDAO.leggiCampagne(listaCampagne);
+        giocatoreDAO = new ImplementazionePostgresGiocatore();
+        this.inventarioDAO = new ImplementazionePostgresInventario();
+        this.abilitaDao= new ImplementazionePostgresAbilita();
         //eventualmente da inserire altro in seguito
     }
 
@@ -56,6 +62,16 @@ public class Controller {
         if (utenteTrovato == null) throw new DatiMancantiException("Credenziali non valide.");
         if(isMaster && utenteTrovato instanceof Giocatore) throw new AutenticazioneException("L'account è registrato come Giocatore!");
         if(!isMaster && utenteTrovato instanceof Master) throw new AutenticazioneException("L'account è registrato come Master!");
+
+        if (utenteTrovato instanceof Giocatore) {
+            Giocatore giocatore = (Giocatore) utenteTrovato;
+            System.out.println("DEBUG: L'ID del giocatore " + giocatore.getUsername() + " è: " + giocatore.getId());
+            giocatore.setListaPartecipazioni(giocatoreDAO.caricaTutteLePartecipazioni(giocatore.getId()));
+        } else if (utenteTrovato instanceof Master) {
+            Master m = (Master) utenteTrovato;
+            // Carichiamo la campagna gestita dal Master
+        }
+
         this.utenteAttivo = utenteTrovato;
         return this.utenteAttivo;
     }
@@ -157,11 +173,45 @@ public class Controller {
             throw new DatiMancantiException("Nome della campagna non valido.");
         }
         this.campagnaAttiva = cercaCampagna(nomeCampagna);
-        if(campagnaAttiva == null) throw new RuntimeException("Campagna non esistente.");
+        if (campagnaAttiva == null) throw new RuntimeException("Campagna non esistente.");
         campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPG(), true, campagnaAttiva.getNome());
         campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPnG(), false, campagnaAttiva.getNome());
         campagnaDAO.leggiGiocatori(campagnaAttiva.getPartecipanti(), campagnaAttiva.getNome());
 
+        if (utenteAttivo instanceof Giocatore) {
+            try {
+                Giocatore giocatore = (Giocatore) utenteAttivo;
+                Personaggio pg = null;
+
+                // Ricerca sicura del personaggio
+                if (giocatore.getListaPartecipazioni() != null) {
+                    for (Campagna c : giocatore.getListaPartecipazioni().keySet()) {
+                        if (c.getNome().equalsIgnoreCase(campagnaAttiva.getNome())) {
+                            pg = giocatore.getListaPartecipazioni().get(c);
+                            break;
+                        }
+                    }
+                }
+
+                if (pg != null) {
+                    // Sicurezza extra: prima di eseguire, controlliamo che le mappe non siano misteriosamente nulle
+                    if (pg.getInventarioConsumabili() == null || pg.getInventarioEquipaggiabili() == null) {
+                        System.err.println("ATTENZIONE: Le HashMap in Personaggio sono rimaste a null!");
+                    } else {
+                        aggiornaZainoInMemoria(pg);
+                        abilitaDao.caricaAbilitaSbloccabili(pg.getClasse());
+                        abilitaDao.caricaAbilitaApprese(pg);
+                    }
+                }
+            } catch (Exception e) {
+                // Se qualcosa esplode, non blocchiamo la GUI, ma lo stampiamo in rosso per capire chi è il colpevole
+                System.err.println("==================================================");
+                System.err.println("ERRORE DURANTE IL CARICAMENTO DELLO ZAINO DA DB:");
+                e.printStackTrace();
+                System.err.println("==================================================");
+            }
+
+        }
     }
 
     /**
@@ -187,10 +237,18 @@ public class Controller {
             throw new NomeMancanteCampagnaException("Nome della campagna non valido.");
         }
 
-        //tramite dao controlliamo se campagna esiste controlla se essa e iniziata e ci sono posti sufficienti
-        //salva nel DB l'iscrizione
+        // Cerchiamo l'oggetto campagna per recuperare la campagna a cui si desidera iscriversi
+        Campagna campagnaIscrizione = cercaCampagna(nomeCampagna);
+        if (campagnaIscrizione == null) {
+            throw new NomeMancanteCampagnaException("La campagna inserita non esiste.");
+        }
 
-        System.out.println("Iscrizione effettuata alla campagna: " + nomeCampagna + " (Simulazione)");
+        try {
+            giocatoreDAO.iscrivitiACampagna(utenteAttivo.getId(), campagnaIscrizione.getId());
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Impossibile completare l'iscrizione: " + e.getMessage());
+        }
+
     }
 
 
@@ -323,8 +381,32 @@ public class Controller {
         if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
             throw new OggettoNonSelezionatoException("Inserisci un oggetto valido.");
         }
-        // Dao controlla se PG esiste e ha abbastanza oro
-        System.out.println("Oggetto '" + nomeOggetto + "' acquistato! (Simulazione)");//per ora
+
+        Giocatore giocatore = (Giocatore) utenteAttivo;
+        Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
+
+        List<Oggetto> catalogo = inventarioDAO.caricaCatalogoNegozio();
+        Oggetto oggettoScelto = null;
+
+        for (Oggetto oggetto : catalogo) {
+            if (oggetto.getNome().equalsIgnoreCase(nomeOggetto)) {
+                oggettoScelto = oggetto;
+                break;
+            }
+        }
+
+        if (oggettoScelto == null) throw new OggettoNonSelezionatoException("Oggetto non trovato in negozio.");
+        if (pg.getOro() < oggettoScelto.getCosto()) throw new OggettoNonSelezionatoException("Oro insufficiente.");
+
+        inventarioDAO.acquistaOggetto(pg.getId(), oggettoScelto.getId(), oggettoScelto.getCosto());
+        pg.setOro(pg.getOro() - oggettoScelto.getCosto());
+
+        // Usiamo i tuoi metodi nativi al posto dei vecchi cicli for!
+        if (oggettoScelto instanceof OggettoConsumabile) {
+            pg.addConsumabile((OggettoConsumabile) oggettoScelto, 1);
+        } else if (oggettoScelto instanceof OggettoEquipaggiabile) {
+            pg.addEquipaggiabile((OggettoEquipaggiabile) oggettoScelto);
+        }
     }
 
     /**
@@ -340,11 +422,23 @@ public class Controller {
         if (nome == null || nome.isEmpty()) {
             throw new NomePgNonValidoException("Nome non valido.");
         }
+        Campagna campagnaIscrizione = cercaCampagna(nomeCampagna);
 
-        // 1. Il DAO recupera l'oggetto 'Razza' e l'oggetto 'Classe' dal database basandosi sui nomi in stringa.
-        // controller fa new personaggio e passa al dao
+        Classe classeScelta = new Classe(classe); // Usa il costruttore public Classe(String nome)
+        Razza razzaScelta = new Razza(razza);   // Usa il costruttore public Razza(String nome)
 
-        System.out.println("Creato nuovo PG: " + nome + " | Razza: " + razza + " | Classe: " + classe + " (Simulazione)");//per ora
+        Personaggio nuovoPg = new Personaggio(classeScelta, razzaScelta, nome);
+
+        try {
+            giocatoreDAO.salvaPersonaggio(nuovoPg, utenteAttivo.getId(), campagnaIscrizione.getId());
+
+            Giocatore giocatore = (Giocatore) utenteAttivo;
+            giocatore.addPartecipazioneDati(campagnaIscrizione, nuovoPg);
+            campagnaIscrizione.getListaPG().add(nuovoPg);
+
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Errore durante la creazione del personaggio: " + e.getMessage());
+        }
     }
 
     /**
@@ -426,11 +520,29 @@ public class Controller {
         if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
             throw new OggettoNonSelezionatoException("Seleziona un oggetto da equipaggiare.");
         }
-        // Dao fa:
-        // boolean successo = pg.equipaggia((OggettoEquipaggiabile) oggetto);
-        // se successo == false, lanceremo un'eccezione "Statistica insufficienti!"
 
-        System.out.println("Equipaggiato l'oggetto: " + nomeOggetto + " (Simulazione)");//per ora
+        Giocatore giocatore = (Giocatore) utenteAttivo;
+        Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
+
+        // Cerca l'oggetto esclusivamente all'interno della mappa dedicata ai soli pezzi equipaggiabili
+        OggettoEquipaggiabile target = null;
+        for (OggettoEquipaggiabile e : pg.getInventarioEquipaggiabili().keySet()) {
+            if (e.getNome().equalsIgnoreCase(nomeOggetto)) {
+                target = e; // Equipaggiamento trovato nello zaino
+                break;
+            }
+        }
+
+        // Se l'oggetto richiesto non si trova nello zaino del personaggio, interrompe l'azione
+        if (target == null) throw new OggettoNonSelezionatoException("Non possiedi questo equipaggiamento.");
+
+        try {
+            inventarioDAO.impostaEquipaggiamento(pg.getId(), target.getId(), true);
+            pg.impostaStatoEquipaggiabile(target, true);
+
+        } catch (RuntimeException e) {
+            throw new OggettoNonSelezionatoException("Requisiti insufficienti: " + e.getMessage());
+        }
     }
 
     /**
@@ -446,9 +558,23 @@ public class Controller {
         if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
             throw new OggettoNonSelezionatoException("Seleziona un oggetto da rimuovere.");
         }
-        // In futuro: pg.rimuoviEquipaggiamento((OggettoEquipaggiabile) oggetto);
 
-        System.out.println("Rimosso l'equipaggiamento: " + nomeOggetto + " (Simulazione)");//per ora
+        Giocatore giocatore = (Giocatore) utenteAttivo;
+        Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
+
+        OggettoEquipaggiabile target = null;
+        for (OggettoEquipaggiabile e : pg.getInventarioEquipaggiabili().keySet()) {
+            if (e.getNome().equalsIgnoreCase(nomeOggetto)) {
+                target = e;
+                break;
+            }
+        }
+
+        if (target != null && pg.getInventarioEquipaggiabili().get(target)) {
+            inventarioDAO.impostaEquipaggiamento(pg.getId(), target.getId(), false);
+            // Sfruttiamo il metodo che avevi già creato tu per rimuoverlo!
+            pg.rimuoviEquipaggiamento(target);
+        }
     }
 
     /**
@@ -460,12 +586,32 @@ public class Controller {
      */
     public void usaConsumabile(String nomeOggetto, String nomeCampagna) throws OggettoNonSelezionatoException {
         if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
-            throw new OggettoNonSelezionatoException("Seleziona un consumabile da usare.");
+            throw new OggettoNonSelezionatoException("Seleziona una pozione da usare.");
         }
-        // In futuro: pg.usaConsumabile((OggettoConsumabile) oggetto);
-        // Questo ripristinerà HP o Mana
 
-        System.out.println("Hai utilizzato: " + nomeOggetto + " (Simulazione)");//per ora
+        Giocatore giocatore = (Giocatore) utenteAttivo;
+        Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
+
+        OggettoConsumabile target = null;
+        for (OggettoConsumabile c : pg.getInventarioConsumabili().keySet()) {
+            if (c.getNome().equalsIgnoreCase(nomeOggetto)) {
+                target = c;
+                break;
+            }
+        }
+
+        if (target == null) {
+            throw new OggettoNonSelezionatoException("Non possiedi questo consumabile nel tuo inventario.");
+        }
+
+        inventarioDAO.consumaOggetto(pg.getId(), target.getId());
+
+        pg.ripristinaHP(target.getRipristinoHP());
+        pg.ripristinaMana(target.getRipristinoMana());
+
+        giocatoreDAO.aggiornaRisorse(pg);
+
+        pg.rimuoviConsumabile(target, 1);
     }
 
     /**
@@ -479,9 +625,48 @@ public class Controller {
         if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
             throw new Exception("Seleziona un oggetto da vendere.");
         }
-        // In futuro: pg.vendiOggetto(oggetto);
 
-        System.out.println("Venduto al mercante: " + nomeOggetto + " (Simulazione)");//per ora
+        Giocatore giocatore = (Giocatore) utenteAttivo;
+        Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
+
+        OggettoConsumabile targetConsumabile = null;
+        OggettoEquipaggiabile targetEquipaggiabile = null;
+
+        for (OggettoConsumabile c : pg.getInventarioConsumabili().keySet()) {
+            if (c.getNome().equalsIgnoreCase(nomeOggetto)) {
+                targetConsumabile = c;
+                break;
+            }
+        }
+
+        if (targetConsumabile == null) {
+            for (OggettoEquipaggiabile e : pg.getInventarioEquipaggiabili().keySet()) {
+                if (e.getNome().equalsIgnoreCase(nomeOggetto)) {
+                    if (pg.getInventarioEquipaggiabili().get(e)) {
+                        throw new Exception("Non puoi vendere un oggetto attualmente equipaggiato!");
+                    }
+                    targetEquipaggiabile = e;
+                    break;
+                }
+            }
+        }
+
+        if (targetConsumabile == null && targetEquipaggiabile == null) {
+            throw new Exception("Non possiedi questo oggetto.");
+        }
+
+        Oggetto target = (targetConsumabile != null) ? targetConsumabile : targetEquipaggiabile;
+        int ricavo = target.getCosto() / 2;
+
+        inventarioDAO.vendiOggetto(pg.getId(), target.getId(), ricavo);
+        pg.setOro(pg.getOro() + ricavo);
+
+        // Usiamo i tuoi metodi nativi per ripulire lo zaino
+        if (targetConsumabile != null) {
+            pg.rimuoviConsumabile(targetConsumabile, 1);
+        } else {
+            pg.rimuoviEquipaggiabile(targetEquipaggiabile);
+        }
     }
 
     /**
@@ -490,8 +675,33 @@ public class Controller {
      * @param nomeAbilita  L'abilità da far apprendere.
      * @param nomeCampagna La campagna in cui avviene l'azione.
      */
-    public void imparaAbilita(String nomeAbilita, String nomeCampagna) {
-        System.out.println("Appresa abilità: " + nomeAbilita);
+    public void imparaAbilita(String nomeAbilita, String nomeCampagna) throws AbilitaNonSelezionataException,AbilitaGiaAppresaException,AbilitaNonSbloccabileException{
+        if (nomeAbilita == null || nomeAbilita.trim().isEmpty()) {
+            throw new AbilitaNonSelezionataException("Seleziona un'abilità valida dalla tabella.");
+        }
+
+        Giocatore giocatore = (Giocatore) utenteAttivo;
+        Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
+
+        Abilita target = null;
+        for (Abilita abilita : pg.getClasse().getAbilitaSbloccabili()) {
+            if (abilita.getNome().equalsIgnoreCase(nomeAbilita)) {
+                target = abilita;
+                break;
+            }
+        }
+
+        if (target == null) {
+            throw new AbilitaNonSbloccabileException("Questa abilità non è prevista per la tua classe.");
+        }
+        if (pg.getListaAbilita().contains(target)) {
+            throw new AbilitaGiaAppresaException("Hai già appreso questa abilità in precedenza!");
+        }
+
+        abilitaDao.imparaAbilita(pg.getId(), target.getNome());
+
+        // Aggiunge l'abilità in memoria
+        pg.addAbilita(target);
     }
 
     public Utente cercaUtente(String username, String email, String password){
@@ -509,9 +719,27 @@ public class Controller {
     public Map<Campagna, Master> getListaCampagne() {
         return Collections.unmodifiableMap(listaCampagne);
     }
+    public List<Oggetto> getCatalogoNegozio() { return inventarioDAO.caricaCatalogoNegozio(); }
 
     public void leggiListaCampagne() {
         campagnaDAO.leggiCampagne(listaCampagne);
+    }
+
+    private void aggiornaZainoInMemoria(Personaggio pg) {
+        pg.svuotaInventari();
+
+        java.util.Map<Oggetto, Integer> zainoDalDB = inventarioDAO.caricaInventarioPersonaggio(pg.getId());
+
+        for (java.util.Map.Entry<Oggetto, Integer> entry : zainoDalDB.entrySet()) {
+            Oggetto oggetto = entry.getKey();
+            int quantita = entry.getValue();
+
+            if (oggetto instanceof OggettoConsumabile) {
+                pg.addConsumabile((OggettoConsumabile) oggetto, quantita);
+            } else if (oggetto instanceof OggettoEquipaggiabile) {
+                pg.impostaStatoEquipaggiabile((OggettoEquipaggiabile) oggetto, oggetto.isEquipaggiato());
+            }
+        }
     }
 
     public Campagna cercaCampagna(String nomeCampagna){

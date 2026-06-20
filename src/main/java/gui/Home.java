@@ -12,7 +12,7 @@ import java.awt.event.ActionListener;
  * <p>
  * Consente agli utenti di registrarsi al sistema specificando il proprio ruolo
  * ({@link Master} o {@link Giocatore}) e di effettuare il login.
- * Dopo ad una autenticazione con successo, la classe delega al {@link Controller}
+ * Dopo ad un' autenticazione con successo, la classe delega al {@link Controller}
  * il riconoscimento dell'utente e apre la Dashboard specifica per il ruolo ricoperto.
  * </p>
  *

@@ -22,6 +22,16 @@ public class OggettoEquipaggiabile extends Oggetto {
         this.bonus = new Statistica(bonus);
     }
 
+    /**
+     *costruttore per il dao
+     */
+    public OggettoEquipaggiabile(int id, String nome, int costo, String tipo,
+                                 Statistica requisiti, Statistica bonus) {
+        super(id, nome, costo, tipo);
+        this.requisiti = requisiti;
+        this.bonus = bonus;
+    }
+
     /** @return l'oggetto Statistica contenente i bonus applicati. */
     public Statistica getBonus() { return bonus; }
 

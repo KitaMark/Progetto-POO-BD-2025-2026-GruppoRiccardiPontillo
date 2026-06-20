@@ -21,6 +21,7 @@ public class Personaggio {
     private int oro;
     private boolean isPg;
 
+
     /** Mappa dei consumabili posseduti associati alla rispettiva quantità. */
     private HashMap<OggettoConsumabile, Integer> inventarioConsumabili;
 
@@ -281,6 +282,18 @@ public class Personaggio {
     /** @return una vista non modificabile dell'inventario degli oggetti equipaggiabili. */
     public Map<OggettoEquipaggiabile, Boolean> getInventarioEquipaggiabili() { return Collections.unmodifiableMap(inventarioEquipaggiabili); }
 
+    public void setOro(int oro) {
+        this.oro = oro;
+    }
+
+    public void setHpCorrenti(int hpCorrenti) {
+        this.hpCorrenti = hpCorrenti;
+    }
+
+    public void setManaCorrente(int manaCorrente) {
+        this.manaCorrente = manaCorrente;
+    }
+
     /**
      * Aggiunge un'abilità alla lista del personaggio se prevista tra quelle sbloccabili dalla classe.
      *
@@ -338,6 +351,23 @@ public class Personaggio {
         } else {
             inventarioConsumabili.put(oggetto, quantita);
         }
+    }
+
+    /**
+     * Svuota completamente l'inventario.
+     * Usato dal Controller esclusivamente per sincronizzare i dati dal database.
+     */
+    public void svuotaInventari() {
+        this.inventarioConsumabili.clear();
+        this.inventarioEquipaggiabili.clear();
+    }
+
+    /**
+     * Inserisce o aggiorna un equipaggiabile forzando lo stato letto dal DB,
+     * aggirando i normali controlli di equipaggiamento in-game.
+     */
+    public void impostaStatoEquipaggiabile(OggettoEquipaggiabile oggetto, boolean equipaggiato) {
+        this.inventarioEquipaggiabili.put(oggetto, equipaggiato);
     }
 
     /**Incrementa i punti statistica del personaggio
@@ -432,6 +462,8 @@ public class Personaggio {
                 statisticaFinali.getCostituzione(), statisticaFinali.getIntelligenza(), statisticaFinali.getCarisma(),
                 statisticaFinali.getFede(), statisticaFinali.getFortuna(), oro, puntiStatistica);
     }
+
+
 
     @Override
     public boolean equals(Object o) {

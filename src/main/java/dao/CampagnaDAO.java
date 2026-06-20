@@ -1,11 +1,8 @@
 package dao;
 
 import exception.NomeCampagnaInUsoException;
-import model.Campagna;
-import model.Giocatore;
-import model.Master;
+import model.*;
 import exception.DatiMancantiException;
-import model.Personaggio;
 
 import java.sql.SQLException;
 import java.util.HashMap;

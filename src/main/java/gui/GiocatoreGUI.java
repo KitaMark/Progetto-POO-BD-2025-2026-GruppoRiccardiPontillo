@@ -1,6 +1,7 @@
 package gui;
 
 import controller.Controller;
+import model.Campagna;
 import model.Giocatore;
 
 import javax.swing.*;
@@ -30,7 +31,7 @@ public class GiocatoreGUI {
     private JButton entraButton;
     private JButton iscrivitiButton;
     private JPanel bottoniPanel;
-    private JPanel mainPanel; // Aggiungi questo nome al pannello principale (lo sfondo di tutto) nel Designer!
+    private JPanel mainPanel;
 
     /** Il Controller di riferimento per delegare le operazioni di business. */
     private Controller controller;
@@ -46,16 +47,13 @@ public class GiocatoreGUI {
         JFrame frame = new JFrame("Dashboard Giocatore - " + controller.getUtenteAttivo().getUsername());
         frame.setContentPane(getMainPanel());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true); // Rende visibile la finestra
-
-
+        frame.setSize(800, 600); // Impostiamo una dimensione pulita e leggibile
+        frame.setLocationRelativeTo(null); // Centra la finestra nello schermo
+        frame.setVisible(true);
 
         benvenutoGiocatore.setText("Benvenuto, "+controller.getUtenteAttivo().getUsername()+"! [Giocatore]");
 
-        // tabella campagna (segue un po la stessa logica per il master)
         inizializzaTabella();
-
 
         LogoutButton.addActionListener(new ActionListener() {
             @Override
@@ -66,8 +64,8 @@ public class GiocatoreGUI {
 
                 if (conferma == JOptionPane.YES_OPTION) {
                     controller.logout();
-                    frame.dispose(); // Chiude la dashboard del giocatore
-                    Home.main(null); // Riapre la schermata di login
+                    frame.dispose();
+                    Home.main(null);
                 }
             }
         });
@@ -75,20 +73,15 @@ public class GiocatoreGUI {
         iscrivitiButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String nomeCampagna = JOptionPane.showInputDialog(frame,
-                        "Inserisci il nome della Campagna a cui vuoi unirti:");
+                String nomeCampagna = JOptionPane.showInputDialog(frame, "Inserisci il nome della Campagna a cui vuoi unirti:");
 
-                // Controlliamo che l'utente non abbia premuto 'Annulla' o inserito testo vuoto
                 if (nomeCampagna != null && !nomeCampagna.trim().isEmpty()) {
                     try {
                         controller.iscrivitiCampagna(nomeCampagna);
-                        JOptionPane.showMessageDialog(frame,
-                                "Ti sei iscritto con successo alla campagna!",
-                                "Successo", JOptionPane.INFORMATION_MESSAGE);
-                        // In futuro: aggiornare la tabella per far comparire la nuova iscrizione
+                        JOptionPane.showMessageDialog(frame, "Ti sei iscritto con successo alla campagna!", "Successo", JOptionPane.INFORMATION_MESSAGE);
+                        inizializzaTabella();
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(frame,
-                                ex.getMessage(), "Errore Iscrizione", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore Iscrizione", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -99,40 +92,41 @@ public class GiocatoreGUI {
             public void actionPerformed(ActionEvent e) {
                 int rigaSelezionata = tableCampagnaGiocatore.getSelectedRow();
 
-                // controllo per gestire caso in cui il giocatore dimentichi di selezionare la campagna in cui entrare
                 if (rigaSelezionata == -1) {
                     JOptionPane.showMessageDialog(frame, "Seleziona una campagna per entrarvi.", "Attenzione", JOptionPane.WARNING_MESSAGE);
-                    return; // Blocca tutto
+                    return;
                 }
 
                 String nomeCampagnaSelezionata = tableCampagnaGiocatore.getValueAt(rigaSelezionata, 0).toString();
 
                 try {
                     controller.visualizzaCampagna(nomeCampagnaSelezionata);
-                    frame.dispose(); // Chiude la dashboard in ogni caso
+                    Giocatore giocatore = (Giocatore) controller.getUtenteAttivo();
 
-
-                    // CONTROLLO PERSONAGGIO (Simulazione)
-                    // Imposta a 'false' per testare la form di creazione del PG.
-                    // Imposta a 'true' per testare la scheda del PG (CampagnaGiocatoreGUI).
+                    // CONTROLLO SICURO: Previene il bug di memoria e verifica se il PG esiste già
                     boolean haGiaIlPersonaggio = false;
+                    if (giocatore.getListaPartecipazioni() != null) {
+                        for (Campagna c : giocatore.getListaPartecipazioni().keySet()) {
+                            if (c.getNome().equalsIgnoreCase(nomeCampagnaSelezionata)) {
+                                haGiaIlPersonaggio = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    frame.dispose();
 
                     if (!haGiaIlPersonaggio) {
-                        // CASO 1: Il personaggio non esiste -> Apriamo CreaPgGUI
                         JFrame creaPgFrame = new JFrame("Creazione Personaggio - Campagna: " + nomeCampagnaSelezionata);
-                        CreaPgGUI creaPgGUI = new CreaPgGUI(controller, (Giocatore)controller.getUtenteAttivo(), nomeCampagnaSelezionata, creaPgFrame);
-
+                        CreaPgGUI creaPgGUI = new CreaPgGUI(controller, giocatore, nomeCampagnaSelezionata, creaPgFrame);
                         creaPgFrame.setContentPane(creaPgGUI.getMainPanel());
                         creaPgFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                         creaPgFrame.setSize(600, 450);
-                        creaPgFrame.setLocationRelativeTo(null); // Centra lo schermo
+                        creaPgFrame.setLocationRelativeTo(null);
                         creaPgFrame.setVisible(true);
-
                     } else {
-                        // CASO 2: Il personaggio esiste già -> Va alla scheda di gioco
                         JFrame campagnaFrame = new JFrame("Scheda Personaggio - Campagna: " + nomeCampagnaSelezionata);
-                        CampagnaGiocatoreGUI campagnaGUI = new CampagnaGiocatoreGUI(controller, (Giocatore)controller.getUtenteAttivo(), nomeCampagnaSelezionata, campagnaFrame);
-
+                        CampagnaGiocatoreGUI campagnaGUI = new CampagnaGiocatoreGUI(controller, giocatore, nomeCampagnaSelezionata, campagnaFrame);
                         campagnaFrame.setContentPane(campagnaGUI.getMainPanel());
                         campagnaFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                         campagnaFrame.setSize(900, 600);
@@ -141,20 +135,19 @@ public class GiocatoreGUI {
                     }
 
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(frame, "Errore nel caricamento: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
     }
-
     /**
      * Metodo  privato che definisce l'intestazione della JTable e ne inibisce
      * la modifica diretta delle celle tramite doppio clic.
      */
-       private void inizializzaTabella() {
+    private void inizializzaTabella() {
         String[] colonne = {"Nome Campagna", "Max Giocatori", "Stato"};
 
-        // Usiamo un DefaultTableModel per non far modificare il testo all'utente con il doppio clic tramite metodo di Swing
         DefaultTableModel model = new DefaultTableModel(null, colonne) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -166,8 +159,18 @@ public class GiocatoreGUI {
         tableCampagnaGiocatore.getTableHeader().setReorderingAllowed(false);
         tableCampagnaGiocatore.getTableHeader().setResizingAllowed(false);
 
+        Giocatore giocatore = (Giocatore) controller.getUtenteAttivo();
 
-        model.addRow(new Object[]{"La Miniera Perduta", 5, "In Corso"});//riga finta finche non implementato DAO
+        if (giocatore.getListaPartecipazioni() != null) {
+            for (Campagna campagna : giocatore.getListaPartecipazioni().keySet()) {
+                String stato = campagna.isIniziata() ? "In Corso" : "Non Iniziata";
+                model.addRow(new Object[]{
+                        campagna.getNome(),
+                        campagna.getMaxGiocatori(),
+                        stato
+                });
+            }
+        }
     }
 
     /**

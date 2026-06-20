@@ -21,6 +21,16 @@ public class Master extends Utente {
         this.campagna = null;
     }
 
+    /**
+     * Costruttore per il DAO (con ID)
+     */
+    public Master(int id, String email, String username, String password) {
+        super(id, email, username, password);
+        this.campagna = null;
+    }
+
+
+
     /** @return la campagna attualmente gestita dal Master, o {@code null} se assente. */
     public Campagna getCampagna() {
         return campagna;

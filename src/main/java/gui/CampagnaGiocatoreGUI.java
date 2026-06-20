@@ -1,7 +1,8 @@
 package gui;
 
 import controller.Controller;
-import model.Giocatore;
+import exception.AbilitaGiaAppresaException;
+import model.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -75,17 +76,11 @@ public class CampagnaGiocatoreGUI {
         tornaAllaSchermataPrecedenteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                frameAttuale.dispose();
-                JFrame giocatoreFrame = new JFrame("Dashboard Giocatore - " + giocatoreLoggato.getUsername());
-                GiocatoreGUI giocatoreGUI = new GiocatoreGUI(controller);
-                giocatoreFrame.setContentPane(giocatoreGUI.getMainPanel());
-                giocatoreFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                giocatoreFrame.setSize(800, 600);
-                giocatoreFrame.setLocationRelativeTo(null);
-                giocatoreFrame.setVisible(true);
+                frameAttuale.dispose(); // Chiude la scheda personaggio attuale
+
+                new GiocatoreGUI(controller);
             }
         });
-
         aumentaStatButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -119,6 +114,7 @@ public class CampagnaGiocatoreGUI {
                 try {
                     controller.compraOggetto(nomeOggetto);
                     JOptionPane.showMessageDialog(frameAttuale, "Hai acquistato: " + nomeOggetto);
+                    inizializzaTabelle(); // ricarica negozio e zaino
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
@@ -139,8 +135,13 @@ public class CampagnaGiocatoreGUI {
                 try {
                     controller.equipaggiaOggetto(nomeOggetto, nomeCampagnaAttuale);
                     JOptionPane.showMessageDialog(frameAttuale, "Hai equipaggiato: " + nomeOggetto);
+                    inizializzaTabelle();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                    String messaggioPulito = ex.getMessage().split("\n")[0]
+                            .replace("ERRORE: ", "")
+                            .replace("Requisiti insufficienti: ", "");
+
+                    JOptionPane.showMessageDialog(frameAttuale, messaggioPulito, "Requisiti Insufficienti", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -157,6 +158,7 @@ public class CampagnaGiocatoreGUI {
                 try {
                     controller.rimuoviEquipaggiamento(nomeOggetto, nomeCampagnaAttuale);
                     JOptionPane.showMessageDialog(frameAttuale, "Hai rimosso: " + nomeOggetto);
+                    inizializzaTabelle(); //  Cambia "Sì" in "No" nella tabella
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
@@ -175,6 +177,7 @@ public class CampagnaGiocatoreGUI {
                 try {
                     controller.vendiOggetto(nomeOggetto, nomeCampagnaAttuale);
                     JOptionPane.showMessageDialog(frameAttuale, "Hai venduto: " + nomeOggetto);
+                    inizializzaTabelle(); // Toglie l'oggetto dalla tabella e aumenta l'oro
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
@@ -194,6 +197,7 @@ public class CampagnaGiocatoreGUI {
                 try {
                     controller.usaConsumabile(nomeOggetto, nomeCampagnaAttuale);
                     JOptionPane.showMessageDialog(frameAttuale, "Hai utilizzato: " + nomeOggetto);
+                    inizializzaTabelle(); //Scala la quantità e aggiorna HP/Mana
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
@@ -212,6 +216,7 @@ public class CampagnaGiocatoreGUI {
                 try {
                     controller.vendiOggetto(nomeOggetto, nomeCampagnaAttuale);
                     JOptionPane.showMessageDialog(frameAttuale, "Hai venduto: " + nomeOggetto);
+                    inizializzaTabelle(); //  Scala la quantità e aumenta l'oro
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
@@ -230,9 +235,12 @@ public class CampagnaGiocatoreGUI {
                 String nomeAbilita = abilitaTable.getValueAt(riga, 0).toString();
                 try {
                     controller.imparaAbilita(nomeAbilita, nomeCampagnaAttuale);
+                    inizializzaTabelle();
                     JOptionPane.showMessageDialog(frameAttuale, "Hai appreso una nuova abilità: " + nomeAbilita);
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                    // Cattura TUTTE le tue eccezioni (GiaAppresa, NonSbloccabile, NonSelezionata)
+                    // e mostra il messaggio personalizzato che hai scritto nel Controller
+                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore Apprendimento", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -244,65 +252,106 @@ public class CampagnaGiocatoreGUI {
      * Consumabili, Abilità), rendendole non modificabili direttamente.
      */
     private void inizializzaTabelle() {
-        // Tabella Statistica
+        Personaggio pg = giocatoreLoggato.getPersonaggioInCampagna(controller.getCampagnaAttiva());
+        if (pg == null) return;
+
+        // Tabella Statistiche
         String[] colonneStat = {"Statistica", "Valore Attuale"};
         DefaultTableModel modelStat = new DefaultTableModel(null, colonneStat) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
         statisticheTable.setModel(modelStat);
         statisticheTable.getTableHeader().setReorderingAllowed(false);
         statisticheTable.getTableHeader().setResizingAllowed(false);
-        modelStat.addRow(new Object[]{"Forza", 15});
-        modelStat.addRow(new Object[]{"Destrezza", 12});
 
-        //  Tabella Negozio
-        String[] colonneInv = {"Oggetto in Vendita", "Tipo", "Costo (Oro)"};
-        DefaultTableModel modelInv = new DefaultTableModel(null, colonneInv) {
-            @Override
-            public boolean isCellEditable(int row, int column) { return false; }
-        };
-        inventarioTable.setModel(modelInv);
-        inventarioTable.getTableHeader().setReorderingAllowed(false);
-        inventarioTable.getTableHeader().setResizingAllowed(false);
-        modelInv.addRow(new Object[]{"Spada di Ferro", "Equipaggiamento", 50});
-        modelInv.addRow(new Object[]{"Pozione Media", "Consumabile", 15});
+        // Inseriamo i dati  del personaggio
+        modelStat.addRow(new Object[]{"Oro", pg.getOro()});
+        modelStat.addRow(new Object[]{"Punti Spendibili", pg.getPuntiStatistica()});
+        modelStat.addRow(new Object[]{"HP Correnti", pg.getHpCorrenti() + " / " + pg.getStatisticheBase().getHpMax()});
+        modelStat.addRow(new Object[]{"Mana Corrente", pg.getManaCorrente() + " / " + pg.getStatisticheBase().getManaMax()});
+        modelStat.addRow(new Object[]{"Forza", pg.getStatisticheBase().getForza()});
+        modelStat.addRow(new Object[]{"Destrezza", pg.getStatisticheBase().getDestrezza()});
 
-        //Tabella Equipaggiamento
+
+        // Tabella Equipaggiamento
         String[] colonneEquip = {"Nome Oggetto", "Bonus", "Equipaggiato"};
         DefaultTableModel modelEquip = new DefaultTableModel(null, colonneEquip) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
         equipaggiamentoTable.setModel(modelEquip);
         equipaggiamentoTable.getTableHeader().setReorderingAllowed(false);
         equipaggiamentoTable.getTableHeader().setResizingAllowed(false);
-        modelEquip.addRow(new Object[]{"Elmo di Cuoio", "+2 Costituzione", "Sì"});
-        modelEquip.addRow(new Object[]{"Spada Lunga", "+5 Forza", "No"});
 
-        // Tabella Consumabili Personali
+        for (OggettoEquipaggiabile oggettoEquipaggiabile : pg.getInventarioEquipaggiabili().keySet()) {
+            String stato = pg.getInventarioEquipaggiabili().get(oggettoEquipaggiabile) ? "Sì" : "No";
+            modelEquip.addRow(new Object[]{oggettoEquipaggiabile.getNome(), "+" + oggettoEquipaggiabile.getBonus().getForza() + " Forza", stato});
+        }
+
+
+        //Tabella Consumabili
         String[] colonneCons = {"Nome Oggetto", "Ripristina HP", "Ripristina Mana", "Quantità"};
         DefaultTableModel modelCons = new DefaultTableModel(null, colonneCons) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
         consumabiliTable.setModel(modelCons);
         consumabiliTable.getTableHeader().setReorderingAllowed(false);
         consumabiliTable.getTableHeader().setResizingAllowed(false);
-        modelCons.addRow(new Object[]{"Pozione di Cura", "20", "0", "3"});
-        modelCons.addRow(new Object[]{"Pozione del Mana", "0", "15", "1"});
 
-        //  Tabella Abilità
-        String[] colonneAbilita = {"Nome Abilità", "Descrizione"};
+        for (OggettoConsumabile oggettoConsumabile : pg.getInventarioConsumabili().keySet()) {
+            int quantita = pg.getInventarioConsumabili().get(oggettoConsumabile);
+
+            String hpText = oggettoConsumabile.getRipristinoHP() == 0 ? "-" : String.valueOf(oggettoConsumabile.getRipristinoHP());
+            String manaText = oggettoConsumabile.getRipristinoMana() == 0 ? "-" : String.valueOf(oggettoConsumabile.getRipristinoMana());
+
+            modelCons.addRow(new Object[]{oggettoConsumabile.getNome(), hpText, manaText, quantita});
+        }
+
+
+        //Tabella Negozio
+        String[] colonneInv = {"Oggetto in Vendita", "Tipo", "Costo (Oro)"};
+        DefaultTableModel modelInv = new DefaultTableModel(null, colonneInv) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        inventarioTable.setModel(modelInv);
+        inventarioTable.getTableHeader().setReorderingAllowed(false);
+        inventarioTable.getTableHeader().setResizingAllowed(false);
+
+
+        for (Oggetto o : controller.getCatalogoNegozio()) {
+            modelInv.addRow(new Object[]{o.getNome(), o.getTipo(), o.getCosto()});
+        }
+
+        // Tabella Abilità
+        String[] colonneAbilita = {"Nome Abilità", "Descrizione", "Appresa"};
         DefaultTableModel modelAbilita = new DefaultTableModel(null, colonneAbilita) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
         abilitaTable.setModel(modelAbilita);
         abilitaTable.getTableHeader().setReorderingAllowed(false);
         abilitaTable.getTableHeader().setResizingAllowed(false);
-        modelAbilita.addRow(new Object[]{"Attacco Pesante", "Infligge danni bonus basati sulla Forza"});
-        modelAbilita.addRow(new Object[]{"Palla di Fuoco", "Causa danni magici ad area"});
+
+        if (pg.getClasse().getAbilitaSbloccabili() != null) {
+            for (Abilita abilita : pg.getClasse().getAbilitaSbloccabili()) {
+                // Controlla se il personaggio ha già questa abilità nella sua lista
+                String appresa = pg.getListaAbilita().contains(abilita) ? "Sì" : "No";
+                modelAbilita.addRow(new Object[]{abilita.getNome(), abilita.getDescrizione(), appresa});
+            }
+        }
     }
 
     /**

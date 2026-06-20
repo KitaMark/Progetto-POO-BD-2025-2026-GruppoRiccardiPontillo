@@ -34,8 +34,10 @@ public class ImplementazionePostgresUtente implements UtenteDAO {
     public void aggiungiUtente(Utente utente) throws AutenticazioneException {
         String query = "INSERT INTO UTENTE (Username, Email, Password, Ruolo) VALUES (?, ?, ?, ?)";
 
-        try(Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement stmt = conn.prepareStatement(query);) {
+        try{
+
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement stmt = conn.prepareStatement(query);
 
 
             stmt.setString(1, utente.getUsername());
@@ -66,30 +68,34 @@ public class ImplementazionePostgresUtente implements UtenteDAO {
     public void leggiUtenti(List<Utente> utenti) {
         String query = "SELECT * FROM UTENTE";
 
-        try(Connection conn = ConnessioneDatabase.getInstance().connection;
+        try{
+
+            Connection conn = ConnessioneDatabase.getInstance().connection;
             PreparedStatement stmt = conn.prepareStatement(query);
-            ResultSet rs = stmt.executeQuery();) {
+            ResultSet rs = stmt.executeQuery();
 
+                while (rs.next()) {
+                    int idDb = rs.getInt("codutente");
+                    String usernameDb = rs.getString("username");
+                    // DEBUG: Stampa cosa legge dal DB
+                    System.out.println("DEBUG DAO: Ho letto dal DB ID=" + idDb + " per utente=" + usernameDb);
 
-            while (rs.next()) {
-                String usernameDb = rs.getString("Username");
-                String emailDb = rs.getString("Email");
-                String passwordDb = rs.getString("Password");
-                String ruoloDb = rs.getString("Ruolo");
+                    String emailDb = rs.getString("email");
+                    String passwordDb = rs.getString("password");
+                    String ruoloDb = rs.getString("ruolo");
 
-                Utente utenteRuolo;
-                if ("Master".equals(ruoloDb)) {
-                    utenteRuolo = new Master(emailDb, usernameDb, passwordDb);
-                } else {
-                    utenteRuolo = new Giocatore(emailDb, usernameDb, passwordDb);
+                    Utente utenteRuolo;
+                    if ("Master".equals(ruoloDb)) {
+                        utenteRuolo = new Master(idDb, emailDb, usernameDb, passwordDb);
+                    } else {
+                        utenteRuolo = new Giocatore(idDb, emailDb, usernameDb, passwordDb);
+                    }
+                    utenti.add(utenteRuolo);
                 }
-                utenti.add(utenteRuolo);
-            }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-            //non è un errore legato all'utente, ma legato al db(spento oppure la tabella legata all'utente cancellata
-            throw new RuntimeException("Errore critico durante il caricamento degli utenti dal database.");
+            } catch (SQLException e) {
+                e.printStackTrace();
+                throw new RuntimeException("Errore critico durante il caricamento degli utenti dal database.");
+            }
         }
     }
-}

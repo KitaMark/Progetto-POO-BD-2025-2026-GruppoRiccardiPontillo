@@ -22,6 +22,18 @@ public class OggettoConsumabile extends Oggetto {
         this.ripristinoMana = mana;
     }
 
+
+    /**
+     * Costruttore per il dao
+     */
+    public OggettoConsumabile(int id, String nome, int costo, String tipo,
+                              int ripristinoHp, int ripristinoMana) {
+
+        super(id, nome, costo, tipo);
+        this.ripristinoHP = ripristinoHp;
+        this.ripristinoMana = ripristinoMana;
+    }
+
     /** @return la quantità di punti mana ripristinati dall'oggetto. */
     public int getRipristinoMana() {
         return ripristinoMana;

@@ -23,6 +23,15 @@ public class Giocatore extends Utente {
         this.listaPartecipazioni = new HashMap<>();
     }
 
+    /**
+     * Costruttore per il DAO (con ID)
+     */
+    public Giocatore(int id, String email, String username, String password) {
+        super(id, email, username, password);
+        this.listaPartecipazioni = new HashMap<>();
+    }
+
+
     /** @return una vista non modificabile della mappa delle campagne a cui partecipa con i relativi personaggi. */
     public Map<Campagna, Personaggio> getListaPartecipazioni() {
         return Collections.unmodifiableMap(listaPartecipazioni);
