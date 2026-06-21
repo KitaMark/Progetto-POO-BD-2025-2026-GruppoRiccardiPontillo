@@ -14,8 +14,30 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+
+/**
+ * Implementazione specifica per PostgreSQL dell'interfaccia {@link GiocatoreDao}.
+ * <p>
+ * Questa classe incapsula tutte le operazioni di persistenza legate al profilo e alle attività
+ * di un utente con ruolo Giocatore. Gestisce l'iscrizione alle campagne, la creazione e il salvataggio
+ * dei personaggi, l'aggiornamento in tempo reale delle risorse (punti vita, mana ed oro).
+ * </p>
+ * * @author Riccardi Carmine
+ * @author Pontillo Salvatore
+ */
 public class ImplementazionePostgresGiocatore implements GiocatoreDao {
 
+    /**
+     * Registra nel database l'iscrizione di un utente a una specifica campagna.
+     * <p>
+     * Inserisce una nuova riga nella tabella ponte {@code ISCRIZIONE} associando il codice utente
+     * al codice della campagna selezionata.
+     * </p>
+     *
+     * @param codUtente   l'identificativo univoco dell'utente giocatore.
+     * @param codCampagna l'identificativo univoco della campagna a cui iscriversi.
+     * @throws RuntimeException se si verifica una violazione dei vincoli o un errore di connessione SQL.
+     */
     @Override
     public void iscrivitiACampagna(int codUtente, int codCampagna) {
         String query = "INSERT INTO ISCRIZIONE (CodUtente, CodCampagna) VALUES (?, ?)";
@@ -33,6 +55,21 @@ public class ImplementazionePostgresGiocatore implements GiocatoreDao {
         }
     }
 
+
+    /**
+     * Esegue il salvataggio  di un personaggio e delle sue statistiche base associate.
+     * <p>
+     * Sfrutta una query  per inserire prima il record nella tabella {@code PERSONAGGIO}
+     * ricavando gli ID di classe e razza tramite sotto-query,
+     * recuperare l'ID autogenerato tramite {@code RETURNING CodPersonaggio} e inserire immediatamente
+     * dopo i valori iniziali all'interno della tabella {@code STATISTICA}.
+     * </p>
+     *
+     * @param pg          l'oggetto {@link Personaggio} contenente i dati e i complessi statistici da salvare.
+     * @param codUtente   l'identificativo del proprietario del personaggio.
+     * @param codCampagna l'identificativo della campagna in cui il personaggio viene inserito.
+     * @throws RuntimeException se si verifica un fallimento nell'inserimento delle tabelle correlate.
+     */
     @Override
     public void salvaPersonaggio(Personaggio pg, int codUtente, int codCampagna) {
 
@@ -83,7 +120,16 @@ public class ImplementazionePostgresGiocatore implements GiocatoreDao {
     }
 
 
-
+    /**
+     * Sincronizza lo stato corrente dei punti vitali (HP), magici (Mana) e delle finanze (Oro) del personaggio.
+     * <p>
+     * Esegue due istruzioni di {@code UPDATE} separate all'interno dello stesso blocco operativo per aggiornare
+     * i dati modificati temporaneamente rispettivamente nelle tabelle {@code STATISTICA} e {@code PERSONAGGIO}.
+     * </p>
+     *
+     * @param pg l'oggetto {@link Personaggio} contenente le risorse aggiornate da salvare.
+     * @throws RuntimeException se si verifica un errore durante le fasi di aggiornamento sul database.
+     */
     @Override
     public void aggiornaRisorse(Personaggio pg) {
         String queryStat = "UPDATE STATISTICA SET HpAttuali = ?, ManaAttuali = ? WHERE CodPersonaggio = ?";
@@ -111,6 +157,19 @@ public class ImplementazionePostgresGiocatore implements GiocatoreDao {
         }
     }
 
+    /**
+     * Recupera lo storico completo di tutte le campagne a cui l'utente è iscritto e i relativi personaggi creati.
+     * <p>
+     * Il metodo esegue una query partendo dalla tabella {@code ISCRIZIONE} verso le tabelle
+     * {@code CAMPAGNA}, {@code PERSONAGGIO}, {@code STATISTICA}, {@code CLASSE} e {@code RAZZA}. Se il giocatore è iscritto
+     * ad una campagna ma non ha ancora creato un personaggio per essa, la campagna viene comunque estratta abbinandola a un
+     * riferimento {@code null}, garantendo la corretta visualizzazione nella Dashboard del giocatore.
+     * </p>
+     *
+     * @param codUtente l'identificativo univoco dell'utente di cui caricare le partecipazioni.
+     * @return una {@link HashMap} contenente come chiavi le istanze di {@link Campagna} ed come valori i relativi oggetti {@link Personaggio} (o {@code null}).
+     * @throws RuntimeException se si riscontrano anomalie nell'esecuzione del mapping relazionale degli attributi.
+     */
     public HashMap<Campagna, Personaggio> caricaTutteLePartecipazioni(int codUtente) {
         HashMap<Campagna, Personaggio> mappaPartecipazioni = new HashMap<>();
 

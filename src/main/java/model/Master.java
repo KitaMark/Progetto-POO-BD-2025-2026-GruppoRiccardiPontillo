@@ -22,7 +22,12 @@ public class Master extends Utente {
     }
 
     /**
-     * Costruttore per il DAO (con ID)
+     * costruttore d'appoggio creato per il dao
+     *
+     * @param id identificativo univoco del Master nel database
+     * @param email l'indirizzo email dell'account.
+     * @param username lo username univoco dell'utente.
+     * @param password la password di accesso.
      */
     public Master(int id, String email, String username, String password) {
         super(id, email, username, password);

@@ -44,6 +44,7 @@ public class CampagnaGiocatoreGUI {
     private JButton usaButton;
     private JTable abilitaTable;
     private JButton imparaButton;
+    private JLabel CampagnanomeJlabel;
 
     /** Il Controller di riferimento per l'orchestrazione delle meccaniche di gioco. */
     private Controller controller;
@@ -70,6 +71,8 @@ public class CampagnaGiocatoreGUI {
         this.giocatoreLoggato = giocatore;
         this.nomeCampagnaAttuale = nomeCampagna;
         this.frameAttuale = frame;
+
+        CampagnanomeJlabel.setText("Campagna: " + nomeCampagnaAttuale);
 
         inizializzaTabelle();
 

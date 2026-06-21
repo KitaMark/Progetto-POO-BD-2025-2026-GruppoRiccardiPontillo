@@ -24,7 +24,10 @@ public class Classe {
     }
 
     /**
-     *  Costruttore di appoggio per il DAO
+     *  Costruttore d'appoggio creato appositamente per il Dao
+     *
+     * @param id identificativo della classe di un pg nel database
+     * @param nome nome identificativo della classe
      */
     public Classe(int id, String nome) {
         this.id = id;

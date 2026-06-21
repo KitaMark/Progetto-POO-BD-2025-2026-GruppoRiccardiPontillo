@@ -24,7 +24,12 @@ public class Giocatore extends Utente {
     }
 
     /**
-     * Costruttore per il DAO (con ID)
+     * costruttore d'appoggio creato appositamente per il Dao
+     *
+     * @param id  identificativo della classe di un pg nel database
+     * @param email l'indirizzo email dell'account.
+     * @param username lo username univoco dell'utente.
+     * @param password la password di accesso.
      */
     public Giocatore(int id, String email, String username, String password) {
         super(id, email, username, password);
@@ -37,6 +42,17 @@ public class Giocatore extends Utente {
         return Collections.unmodifiableMap(listaPartecipazioni);
     }
 
+    /**
+     * Associa al giocatore l'elenco completo delle sue partecipazioni alle campagne.
+     * <p>
+     *  Questo metodo viene richiamato dal Controller.subito dopo la fase di Login. Permette di trasferire i dati del giocatore
+     * (quali campagne sta giocando e con quali personaggi) recuperati dal Database tramite il DAO
+     * direttamente all'interno dell'oggetto in memoria, rendendoli immediatamente
+     * disponibili per le tabelle della Dashboard.
+     * </p>
+     *
+     * @param listaPartecipazioni Una mappa che associa ogni {@link Campagna} al relativo {@link Personaggio} creato dal giocatore.
+     */
     public void setListaPartecipazioni(HashMap<Campagna, Personaggio> listaPartecipazioni) {
         this.listaPartecipazioni = listaPartecipazioni;
     }

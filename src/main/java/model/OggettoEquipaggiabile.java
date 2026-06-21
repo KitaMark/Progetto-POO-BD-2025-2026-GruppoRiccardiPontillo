@@ -23,7 +23,14 @@ public class OggettoEquipaggiabile extends Oggetto {
     }
 
     /**
-     *costruttore per il dao
+     * Costruttore utilizzato dal DAO per il caricamento dei dati dal database.
+     *
+     * @param id        l'identificativo univoco dell'oggetto nel database.
+     * @param nome      il nome dell'equipaggiamento.
+     * @param costo     il costo d'acquisto espresso in oro.
+     * @param tipo      la stringa che definisce la tipologia dell'oggetto (es. 'Equipaggiamento').
+     * @param requisiti l'oggetto {@link Statistica} che racchiude i valori minimi richiesti per l'uso.
+     * @param bonus     l'oggetto {@link Statistica} che definisce i modificatori applicati ai parametri del personaggio.
      */
     public OggettoEquipaggiabile(int id, String nome, int costo, String tipo,
                                  Statistica requisiti, Statistica bonus) {

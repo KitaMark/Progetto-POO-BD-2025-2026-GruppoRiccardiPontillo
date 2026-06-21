@@ -24,7 +24,14 @@ public class OggettoConsumabile extends Oggetto {
 
 
     /**
-     * Costruttore per il dao
+     * Costruttore utilizzato dal DAO per il caricamento dei dati dal database.
+     *
+     * @param id             l'identificativo univoco dell'oggetto nel database.
+     * @param nome           il nome del consumabile.
+     * @param costo          il costo d'acquisto espresso in oro.
+     * @param tipo           la stringa che definisce la tipologia dell'oggetto (es. 'Consumabile').
+     * @param ripristinoHp   i punti ferita (HP) che l'oggetto ripristina quando utilizzato.
+     * @param ripristinoMana i punti mana che l'oggetto ripristina quando utilizzato.
      */
     public OggettoConsumabile(int id, String nome, int costo, String tipo,
                               int ripristinoHp, int ripristinoMana) {

@@ -96,16 +96,60 @@ public class Campagna {
     /** @param listaPnG la nuova lista di personaggi non giocanti. */
     public void setListaPnG(ArrayList<Personaggio> listaPnG) { this.listaPnG = listaPnG; }
 
+    /**
+     * Confronta questa campagna con un altro oggetto per stabilire se sono logicamente uguali.
+     * <p>
+     * Sovrascrivendo questo metodo, diciamo che due istanze diverse di
+     * {@link Campagna} devono essere considerate "la stessa campagna" se hanno lo stesso {@code nome},
+     * ignorando eventuali differenze tra lettere maiuscole e minuscole.
+     * </p>
+     *
+     * @param o L'oggetto da confrontare con questa campagna.
+     * @return {@code true} se l'oggetto passato è una Campagna con lo stesso nome, altrimenti {@code false}.
+     */
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        //Se è esattamente lo stesso oggetto in memoria, sono sicuramente uguali
+        if (this == o) {
+            return true;
+        }
+
+        //Se l'oggetto passato è nullo o appartiene a una classe diversa, non sono uguali
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
+
+        //Cast a Campagna
         Campagna campagna = (Campagna) o;
-        return nome != null ? nome.equalsIgnoreCase(campagna.nome) : campagna.nome == null;
+
+        //Confronto vero e proprio del nome
+        if (this.nome != null) {
+            // Se il nome non è nullo, confrontiamo ignorando il maiuscolo/minuscolo
+            return this.nome.equalsIgnoreCase(campagna.nome);
+        } else {
+            // Se il nostro nome è nullo, sono uguali solo se anche l'altro nome è nullo
+            return campagna.nome == null;
+        }
     }
 
+    /**
+     * Genera un codice numerico (hash) che identifica in modo univoco questa campagna in base al suo nome.
+     * <p>
+     *  Strutture dati come le {@code HashMap} usate nel Controller per memorizzare la lista delle campagne
+     *  usano questo numero per smistare e ritrovare velocemente gli oggetti. Se due campagne sono "uguali" secondo l'equals,
+     * devono per forza restituire lo stesso numero qui.
+     * </p>
+     *
+     * @return Il codice hash calcolato in base al nome (convertito in minuscolo per coerenza con l'equals).
+     */
     @Override
     public int hashCode() {
-        return nome != null ? nome.toLowerCase().hashCode() : 0;
+        if (this.nome != null) {
+            // Convertiamo in minuscolo prima di generare l'hash,
+            // per garantire che "Yo" e "yo" finiscano nello stesso "cassetto" della HashMap
+            return this.nome.toLowerCase().hashCode();
+        } else {
+            return 0;
+        }
     }
 }
