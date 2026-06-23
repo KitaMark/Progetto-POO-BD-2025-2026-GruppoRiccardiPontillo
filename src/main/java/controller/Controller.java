@@ -130,6 +130,7 @@ public class Controller {
             throw new NomeMancanteCampagnaException("Il nome della campagna non può essere vuoto.");
         }
         if(listaCampagne.containsValue((Master) utenteAttivo)) throw new CampagnaAttivaEsistenteException("Hai già una campagna attiva. Concludila prima di crearne una nuova.");
+        if(listaCampagne.containsKey(cercaCampagna(nomeCampagna))) throw new NomeCampagnaInUsoException("Nome già in uso.");
         Campagna campagna = new Campagna(nomeCampagna, maxGiocatori, (Master) utenteAttivo);
         listaCampagne.put(campagna, (Master) utenteAttivo);
         //per ora salviamo subito nel db. Rivedere in futuro.
