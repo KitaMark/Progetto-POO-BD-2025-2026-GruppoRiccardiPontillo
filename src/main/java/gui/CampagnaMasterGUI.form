@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="538" height="400"/>
+      <xy x="20" y="20" width="623" height="400"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -48,9 +48,51 @@
             <preferred-size width="200" height="200"/>
           </grid>
         </constraints>
-        <properties/>
+        <properties>
+          <tabLayoutPolicy value="1"/>
+        </properties>
         <border type="none"/>
         <children>
+          <grid id="8d0f" binding="partecipantiPanel" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <tabbedpane title="Partecipanti"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <scrollpane id="5a358" binding="partecipantiScrollPane">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="9c3b2" class="javax.swing.JTable" binding="partecipantiTable">
+                    <constraints/>
+                    <properties/>
+                  </component>
+                </children>
+              </scrollpane>
+              <grid id="6bba3" binding="partecipantiButtonPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="4">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="e79e2" class="javax.swing.JButton" binding="rimuoviButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <horizontalAlignment value="0"/>
+                      <horizontalTextPosition value="11"/>
+                      <text value="Rimuovi"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+            </children>
+          </grid>
           <grid id="ef2cc" binding="PG" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
@@ -66,13 +108,19 @@
                 <properties/>
                 <border type="none"/>
                 <children>
+                  <component id="91eab" class="javax.swing.JButton" binding="visualizzaDettagliPGButton">
+                    <constraints/>
+                    <properties>
+                      <text value="Visualizza dettagli"/>
+                    </properties>
+                  </component>
                   <component id="7dbc6" class="javax.swing.JButton" binding="rimuoviPgButton">
                     <constraints/>
                     <properties>
-                      <text value="Rimuovi PG"/>
+                      <text value="Rimuovi "/>
                     </properties>
                   </component>
-                  <component id="3ceeb" class="javax.swing.JButton" binding="modificaStatisticaButton">
+                  <component id="3ceeb" class="javax.swing.JButton" binding="modificaStatisticheButton">
                     <constraints/>
                     <properties>
                       <text value="Modifica statistiche"/>
@@ -116,6 +164,12 @@
                 <properties/>
                 <border type="none"/>
                 <children>
+                  <component id="ab838" class="javax.swing.JButton" binding="visualizzaDettagliButton1" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Visualizza dettagli"/>
+                    </properties>
+                  </component>
                   <component id="38dc1" class="javax.swing.JButton" binding="creaPngButton">
                     <constraints/>
                     <properties>
@@ -145,7 +199,7 @@
               </scrollpane>
             </children>
           </grid>
-          <grid id="8d9b6" binding="impostazioniCampagna" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="8d9b6" binding="impostazioniCampagna" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
               <tabbedpane title="Impostazioni Campagna"/>
@@ -153,19 +207,57 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="a601a" class="javax.swing.JButton" binding="statoCampagnaButton">
+              <grid id="398d4" binding="impostazioniPanel" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>
-                <properties>
-                  <text value="[testo]"/>
-                </properties>
-              </component>
-              <vspacer id="d2cb8">
-                <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-                </constraints>
-              </vspacer>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <grid id="8b21d" binding="impostazioniButtonPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="2">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="c7a1b" class="javax.swing.JButton" binding="catalogoOggettiButton" default-binding="true">
+                        <constraints/>
+                        <properties>
+                          <text value="Catalogo Oggetti"/>
+                        </properties>
+                      </component>
+                      <component id="10b7" class="javax.swing.JButton" binding="editorClassiButton" default-binding="true">
+                        <constraints/>
+                        <properties>
+                          <text value="Editor Classi"/>
+                        </properties>
+                      </component>
+                      <component id="7e53f" class="javax.swing.JButton" binding="editorRazzeButton" default-binding="true">
+                        <constraints/>
+                        <properties>
+                          <text value="Editor Razze"/>
+                        </properties>
+                      </component>
+                      <component id="a601a" class="javax.swing.JButton" binding="statoCampagnaButton">
+                        <constraints/>
+                        <properties>
+                          <text value="[testo]"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </grid>
+                  <scrollpane id="c5f2">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties/>
+                    <border type="none"/>
+                    <children/>
+                  </scrollpane>
+                </children>
+              </grid>
             </children>
           </grid>
         </children>

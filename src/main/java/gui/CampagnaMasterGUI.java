@@ -7,6 +7,7 @@ import model.Personaggio;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -33,7 +34,7 @@ public class CampagnaMasterGUI {
     private JTabbedPane tabbedPane1;
     private JTable pgTable;
     private JButton assegnaPuntiButton;
-    private JButton modificaStatisticaButton;
+    private JButton modificaStatisticheButton;
     private JButton rimuoviPgButton;
     private JTable pngTable;
     private JPanel panelPgButton;
@@ -46,6 +47,18 @@ public class CampagnaMasterGUI {
     private JButton statoCampagnaButton;
     private JScrollPane pgScrollPane;
     private JScrollPane pngScrollPane;
+    private JPanel partecipantiPanel;
+    private JScrollPane partecipantiScrollPane;
+    private JTable partecipantiTable;
+    private JPanel partecipantiButtonPanel;
+    private JButton rimuoviButton;
+    private JPanel impostazioniButtonPanel;
+    private JPanel impostazioniPanel;
+    private JButton editorRazzeButton;
+    private JButton editorClassiButton;
+    private JButton catalogoOggettiButton;
+    private JButton visualizzaDettagliPGButton;
+    private JButton visualizzaDettagliButton1;
 
     /**
      * Il Controller di riferimento per orchestrare tutte le logiche di modifica e gestione della campagna.
@@ -80,6 +93,7 @@ public class CampagnaMasterGUI {
 
         inizializzaTabellaPG();
         inizializzaTabellaPnG();
+        inizializzaTabellaPartecipanti();
 
 
         indietroButton.addActionListener(new ActionListener() {
@@ -87,7 +101,6 @@ public class CampagnaMasterGUI {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose(); // Chiude la gestione della campagna
                 frameChiamante.setVisible(true);
-                //TODO: modificare mastergui ed eliminare lo stato della campagna dalla tabella.
             }
         });
 
@@ -118,7 +131,7 @@ public class CampagnaMasterGUI {
         });
 
 
-        modificaStatisticaButton.addActionListener(new ActionListener() {
+        modificaStatisticheButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int riga = pgTable.getSelectedRow();
@@ -129,21 +142,11 @@ public class CampagnaMasterGUI {
                 }
 
                 String nomePg = pgTable.getValueAt(riga, 0).toString();
+                int pgId = (Integer)pgTable.getModel().getValueAt(riga, 4);
 
-                try {
-                    JFrame modificaFrame = new JFrame("Modifica Statistiche - " + nomePg);
-                    ModificaStatisticheGUI modificaGUI = new ModificaStatisticheGUI(controller, nomePg, modificaFrame);
+                //non rendiamo il frame invisibile, poiché la gui chiamata si comporta come un popup.
+                ModificaStatisticheGUI modificaGUI = new ModificaStatisticheGUI(controller, nomePg, pgId, true, frame);
 
-                    modificaFrame.setContentPane(modificaGUI.getMainPanel());
-                    // Usiamo DISPOSE_ON_CLOSE per chiudere solo questo popup e non tutto
-                    modificaFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                    modificaFrame.setSize(400, 500);
-                    modificaFrame.setLocationRelativeTo(frame);
-                    modificaFrame.setVisible(true);
-
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
-                }
             }
         });
 
@@ -178,17 +181,8 @@ public class CampagnaMasterGUI {
         creaPngButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JFrame creaPngFrame = new JFrame("Nuovo PNG - Campagna: " + controller.getCampagnaAttiva().getNome());
-                CreaPngGUI creaPngGUI = new CreaPngGUI(controller, (Master)controller.getUtenteAttivo(),
-                        controller.getCampagnaAttiva().getNome(), creaPngFrame);
-
-                creaPngFrame.setContentPane(creaPngGUI.getMainPanel());
-                // uso DISPOSE così se il Master chiude questo popup non si chiude l'intero gioco!
-                creaPngFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-                creaPngFrame.setSize(600, 500);
-                creaPngFrame.setLocationRelativeTo(frame);
-                creaPngFrame.setVisible(true);
+                CreaPngGUI creaPngGUI = new CreaPngGUI(controller, (Master)controller.getUtenteAttivo(), frame);
+                inizializzaTabellaPnG(); //aggiorna
             }
         });
 
@@ -201,9 +195,9 @@ public class CampagnaMasterGUI {
                     JOptionPane.showMessageDialog(frame, "Seleziona un PnG da rimuovere.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                String nomePng = pngTable.getValueAt(riga, 0).toString();
+                int idPng = (int)pngTable.getModel().getValueAt(riga, 3);
                 try {
-                    controller.rimuoviPnG(nomePng);
+                    controller.rimuoviPnG(idPng);
                     JOptionPane.showMessageDialog(frame, "PnG rimosso con successo.");
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
@@ -242,7 +236,7 @@ public class CampagnaMasterGUI {
      */
     private void inizializzaTabellaPG() {
         // Tabella PG
-        String[] colonnePG = {"Nome", "Giocatore", "Razza", "Classe"}; //eliminato livello perchè non l'abbiamo piu inserito in Personaggio
+        String[] colonnePG = {"Nome", "Giocatore", "Razza", "Classe", "ID"}; //eliminato livello perchè non l'abbiamo piu inserito in Personaggio
         DefaultTableModel modelPG = new DefaultTableModel(null, colonnePG) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -252,6 +246,8 @@ public class CampagnaMasterGUI {
         pgTable.setModel(modelPG);
         pgTable.getTableHeader().setReorderingAllowed(false);
         pgTable.getTableHeader().setResizingAllowed(false);
+        TableColumn colonna = pgTable.getColumnModel().getColumn(4);
+        pgTable.getColumnModel().removeColumn(colonna);
         if (controller.getCampagnaAttiva().getListaPG().isEmpty()) return;
         for (Personaggio pg : controller.getCampagnaAttiva().getListaPG()) {
             String nomeProprietario = "Sconosciuto"; //valore di sicurezza per evitare problemi
@@ -262,13 +258,13 @@ public class CampagnaMasterGUI {
                 }
             }
             modelPG.addRow(new Object[]{pg.getNome(), nomeProprietario,
-                    pg.getRazza().getNome(), pg.getClasse().getNome()});
+                    pg.getRazza().getNome(), pg.getClasse().getNome(), pg.getId()});
         }
     }
 
     private void inizializzaTabellaPnG() {
         // Tabella PnG
-        String[] colonnePnG = {"Nome", "Razza", "Classe"};
+        String[] colonnePnG = {"Nome", "Razza", "Classe", "ID"};
         DefaultTableModel modelPnG = new DefaultTableModel(null, colonnePnG) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -278,8 +274,26 @@ public class CampagnaMasterGUI {
         pngTable.setModel(modelPnG);
         pngTable.getTableHeader().setReorderingAllowed(false);
         pngTable.getTableHeader().setResizingAllowed(false);
+        TableColumn colonna = pngTable.getColumnModel().getColumn(3);
+        pngTable.getColumnModel().removeColumn(colonna);
         for(Personaggio png : controller.getCampagnaAttiva().getListaPnG()){
-            modelPnG.addRow(new Object[]{png.getNome(), png.getRazza(), png.getClasse()});
+            modelPnG.addRow(new Object[]{png.getNome(), png.getRazza(), png.getClasse(), png.getId()});
+        }
+    }
+
+    private void inizializzaTabellaPartecipanti(){
+        String[] colonne = {"Username", "Email", "ID"};
+        DefaultTableModel modelPartecipanti = new DefaultTableModel(null, colonne){
+            @Override
+            public boolean isCellEditable(int row, int column){return false;}
+        };
+        partecipantiTable.setModel(modelPartecipanti);
+        partecipantiTable.getTableHeader().setReorderingAllowed(false);
+        partecipantiTable.getTableHeader().setResizingAllowed(false);
+        TableColumn colonna = partecipantiTable.getColumnModel().getColumn(2);
+        partecipantiTable.getColumnModel().removeColumn(colonna);
+        for(Giocatore giocatore : controller.getCampagnaAttiva().getPartecipanti()){
+            modelPartecipanti.addRow(new Object[]{giocatore.getUsername(), giocatore.getEmail(), giocatore.getId()});
         }
     }
 

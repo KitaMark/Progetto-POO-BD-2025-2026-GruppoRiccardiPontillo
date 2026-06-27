@@ -1,6 +1,8 @@
 package model;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Rappresenta una campagna di gioco.
@@ -16,6 +18,9 @@ public class Campagna {
     private Master master;
     private ArrayList<Personaggio> listaPG;
     private ArrayList<Personaggio> listaPnG;
+    private ArrayList<Oggetto> catalogoOggetti;
+    private ArrayList<Razza> listaRazze;
+    private ArrayList<Classe> listaClassi;
 
     /**
      * Crea una nuova campagna di gioco in stato non iniziata.
@@ -32,6 +37,9 @@ public class Campagna {
         this.partecipanti = new ArrayList<>();
         this.listaPG = new ArrayList<>();
         this.listaPnG = new ArrayList<>();
+        this.catalogoOggetti = new ArrayList<>();
+        this.listaRazze = new ArrayList<>();
+        this.listaClassi = new ArrayList<>();
     }
 
     /**
@@ -52,6 +60,9 @@ public class Campagna {
         this.partecipanti = new ArrayList<>();
         this.listaPG = new ArrayList<>();
         this.listaPnG = new ArrayList<>();
+        this.catalogoOggetti = new ArrayList<>();
+        this.listaRazze = new ArrayList<>();
+        this.listaClassi = new ArrayList<>();
     }
 
     /** @return l'identificativo della campagna nel database. */
@@ -77,6 +88,18 @@ public class Campagna {
 
     /** @return la lista dei personaggi non giocanti (PnG) inseriti. */
     public ArrayList<Personaggio> getListaPnG() { return listaPnG; }
+
+    public ArrayList<Oggetto> getCatalogoOggetti() {
+        return catalogoOggetti;
+    }
+
+    public ArrayList<Razza> getListaRazze() {
+        return listaRazze;
+    }
+
+    public ArrayList<Classe> getListaClassi() {
+        return listaClassi;
+    }
 
     /** @param nome il nuovo nome da assegnare alla campagna. */
     public void setNome(String nome) { this.nome = nome; }

@@ -1,10 +1,7 @@
 package implementazionePostgresDAO;
 
 import dao.MasterDAO;
-import model.Campagna;
 import database.ConnessioneDatabase;
-import exception.DatiMancantiException;
-import exception.NomeCampagnaInUsoException;
 import model.Personaggio;
 
 import java.sql.Connection;
@@ -52,6 +49,12 @@ public class ImplementazionePostgresMaster implements MasterDAO {
             e.printStackTrace();
             throw new RuntimeException("Errore durante l'aggiornamento dei punti: " + e.getMessage());
         }
+    }
+
+    @Override
+    public int creaPnG(Personaggio png) {
+        return 0;
+        //TODO: implementare; deve ritornare l'id salvato nel db
     }
 
     //vuota per ora

@@ -1,9 +1,14 @@
 package gui;
 
 import controller.Controller;
+import exception.DatiMancantiException;
+import model.Classe;
 import model.Master;
+import model.Razza;
+import model.Statistica;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -27,23 +32,40 @@ public class CreaPngGUI {
     private JLabel razza;
     private JLabel classe;
     private JTextField campoNome;
-    private JComboBox razzaComboBox;
-    private JComboBox ClasseComboBox;
+    private JComboBox<Razza> razzaComboBox;
+    private JComboBox<Classe> ClasseComboBox;
     private JCheckBox avanzateCheckBox;
-    private JLabel oro;
-    private JSpinner OroSpinner;
-    private JLabel statistica;
-    private JSpinner spinner1; // Corrisponde ai Punti Statistica
+    private JLabel oroLabel;
+    private JSpinner oroSpinner;
+    private JLabel puntiStatLabel;
+    private JSpinner puntiStatSpinner; // Corrisponde ai Punti Statistica
     private JButton creaButton;
+    private JLabel forzaLabel;
+    private JSpinner forzaSpinner;
+    private JSpinner destrezzaSpinner;
+    private JLabel destrezzaLabel;
+    private JLabel costituzioneLabel;
+    private JSpinner costituzioneSpinner;
+    private JLabel intelligenzaLabel;
+    private JSpinner intelligenzaSpinner;
+    private JSpinner fortunaSpinner;
+    private JSpinner carismaSpinner;
+    private JSpinner fedeSpinner;
+    private JSpinner manaMaxSpinner;
+    private JSpinner hpMaxSpinner;
+    private JLabel hpLabel;
+    private JLabel manaLabel;
+    private JPanel campiPanel;
+    private JLabel fedeLabel;
+    private JLabel carismaLabel;
+    private JLabel fortunaLabel;
+    private JPanel impostazioniAvanzatePanel;
 
     /** Il Controller di sistema per delegare la logica di creazione e salvataggio nel database. */
     private Controller controller;
     /** Il Master attualmente loggato che sta effettuando l'operazione. */
     private Master masterLoggato;
-    /** Il nome della campagna in cui il nuovo PnG verrà inserito e salvato. */
-    private String nomeCampagnaAttuale;
-    /** Riferimento alla finestra di popup corrente, utilizzato per chiuderla dopo la creazione. */
-    private JFrame frameAttuale;
+
 
     /**
      * Costruisce l'interfaccia di creazione del PnG, inizializzando i menu a tendina
@@ -51,25 +73,25 @@ public class CreaPngGUI {
      *
      * @param controller   Il {@link Controller} di riferimento.
      * @param master       L'oggetto {@link Master} che coordina la campagna.
-     * @param nomeCampagna Il nome della campagna a cui associare il personaggio.
-     * @param frame        Il {@link JFrame} (popup) all'interno del quale è ospitato questo pannello.
      */
-    public CreaPngGUI(Controller controller, Master master, String nomeCampagna, JFrame frame) {
+    public CreaPngGUI(Controller controller, Master master, JFrame frameChiamante) {
         this.controller = controller;
         this.masterLoggato = master;
-        this.nomeCampagnaAttuale = nomeCampagna;
-        this.frameAttuale = frame;
 
         inizializzaComponenti();
+
+        JDialog frame = new JDialog(frameChiamante, "Creazione Png", true); //in modo da avere un comportamento da popup
+        frame.setContentPane(mainPanel);
+        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        frame.setResizable(false);
+
 
 
         avanzateCheckBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Se c'è la spunta, i campi diventano cliccabili (true), altrimenti si spengono (false)
                 boolean isAttivo = avanzateCheckBox.isSelected();
-                OroSpinner.setEnabled(isAttivo);
-                spinner1.setEnabled(isAttivo);
+                setComponentiAvanzatiVisibili(isAttivo);
             }
         });
 
@@ -77,36 +99,43 @@ public class CreaPngGUI {
         creaButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String nomeInserito = campoNome.getText().trim();
-
-                if (nomeInserito.isEmpty()) {
-                    JOptionPane.showMessageDialog(frameAttuale, "Inserisci un nome per il PnG!", "Attenzione", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-
-                String razzaSelezionata = razzaComboBox.getSelectedItem().toString();
-                String classeSelezionata = ClasseComboBox.getSelectedItem().toString();
 
                 try {
-                    // IL BIVIO: Controlliamo se la spunta è attiva
+                    String nomeInserito = campoNome.getText().trim();
+                    Razza razzaSelezionata = (Razza)razzaComboBox.getSelectedItem();
+                    Classe classeSelezionata = (Classe)ClasseComboBox.getSelectedItem();
                     if (avanzateCheckBox.isSelected()) {
-                        // Creazione Avanzata
-                        int oroIniziale = (int) OroSpinner.getValue();
-                        int puntiIniziali = (int) spinner1.getValue();
-                        controller.creaPnGAvanzato(nomeInserito, razzaSelezionata, classeSelezionata, oroIniziale, puntiIniziali, nomeCampagnaAttuale);
+                        int oroIniziale = (int) oroSpinner.getValue();
+                        int puntiIniziali = (int) puntiStatSpinner.getValue();
+                        int forza = (int) forzaSpinner.getValue();
+                        int destrezza = (int) destrezzaSpinner.getValue();
+                        int costituzione = (int) costituzioneSpinner.getValue();
+                        int intelligenza = (int) intelligenzaSpinner.getValue();
+                        int carisma = (int) carismaSpinner.getValue();
+                        int fede = (int) fedeSpinner.getValue();
+                        int fortuna = (int) fortunaSpinner.getValue();
+                        int hpMax = (int) hpMaxSpinner.getValue();
+                        int manaMax = (int) manaMaxSpinner.getValue();
+                        Statistica stat = new Statistica(costituzione, forza, destrezza, intelligenza, fede, carisma, fortuna, hpMax, manaMax);
+                        controller.creaPnG(nomeInserito, razzaSelezionata, classeSelezionata, oroIniziale, puntiIniziali, stat);
                     } else {
-                        // Creazione Base
-                        controller.creaPnGBase(nomeInserito, razzaSelezionata, classeSelezionata, nomeCampagnaAttuale);
+                        controller.creaPnG(nomeInserito, razzaSelezionata, classeSelezionata);
                     }
 
-                    JOptionPane.showMessageDialog(frameAttuale, "PnG creato con successo!", "Successo", JOptionPane.INFORMATION_MESSAGE);
-                    frameAttuale.dispose(); // Chiude il popup
+                    JOptionPane.showMessageDialog(frame, "PnG creato con successo!", "Successo", JOptionPane.INFORMATION_MESSAGE);
+                    frame.dispose(); // Chiude il popup
 
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
+
+        //poiché si tratta di una finestra modale e non di un JFrame, queste istruzioni vanno alla fine: da
+        //queste istruzioni in poi il flusso viene "bloccato"; se messe all'inizio, bloccherebbero la configurazione
+        //dei listener.
+        frame.pack();
+        frame.setVisible(true);
     }
 
     /**
@@ -115,23 +144,43 @@ public class CreaPngGUI {
      */
     private void inizializzaComponenti() {
         // Popoliamo le Razze
-        razzaComboBox.addItem("Mostro/Bestia");
-        razzaComboBox.addItem("Umano");
-        razzaComboBox.addItem("Orco");
-        razzaComboBox.addItem("Non-Morto");
+        for(Razza razza : controller.getCampagnaAttiva().getListaRazze()){
+            razzaComboBox.addItem(razza);
+        }
 
         // Popoliamo le Classi
-        ClasseComboBox.addItem("Guerriero");
-        ClasseComboBox.addItem("Mago");
-        ClasseComboBox.addItem("Nessuna"); // I mostri base potrebbero non avere classe
+        for(Classe classe : controller.getCampagnaAttiva().getListaClassi()){
+            ClasseComboBox.addItem(classe);
+        }
 
-        // Impediamo che i JSpinner vadano sotto lo zero (Valore iniziale, Min, Max, Step)
-        OroSpinner.setModel(new SpinnerNumberModel(0, 0, 9999, 1));
-        spinner1.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+        oroSpinner.setModel(new SpinnerNumberModel(0, 0, 9999, 1));
+        puntiStatSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+        carismaSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+        costituzioneSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+        destrezzaSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+        fedeSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+        fortunaSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+        forzaSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+        intelligenzaSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+        hpMaxSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+        manaMaxSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
 
-        // Partono disattivati per colpa della CheckBox
-        OroSpinner.setEnabled(false);
-        spinner1.setEnabled(false);
+        setComponentiAvanzatiVisibili(false);
+
+    }
+
+    private void setComponentiAvanzatiVisibili(boolean visibile) {
+        impostazioniAvanzatePanel.setVisible(visibile);
+
+        // Forza il contenitore principale a ricalcolare gli spazi vuoti
+        mainPanel.revalidate();
+        mainPanel.repaint();
+
+        // Se il JDialog è già visibile, ridimensiona la finestra alla nuova dimensione ottimale
+        Window window = SwingUtilities.getWindowAncestor(mainPanel);
+        if (window != null) {
+            window.pack();
+        }
     }
 
     /**

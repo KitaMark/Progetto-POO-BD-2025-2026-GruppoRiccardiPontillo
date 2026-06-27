@@ -59,8 +59,6 @@ public class Home {
         frameHome.setResizable(false);
         frameHome.pack();
         frameHome.setVisible(true);
-
-
     }
 
 

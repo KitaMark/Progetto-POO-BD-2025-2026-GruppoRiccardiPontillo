@@ -3,16 +3,10 @@ package implementazionePostgresDAO;
 import dao.CampagnaDAO;
 import database.ConnessioneDatabase;
 import exception.NomeCampagnaInUsoException;
-import model.Campagna;
-import model.Giocatore;
-import model.Master;
-import model.Abilita;
+import model.*;
 import database.ConnessioneDatabase;
 import exception.DatiMancantiException;
-import model.Personaggio;
-import model.Statistica;
-import model.Razza;
-import model.Classe;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -270,5 +264,18 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
         }
     }
 
+    @Override
+    public void leggiCatalogoOggetti(List<Oggetto> catalogo, int idCampagna) {
+        //TODO: implementa
+    }
 
+    @Override
+    public void leggiListaRazze(List<Razza> lista, int idCampagna) {
+        //TODO: implementa
+    }
+
+    @Override
+    public void leggiListaClassi(List<Classe> lista, int idCampagna) {
+        //TODO: implementa
+    }
 }

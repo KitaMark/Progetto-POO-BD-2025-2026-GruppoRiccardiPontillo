@@ -29,6 +29,7 @@ public class Controller {
     private GiocatoreDao giocatoreDAO;
     private InventarioDao inventarioDAO;
     private AbilitaDao abilitaDao;
+    private StatisticaDAO personaggioDAO;
 
     public Controller() {
         utenteAttivo = null;
@@ -40,8 +41,9 @@ public class Controller {
         campagnaDAO = new ImplementazionePostgresCampagna();
         campagnaDAO.leggiCampagne(listaCampagne);
         giocatoreDAO = new ImplementazionePostgresGiocatore();
-        this.inventarioDAO = new ImplementazionePostgresInventario();
-        this.abilitaDao= new ImplementazionePostgresAbilita();
+        inventarioDAO = new ImplementazionePostgresInventario();
+        abilitaDao= new ImplementazionePostgresAbilita();
+        personaggioDAO = new ImplementazionePostgresStatistica();
         //eventualmente da inserire altro in seguito
     }
 
@@ -177,6 +179,9 @@ public class Controller {
         if (campagnaAttiva == null) throw new RuntimeException("Campagna non esistente.");
         campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPG(), true, campagnaAttiva.getNome());
         campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPnG(), false, campagnaAttiva.getNome());
+        campagnaDAO.leggiCatalogoOggetti(campagnaAttiva.getCatalogoOggetti(), campagnaAttiva.getId());
+        campagnaDAO.leggiListaClassi(campagnaAttiva.getListaClassi(), campagnaAttiva.getId());
+        campagnaDAO.leggiListaRazze(campagnaAttiva.getListaRazze(), campagnaAttiva.getId());
         campagnaDAO.leggiGiocatori(campagnaAttiva.getPartecipanti(), campagnaAttiva.getNome());
 
         if (utenteAttivo instanceof Giocatore) {
@@ -331,16 +336,20 @@ public class Controller {
     /**
      * Rimuove un Personaggio Non Giocante (PnG) dal sistema.
      *
-     * @param nomePnG Il nome del PnG da eliminare.
-     * @throws PngNonSelezionatoException Se il nome specificato è nullo o vuoto.
+     * @param id L'identificativo del PnG da eliminare.
+     * @throws DatiMancantiException Se l'id non esiste nel database.
      */
-    public void rimuoviPnG(String nomePnG) throws PngNonSelezionatoException {
-        if (nomePnG == null || nomePnG.trim().isEmpty()) {
-            throw new PngNonSelezionatoException("Seleziona un PnG da rimuovere.");
+    public void rimuoviPnG(int id) throws DatiMancantiException {
+        Personaggio daTrovare = null;
+        for(Personaggio png : campagnaAttiva.getListaPnG()){
+            if(png.getId() == id){
+                daTrovare = png;
+                break;
+            }
         }
-        //TODO: implementare
-        //da fare utilizzando l'id del personaggio per evitare di eliminare eventuali png con lo stesso nome.
-        //modificare model tabellaPnG nella GUI per avere una colonna invisibile "ID". Ridefinire metodi correlati per leggerlo da db.
+        if(daTrovare == null) throw new DatiMancantiException("Id non esistente, impossibile trovare il png.");
+        masterDAO.rimuoviPersonaggio(daTrovare);
+        campagnaAttiva.getListaPnG().remove(daTrovare);
     }
 
 
@@ -448,40 +457,41 @@ public class Controller {
      * @param nome         Il nome del PnG.
      * @param razza        La razza del PnG.
      * @param classe       La classe del PnG.
-     * @param nomeCampagna La campagna di appartenenza.
-     * @throws NomeMancantePngException Se il nome è mancante.
+     * @throws DatiMancantiException Se ci sono parametri null.
      */
-    public void creaPnGBase(String nome, String razza, String classe, String nomeCampagna) throws NomeMancantePngException {
+    public void creaPnG(String nome, Razza razza, Classe classe) throws DatiMancantiException {
         if (nome == null || nome.trim().isEmpty()) {
-            throw new NomeMancantePngException("Il nome del PnG non può essere vuoto.");
+            throw new DatiMancantiException("nome PnG non valido.");
         }
-        // In futuro  costruttore base Master.creaPersonaggio(classe, razza, nome)
-        System.out.println("Creato PnG BASE: " + nome + " | Razza: " + razza + " | Classe: " + classe);
+        if(razza == null || classe == null) throw new DatiMancantiException("Devi selezionare razza e classe prima di procedere.");
+        Personaggio png = new Personaggio(classe, razza, nome);
+        png.setId(masterDAO.creaPnG(png));
+        campagnaAttiva.getListaPnG().add(png);
     }
 
     /**
-     * Crea un Personaggio Non Giocante (PnG) avanzato andando a definire i campi  oro e punti statistica.
+     * Crea un Personaggio Non Giocante (PnG) andando a definire anche i campi  oro e punti statistica.
      *
      * @param nome         Il nome del PnG.
      * @param razza        La razza del PnG.
      * @param classe       La classe del PnG.
      * @param oro          La quantità di oro iniziale.
      * @param punti        I punti statistica disponibili fin dall'inizio.
-     * @param nomeCampagna La campagna di appartenenza.
-     * @throws NomeMancantePngException Se il nome è mancante.
+     * @throws DatiMancantiException se i dati non sono validi.
      */
-    public void creaPnGAvanzato(String nome, String razza, String classe, int oro, int punti, String nomeCampagna) throws NomeMancantePngException {
+    public void creaPnG(String nome, Razza razza, Classe classe, int oro, int punti, Statistica statBase) throws DatiMancantiException {
         if (nome == null || nome.trim().isEmpty()) {
-            throw new NomeMancantePngException("Il nome del PnG non può essere vuoto.");
+            throw new DatiMancantiException("nome PnG non valido.");
         }
-        // In futuroil costruttore Master.creaPersonaggio(classe, razza, stat, nome, oro, punti)
-        System.out.println("Creato PnG AVANZATO: " + nome + " | Oro: " + oro + " | Punti: " + punti);
+        if(razza == null || classe == null) throw new DatiMancantiException("Devi selezionare razza e classe prima di procedere.");
+        Personaggio png = new Personaggio(classe, razza, statBase, nome, oro, punti);
+        png.setId(masterDAO.creaPnG(png));
+        campagnaAttiva.getListaPnG().add(png);
     }
 
     /**
      * Aggiorna e salva le nuove statistiche di un PG o PnG nel database.
-     *
-     * @param nomePersonaggio Il nome dell'entità da aggiornare.
+     * @param idPersonaggio   L'identificativo univoco del personaggio.
      * @param forza           Il nuovo valore della statistica Forza.
      * @param destrezza       Il nuovo valore della statistica Destrezza.
      * @param costituzione    Il nuovo valore della statistica Costituzione.
@@ -493,19 +503,27 @@ public class Controller {
      * @param manaMax         I nuovi punti Mana massimi.
      * @throws PngNonSelezionatoException Se il personaggio non è stato selezionato correttamente.
      */
-    public void salvaStatisticheModificate(String nomePersonaggio, int forza, int destrezza, int costituzione,
+    public void salvaStatisticheModificate(String nomePersonaggio, int idPersonaggio, int forza, int destrezza, int costituzione,
                                            int intelligenza, int fede, int carisma, int fortuna,
-                                           int hpMax, int manaMax) throws PngNonSelezionatoException {
+                                           int hpMax, int manaMax, boolean isPg) throws PngNonSelezionatoException {
 
         if (nomePersonaggio == null || nomePersonaggio.trim().isEmpty()) {
             throw new PngNonSelezionatoException("Nessun personaggio selezionato.");
         }
-
-
-        //  Il DAO recupererà l'oggetto Personaggio dal database
-        //  Controller prende il PG dal DAO, userà i setter e DAO fa l'UPDATE nel database.
-
-        System.out.println("Statistica aggiornate per il PG: " + nomePersonaggio + " (Simulazione)"); //per ora
+        Personaggio daModificare = null;
+        ArrayList<Personaggio> listaPersonaggi = isPg? campagnaAttiva.getListaPG() : campagnaAttiva.getListaPnG();
+        for(Personaggio pg : listaPersonaggi){
+            if(pg.getId() == idPersonaggio){
+                daModificare = pg;
+                break;
+            }
+        }
+        if(daModificare == null) throw new PersonaggioNonTrovatoException("Impossibile trovare il personaggio selezionato.");
+        Statistica modifiche = new Statistica(costituzione, forza, destrezza, intelligenza, fede, carisma, fortuna, hpMax, manaMax);
+        daModificare.setHpCorrenti(hpMax);
+        daModificare.setManaCorrente(manaMax);
+        personaggioDAO.aggiornaStatistichePersonaggio(daModificare.getId(), modifiche);
+        daModificare.setStatisticaBase(modifiche);
     }
 
 

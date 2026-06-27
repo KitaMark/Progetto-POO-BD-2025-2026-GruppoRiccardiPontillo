@@ -74,4 +74,9 @@ public class Razza {
     public void setModificatori(Statistica modificatori) {
         this.modificatori = modificatori;
     }
+
+    @Override
+    public String toString(){
+        return nome;
+    }
 }

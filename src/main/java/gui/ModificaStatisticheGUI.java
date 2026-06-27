@@ -24,7 +24,7 @@ public class ModificaStatisticheGUI {
     private JSpinner forzaSpinner;
     private JSpinner destrezzaSpinner;
     private JSpinner costituzioneSpinner;
-    private JSpinner inteliggenzaSpinner;
+    private JSpinner intelligenzaSpinner;
     private JSpinner fedeSpinner;
     private JSpinner carismaSpinner;
     private JSpinner fortunaSpinner;
@@ -33,12 +33,13 @@ public class ModificaStatisticheGUI {
     private JLabel forza;
     private JLabel destrezza;
     private JLabel costituzione;
-    private JLabel inteligenza;
+    private JLabel intelligenzaLabel;
     private JLabel fede;
     private JLabel carisma;
     private JLabel fortuna;
     private JLabel maxHp;
     private JLabel manaMax;
+    private JPanel buttonPanel;
 
     /** Il Controller di sistema a cui delegare il salvataggio dei nuovi valori. */
     private Controller controller;
@@ -46,51 +47,58 @@ public class ModificaStatisticheGUI {
     /** Il nome identificativo del personaggio di cui si stanno modificando le statistiche. */
     private String nomePersonaggioSelezionato;
 
-    /** Riferimento alla finestra di popup corrente, utilizzato per chiuderla dopo il salvataggio. */
-    private JFrame frameAttuale;
-
-
     /**
      * Costruisce l'interfaccia di modifica statistiche, preimpostando i limiti numerici
      * dei campi e abilitando l'ascoltatore per il pulsante di conferma.
      *
      * @param controller      Il {@link Controller} che comunicherà i nuovi dati al DAO.
-     * @param nomePersonaggio Il nome del personaggio bersaglio della modifica.
-     * @param frame           Il {@link JFrame} che ospita questo pannello (popup).
+     * @param nomePg Il nome del personaggio bersaglio della modifica.
+     * @param id l'id univoco del personaggio.
      */
-    public ModificaStatisticheGUI(Controller controller, String nomePersonaggio, JFrame frame) {
+    public ModificaStatisticheGUI(Controller controller, String nomePg, int id, boolean isPg, JFrame frameChiamante) {
         this.controller = controller;
-        this.nomePersonaggioSelezionato = nomePersonaggio;
-        this.frameAttuale = frame;
+        nomePersonaggioSelezionato = nomePg;
+
+        JDialog frame = new JDialog(frameChiamante, "Modifica Statistiche - " + nomePg, true);
+        frame.setContentPane(mainPanel);
+        // Usiamo DISPOSE_ON_CLOSE per chiudere solo questo popup e non tutto
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setResizable(false);
+        frame.pack();
+        frame.setVisible(true);
 
         inizializzaSpinner();
 
         modificaButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                int conferma = JOptionPane.showConfirmDialog(frame, "Le statistiche del personaggio " +
+                        "saranno sovrascritte forzatamente. Vuoi continuare?", "Conferma modifica",
+                        JOptionPane.YES_NO_OPTION);
+                if(conferma == JOptionPane.NO_OPTION) return;
                 try {
                     int forzaVal = (int) forzaSpinner.getValue();
                     int destrezzaVal = (int) destrezzaSpinner.getValue();
                     int costituzioneVal = (int) costituzioneSpinner.getValue();
-                    int intelligenzaVal = (int) inteliggenzaSpinner.getValue();
+                    int intelligenzaVal = (int) intelligenzaSpinner.getValue();
                     int fedeVal = (int) fedeSpinner.getValue();
                     int carismaVal = (int) carismaSpinner.getValue();
                     int fortunaVal = (int) fortunaSpinner.getValue();
                     int hpMaxVal = (int) maxHpSpinner.getValue();
                     int manaMaxVal = (int) manaMaxSpinner.getValue();
 
-                    controller.salvaStatisticheModificate(nomePersonaggioSelezionato, forzaVal, destrezzaVal,
+                    controller.salvaStatisticheModificate(nomePersonaggioSelezionato, id, forzaVal, destrezzaVal,
                             costituzioneVal, intelligenzaVal, fedeVal, carismaVal,
-                            fortunaVal, hpMaxVal, manaMaxVal);
+                            fortunaVal, hpMaxVal, manaMaxVal, isPg);
 
-                    JOptionPane.showMessageDialog(frameAttuale,
-                            "Statistica di " + nomePersonaggioSelezionato + " aggiornate con successo!",
+                    JOptionPane.showMessageDialog(frame,
+                            "Statistiche di " + nomePersonaggioSelezionato + " aggiornate con successo!",
                             "Successo", JOptionPane.INFORMATION_MESSAGE);
 
-                    frameAttuale.dispose(); // Chiudiamo il popup
+                    frame.dispose(); // Chiudiamo il popup
 
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -106,14 +114,14 @@ public class ModificaStatisticheGUI {
         forzaSpinner.setModel(new SpinnerNumberModel(10, 1, 100, 1));
         destrezzaSpinner.setModel(new SpinnerNumberModel(10, 1, 100, 1));
         costituzioneSpinner.setModel(new SpinnerNumberModel(10, 1, 100, 1));
-        inteliggenzaSpinner.setModel(new SpinnerNumberModel(10, 1, 100, 1));
+        intelligenzaSpinner.setModel(new SpinnerNumberModel(10, 1, 100, 1));
         fedeSpinner.setModel(new SpinnerNumberModel(10, 1, 100, 1));
         carismaSpinner.setModel(new SpinnerNumberModel(10, 1, 100, 1));
         fortunaSpinner.setModel(new SpinnerNumberModel(10, 1, 100, 1));
 
         //(da definire max per hp e mana)
         maxHpSpinner.setModel(new SpinnerNumberModel(100, 1, 9999, 1));
-        manaMaxSpinner.setModel(new SpinnerNumberModel(50, 0, 9999, 1));
+        manaMaxSpinner.setModel(new SpinnerNumberModel(50, 1, 9999, 1));
     }
 
     /**

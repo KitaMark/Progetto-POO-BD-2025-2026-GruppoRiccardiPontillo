@@ -91,4 +91,9 @@ public class Classe {
         }
         return false;
     }
+
+    @Override
+    public String toString(){
+        return nome;
+    }
 }

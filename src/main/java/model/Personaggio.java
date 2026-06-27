@@ -30,7 +30,7 @@ public class Personaggio {
     private ArrayList<Abilita> listaAbilita;
 
     /**
-     * Costruttore per la creazione di un nuovo Personaggio Giocante (PG).
+     * Costruttore per la creazione di un nuovo Personaggio Giocante (PG). Utilizzato anche per la creazione di PnG "standard".
      * Inizializza l'oro e i punti statistica a 0, assegna l'equipaggiamento iniziale della classe,
      * applica i modificatori di razza alle statistiche base e imposta HP e Mana al massimo.
      *
@@ -286,12 +286,18 @@ public class Personaggio {
         this.oro = oro;
     }
 
+    public void setStatisticaBase(Statistica statistica){statisticaBase = statistica;}
+
     public void setHpCorrenti(int hpCorrenti) {
         this.hpCorrenti = hpCorrenti;
     }
 
     public void setManaCorrente(int manaCorrente) {
         this.manaCorrente = manaCorrente;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     /**
