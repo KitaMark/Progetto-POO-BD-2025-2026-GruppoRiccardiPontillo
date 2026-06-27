@@ -41,15 +41,19 @@ public class Razza {
         this.modificatori = new Statistica(statistica);
     }
 
-    /** Costruttore di appoggio per il DAO */
+    /** * Costruttore di appoggio per il DAO.
+     */
     public Razza(String nome) {
         this.nome = nome;
+        this.modificatori = new Statistica(0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
-    /** Costruttore di appoggio per il DAO */
-    public Razza(int id,String nome) {
-        this.id= id;
+    /** * Costruttore di appoggio per il DAO.
+     */
+    public Razza(int id, String nome) {
+        this.id = id;
         this.nome = nome;
+        this.modificatori = new Statistica(0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     /** @return l'id della razza. */

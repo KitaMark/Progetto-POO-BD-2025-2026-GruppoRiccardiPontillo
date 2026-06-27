@@ -57,21 +57,22 @@ public class ImplementazionePostgresGiocatore implements GiocatoreDao {
 
 
     /**
-     * Esegue il salvataggio  di un personaggio e delle sue statistiche base associate.
+     * Esegue il salvataggio atomico di un personaggio e delle sue statistiche base associate.
      * <p>
-     * Sfrutta una query  per inserire prima il record nella tabella {@code PERSONAGGIO}
-     * ricavando gli ID di classe e razza tramite sotto-query,
-     * recuperare l'ID autogenerato tramite {@code RETURNING CodPersonaggio} e inserire immediatamente
-     * dopo i valori iniziali all'interno della tabella {@code STATISTICA}.
+     * Sfrutta una query prima il record nella tabella {@code PERSONAGGIO}, recuperare l'ID autogenerato tramite
+     * {@code RETURNING CodPersonaggio} e inserire immediatamente dopo i valori iniziali
+     * all'interno della tabella {@code STATISTICA}.
+     * L'ID finale viene recuperato e assegnato direttamente all'oggetto in memoria.
      * </p>
      *
      * @param pg          l'oggetto {@link Personaggio} contenente i dati e i complessi statistici da salvare.
      * @param codUtente   l'identificativo del proprietario del personaggio.
      * @param codCampagna l'identificativo della campagna in cui il personaggio viene inserito.
+     * @return l'identificativo univoco (ID) generato dal database per il nuovo personaggio.
      * @throws RuntimeException se si verifica un fallimento nell'inserimento delle tabelle correlate.
      */
     @Override
-    public void salvaPersonaggio(Personaggio pg, int codUtente, int codCampagna) {
+    public int salvaPersonaggio(Personaggio pg, int codUtente, int codCampagna) {
 
         String query = """
         WITH nuovo_pg AS (
@@ -83,11 +84,13 @@ public class ImplementazionePostgresGiocatore implements GiocatoreDao {
             ) RETURNING CodPersonaggio
         )
         INSERT INTO STATISTICA (Forza, Destrezza, Costituzione, Intelligenza, Fede, Carisma, Fortuna, HpMax, HpAttuali, ManaMax, ManaAttuali, CodPersonaggio) 
-        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CodPersonaggio FROM nuovo_pg;
+        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CodPersonaggio FROM nuovo_pg
+        RETURNING CodPersonaggio;
         """;
 
-        try {Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement stmt = conn.prepareStatement(query);
+        try {
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement stmt = conn.prepareStatement(query);
 
             // Parametri per la tabella PERSONAGGIO
             stmt.setString(1, pg.getNome());
@@ -111,7 +114,19 @@ public class ImplementazionePostgresGiocatore implements GiocatoreDao {
             stmt.setInt(16, s.getManaMax());
             stmt.setInt(17, pg.getManaCorrente());
 
-            stmt.executeUpdate();
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int idGenerato = rs.getInt("CodPersonaggio");
+
+                // 1. Aggiorniamo subito l'oggetto in memoria
+                pg.setId(idGenerato);
+
+                // 2. Ritorniamo l'ID al Controller
+                return idGenerato;
+            } else {
+                throw new SQLException("Creazione fallita: nessun ID restituito dal database.");
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();

@@ -51,7 +51,7 @@ public class GiocatoreGUI {
         frame.setLocationRelativeTo(null); // Centra la finestra nello schermo
         frame.setVisible(true);
 
-        benvenutoGiocatore.setText("Benvenuto, "+controller.getUtenteAttivo().getUsername()+"! [Giocatore]");
+        benvenutoGiocatore.setText("Benvenuto, " + controller.getUtenteAttivo().getUsername() + "! [Giocatore]");
 
         inizializzaTabella();
 
@@ -100,19 +100,8 @@ public class GiocatoreGUI {
                 String nomeCampagnaSelezionata = tableCampagnaGiocatore.getValueAt(rigaSelezionata, 0).toString();
 
                 try {
-                    controller.visualizzaCampagna(nomeCampagnaSelezionata);
+                    boolean haGiaIlPersonaggio = controller.visualizzaCampagna(nomeCampagnaSelezionata);
                     Giocatore giocatore = (Giocatore) controller.getUtenteAttivo();
-
-                    // CONTROLLO SICURO: Previene il bug di memoria e verifica se il PG esiste già
-                    boolean haGiaIlPersonaggio = false;
-                    if (giocatore.getListaPartecipazioni() != null) {
-                        for (Campagna c : giocatore.getListaPartecipazioni().keySet()) {
-                            if (c.getNome().equalsIgnoreCase(nomeCampagnaSelezionata)) {
-                                haGiaIlPersonaggio = true;
-                                break;
-                            }
-                        }
-                    }
 
                     frame.dispose();
 
@@ -141,6 +130,8 @@ public class GiocatoreGUI {
             }
         });
     }
+
+
     /**
      * Metodo  privato che definisce l'intestazione della JTable e ne inibisce
      * la modifica diretta delle celle tramite doppio clic.

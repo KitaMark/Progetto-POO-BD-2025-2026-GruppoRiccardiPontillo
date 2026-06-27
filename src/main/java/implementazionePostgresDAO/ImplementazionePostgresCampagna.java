@@ -6,8 +6,6 @@ import exception.NomeCampagnaInUsoException;
 import model.Campagna;
 import model.Giocatore;
 import model.Master;
-import model.Abilita;
-import database.ConnessioneDatabase;
 import exception.DatiMancantiException;
 import model.Personaggio;
 import model.Statistica;
@@ -22,22 +20,31 @@ import java.util.List;
 
 /**
  * Implementazione concreta dell'interfaccia {@link CampagnaDAO} per il database PostgreSQL.
- * Gestisce il recupero massivo e l'eliminazione delle campagne di gioco, occupandosi di
- * ricostruire le relazioni tra le entità (Campagna e Master) tramite query.
- * * @author Riccardi Carmine
+ * <p>
+ * Gestisce la persistenza, il recupero massivo e l'eliminazione delle campagne di gioco.
+ * Si occupa di ricostruire in RAM le complesse relazioni tra le entità (Campagna, Master, Giocatori e Personaggi)
+ * garantendo la corretta mappatura delle chiavi primarie per mantenere l'identità degli oggetti.
+ * </p>
+ *
+ * @author Riccardi Carmine
  * @author Pontillo Salvatore
  */
 public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
-     * Recupera tutte le campagne presenti nel database e popola la mappa fornita in input.
+     * Recupera tutte le campagne presenti nel database e popola la mappa fornita in input all'avvio.
+     * <p>
+     * Legge sia i dati della campagna che quelli del Master.
+     * </p>
+     *
      * @param listaCampagne La mappa (inizialmente vuota) in cui inserire le campagne estratte.
-     * La chiave sarà l'oggetto Campagna, il valore sarà l'oggetto Master.
+     * La chiave sarà l'oggetto {@link Campagna}, il valore sarà l'oggetto {@link Master}.
      * @throws RuntimeException Se si verifica un errore critico durante la comunicazione col database.
      */
     @Override
     public void leggiCampagne(HashMap<Campagna, Master> listaCampagne) {
-        String query = "SELECT c.Nome, c.MaxGiocatori, c.Stato, u.Username, u.Email, u.Password " +
+        String query = "SELECT c.CodCampagna, c.Nome, c.MaxGiocatori, c.Stato, " +
+                "u.CodUtente, u.Username, u.Email, u.Password " +
                 "FROM CAMPAGNA c " +
                 "INNER JOIN UTENTE u ON c.CodMaster = u.CodUtente";
 
@@ -45,30 +52,28 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()){
 
-
             while (rs.next()) {
-                // 1. Dati Master
+                int idMaster = rs.getInt("CodUtente");
                 String username = rs.getString("Username");
                 String email = rs.getString("Email");
                 String password = rs.getString("Password");
                 Master master = new Master(email, username, password);
+                master.setId(idMaster); // Salviamo l'ID reale del Master!
 
-                // 2. Dati Campagna
+                int idCampagna = rs.getInt("CodCampagna");
                 String nomeCampagna = rs.getString("Nome");
                 int maxGiocatori = rs.getInt("MaxGiocatori");
-                String statoDb = rs.getString("Stato"); // equivalente isIniziata
+                String statoDb = rs.getString("Stato");
 
                 Campagna campagna = new Campagna(nomeCampagna, maxGiocatori, master);
+                campagna.setId(idCampagna);
 
-                //per effettivamente settare lo stati della campagna in java rispetto al db
                 if ("Non Iniziata".equals(statoDb)) {
                     campagna.setIniziata(false);
                 } else {
-                    // Se invece il contrario
                     campagna.setIniziata(true);
                 }
 
-                // 3. Inserisco la coppia nella HashMap
                 listaCampagne.put(campagna, master);
             }
 
@@ -79,27 +84,36 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
     }
 
     /**
-     * Inserisce una nuova campagna di gioco all'interno del database.
-     * Il metodo utilizza una sotto-query SQL per recuperare dinamicamente
-     * l'identificativo (CodUtente) del Master a partire dal suo Username,
-     * garantendo la corretta associazione della chiave esterna.
+     * Inserisce una nuova campagna di gioco all'interno del database generata dal Master.
+     * <p>
+     * Sfrutta una squery per recuperare l'ID del Master e, tramite la clausola {@code RETURNING CodCampagna},
+     * restituisce immediatamente la chiave primaria appena generata da PostgreSQL.
+     * </p>
      *
      * @param campagna L'oggetto {@link Campagna} contenente i dati da persistere.
-     * @throws NomeCampagnaInUsoException Se l'inserimento fallisce, presumibilmente perché
-     * il nome scelto per la campagna è già presente nel database (violazione vincolo UNIQUE).
+     * @return L'identificativo numerico (ID) assegnato dal database alla nuova campagna.
+     * @throws NomeCampagnaInUsoException Se il nome scelto per la campagna è già presente nel DB.
      */
     @Override
-    public void creaCampagna(Campagna campagna) throws NomeCampagnaInUsoException {
+    public int creaCampagna(Campagna campagna) throws NomeCampagnaInUsoException {
         String query = "INSERT INTO CAMPAGNA (Nome, MaxGiocatori, Stato, CodMaster) " +
-                "VALUES (?, ?, 'Non Iniziata', (SELECT CodUtente FROM UTENTE WHERE Username = ?))";
+                "VALUES (?, ?, 'Non Iniziata', (SELECT CodUtente FROM UTENTE WHERE Username = ?)) " +
+                "RETURNING CodCampagna";
 
-        try(Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement stmt = conn.prepareStatement(query);) {
+        try (Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
             stmt.setString(1, campagna.getNome());
             stmt.setInt(2, campagna.getMaxGiocatori());
             stmt.setString(3, campagna.getMaster().getUsername());
 
-            stmt.executeUpdate();
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("CodCampagna"); // Restituisce l'ID al Controller
+                } else {
+                    throw new SQLException("Nessun ID generato dal database.");
+                }
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -108,31 +122,26 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
     }
 
     /**
-     * Rimuove definitivamente una campagna dal database partendo dal suo nome.
-     * L'eliminazione della campagna comporterà la rimozione automatica di tutte
-     * le iscrizioni e dei personaggi ad essa associati (ON DELETE CASCADE).
+     * Rimuove definitivamente una campagna dal database partendo dal suo nome univoco.
+     * <p>
+     * L'eliminazione innesca un effetto a cascata (ON DELETE CASCADE) a livello di database,
+     * distruggendo automaticamente tutte le iscrizioni alla tabella ponte e i personaggi associati.
+     * </p>
      *
      * @param campagnaTarget la {@link Campagna} da eliminare.
-     * @throws DatiMancantiException Se il database non trova nessuna campagna con il nome
-     * specificato (nessuna riga modificata).
-     * @throws RuntimeException      Se si verifica un errore critico durante la comunicazione
-     * con il database.
+     * @throws DatiMancantiException Se nessuna riga viene modificata (la campagna non esiste).
+     * @throws RuntimeException      Se si verifica un errore SQL critico.
      */
-
     @Override
     public void eliminaCampagna(Campagna campagnaTarget) throws DatiMancantiException {
         String query = "DELETE FROM CAMPAGNA WHERE Nome = ?";
 
-        try(Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement stmt = conn.prepareStatement(query);) {
-
+        try (Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, campagnaTarget.getNome());
-
-            // executeUpdate() restituisce quante righe ha cancellato
             int righeModificate = stmt.executeUpdate();
 
-            // Se ha cancellato 0 righe, la campagna non esisteva nel db
             if (righeModificate == 0) {
                 throw new DatiMancantiException("Impossibile eliminare: La campagna '" + campagnaTarget.getNome() + "' non esiste.");
             }
@@ -143,11 +152,22 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
         }
     }
 
+    /**
+     * Carica i personaggi appartenenti a una specifica campagna filtrandoli per tipologia (PG o PnG).
+     * <p>
+     * Esegue una serie di {@code JOIN} con le tabelle {@code CLASSE}, {@code RAZZA}, {@code CAMPAGNA}
+     * e {@code STATISTICA} per ricostruire interamente l'albero delle istanze del personaggio.
+     * </p>
+     *
+     * @param listaPersonaggi La lista (svuotata e ripopolata) che conterrà i personaggi trovati.
+     * @param isPg            {@code true} per cercare i Personaggi Giocanti, {@code false} per i Personaggi Non Giocanti (Master).
+     * @param nomeCampagna    Il nome della campagna in cui cercare.
+     * @throws DatiMancantiException In caso di errori durante l'estrazione SQL.
+     */
     @Override
     public void leggiListaPersonaggi(List<Personaggio> listaPersonaggi, boolean isPg, String nomeCampagna) throws DatiMancantiException {
         listaPersonaggi.clear();
 
-        // Query modificata: aggiunta la JOIN con CAMPAGNA per filtrare tramite il Nome della campagna
         String query = "SELECT p.CodPersonaggio, p.Nome, p.Oro, p.IsPG, " +
                 "c.Nome AS nome_classe, " +
                 "r.Nome AS nome_razza, " +
@@ -158,15 +178,15 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "FROM PERSONAGGIO p " +
                 "JOIN CLASSE c ON p.CodClasse = c.CodClasse " +
                 "JOIN RAZZA r ON p.CodRazza = r.CodRazza " +
-                "JOIN CAMPAGNA cam ON p.CodCampagna = cam.CodCampagna " + // Nuova JOIN
+                "JOIN CAMPAGNA cam ON p.CodCampagna = cam.CodCampagna " +
                 "LEFT JOIN STATISTICA sp ON sp.CodPersonaggio = p.CodPersonaggio " +
-                "WHERE p.IsPG = ? AND cam.Nome = ?"; // Filtro sul nome della campagna
+                "WHERE p.IsPG = ? AND cam.Nome = ?";
 
         try (Connection conn = ConnessioneDatabase.getInstance().connection;
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setBoolean(1, isPg);
-            pstmt.setString(2, nomeCampagna); // Impostiamo la stringa del nome campagna
+            pstmt.setString(2, nomeCampagna);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
@@ -178,25 +198,15 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                     int puntiStatistica = rs.getInt("PuntiSpendere");
 
                     Statistica statBase = new Statistica(
-                            rs.getInt("costituzione_base"),
-                            rs.getInt("forza_base"),
-                            rs.getInt("destrezza_base"),
-                            rs.getInt("intelligenza_base"),
-                            rs.getInt("fede_base"),
-                            rs.getInt("carisma_base"),
-                            rs.getInt("fortuna_base"),
-                            0, 0
+                            rs.getInt("costituzione_base"), rs.getInt("forza_base"), rs.getInt("destrezza_base"),
+                            rs.getInt("intelligenza_base"), rs.getInt("fede_base"), rs.getInt("carisma_base"),
+                            rs.getInt("fortuna_base"), 0, 0
                     );
 
                     Statistica modRazza = new Statistica(
-                            rs.getInt("ModCostituzione"),
-                            rs.getInt("ModForza"),
-                            rs.getInt("ModDestrezza"),
-                            rs.getInt("ModIntelligenza"),
-                            rs.getInt("ModFede"),
-                            rs.getInt("ModCarisma"),
-                            rs.getInt("ModFortuna"),
-                            0, 0
+                            rs.getInt("ModCostituzione"), rs.getInt("ModForza"), rs.getInt("ModDestrezza"),
+                            rs.getInt("ModIntelligenza"), rs.getInt("ModFede"), rs.getInt("ModCarisma"),
+                            rs.getInt("ModFortuna"), 0, 0
                     );
 
                     Razza razza = new Razza(rs.getString("nome_razza"), modRazza);
@@ -212,13 +222,25 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
         }
     }
 
+    /**
+     * Carica i giocatori che partecipano a una campagna specifica per la dashboard del Master.
+     * <p>
+     * Se il giocatore ha già creato un personaggio per la campagna in questione,
+     * viene istanziato un oggetto fittizzio del Personaggio contenente il solo ID.
+     * Grazie all'override del metodo {@code equals()}, il sistema lo riconoscerà automaticamente
+     * come equivalente al personaggio reale caricato nel metodo {@code leggiListaPersonaggi},
+     * permettendo il corretto accoppiamento visivo nella GUI ed evitando il problema dello stato "Sconosciuto".
+     * </p>
+     *
+     * @param partecipanti La lista (svuotata e ripopolata) che conterrà i {@link Giocatore} iscritti.
+     * @param nomeCampagna La stringa che identifica la campagna da analizzare.
+     * @throws DatiMancantiException In caso di errori durante la risoluzione relazionale SQL.
+     */
     @Override
     public void leggiGiocatori(List<Giocatore> partecipanti, String nomeCampagna) throws DatiMancantiException {
-        // Svuotiamo la lista per evitare duplicati in caso di chiamate ripetute
         partecipanti.clear();
-        // Query con JOIN per prendere solo i giocatori iscritti a QUELLA campagna
-        // e per estrarre anche il codice del personaggio che possiedono in quella sessione
-        String query = "SELECT u.Username, u.Email, u.Password, p.CodPersonaggio " +
+
+        String query = "SELECT u.CodUtente, u.Username, u.Email, u.Password, p.CodPersonaggio " +
                 "FROM UTENTE u " +
                 "JOIN ISCRIZIONE i ON u.CodUtente = i.CodUtente " +
                 "JOIN CAMPAGNA c ON i.CodCampagna = c.CodCampagna " +
@@ -232,30 +254,18 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
+                    int idGiocatore = rs.getInt("CodUtente");
                     String username = rs.getString("Username");
                     String email = rs.getString("Email");
                     String password = rs.getString("Password");
                     int idPersonaggio = rs.getInt("CodPersonaggio");
 
-                    // 1. Creiamo il giocatore
                     Giocatore giocatore = new Giocatore(email, username, password);
+                    giocatore.setId(idGiocatore); // Mappiamo l'ID anche per il Giocatore iscritto!
 
-                    // 2. Risolviamo il problema di "Sconosciuto":
-                    // Se il giocatore ha un personaggio in questa campagna (idPersonaggio != 0),
-                    // dobbiamo inserirlo nella sua mappa delle partecipazioni!
                     if (idPersonaggio != 0) {
-                        // Creiamo un oggetto Personaggio fittizio (o "proxy") che ha lo stesso ID.
-                        // Grazie all'override di .equals() basato sull'ID che hai messo in Personaggio,
-                        // Java lo riconoscerà come IDENTICO a quello caricato da leggiListaPersonaggi!
                         Personaggio pgFittizio = new Personaggio(idPersonaggio, null, null, null, null, 0, 0, 0, 0, true);
-
-                        // Creiamo un oggetto Campagna fittizio con lo stesso nome per fare da chiave
                         Campagna campagnaFittizia = new Campagna(nomeCampagna, 0, null);
-
-                        // Per aggirare l'unmodifiableMap del getter, dobbiamo inserire il dato
-                        // sfruttando la logica di inizializzazione dell'oggetto, oppure se hai un metodo
-                        // addPartecipazione(Campagna, Personaggio) dentro Giocatore usa quello.
-                        // Se non hai quel metodo, inserisci questo trucco di riflessione o un metodo d'appoggio:
                         giocatore.addPartecipazioneDati(campagnaFittizia, pgFittizio);
                     }
 
@@ -268,6 +278,4 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
             throw new DatiMancantiException("Errore critico durante il caricamento dei giocatori: " + e.getMessage());
         }
     }
-
-
 }

@@ -294,6 +294,10 @@ public class Personaggio {
         this.manaCorrente = manaCorrente;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     /**
      * Aggiunge un'abilità alla lista del personaggio se prevista tra quelle sbloccabili dalla classe.
      *
