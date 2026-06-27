@@ -117,7 +117,8 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new NomeCampagnaInUsoException("Creazione fallita: Il nome '" + campagna.getNome() + "' è già utilizzato da un'altra campagna!");
+            System.err.println("DEBUG: Errore salvataggio campagna in db");
+            throw new NomeCampagnaInUsoException("Dati campagna corrotti durante il salvataggio.");
         }
     }
 

@@ -11,7 +11,7 @@ public class ConnessioneDatabase {
 	private static ConnessioneDatabase instance;
 	public Connection connection = null;
 	private String nome = "postgres";
-	private String password = "animeworld.1";
+	private String password = "mHgvB17ld1906CG0204!?@#asd!";
 	private String url = "jdbc:postgresql://localhost:5432/gdr_db";
 	private String driver = "org.postgresql.Driver";
 
