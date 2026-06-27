@@ -13,7 +13,7 @@ import java.awt.event.ActionListener;
  * <p>
  * Viene richiamata quando un {@link Giocatore} accede per la prima volta a una
  * campagna in cui non possiede ancora un PG. L'interfaccia permette di
- * definire l'identità del personaggio raccogliendone il nome, la razza e la classe
+ * definire l'identità del personaggio raccogliendone il nome, la razza e la classe.
  * </p>
  *
  * @author Riccardi Carmine
@@ -74,20 +74,31 @@ public class CreaPgGUI {
                     return;
                 }
 
-                // Recuperiamo le scelte dai menu a tendina
                 String razzaSelezionata = razzaComboBox.getSelectedItem().toString();
                 String classeSelezionata = ClasseComboBox.getSelectedItem().toString();
 
                 try {
-                    // Passiamo tutto al Controller
                     controller.creaNuovoPersonaggio(nomeInserito, razzaSelezionata, classeSelezionata, nomeCampagnaAttuale);
 
                     JOptionPane.showMessageDialog(frameAttuale,
                             "Personaggio creato con successo! L'avventura di " + nomeInserito + " sta per iniziare.",
                             "Successo", JOptionPane.INFORMATION_MESSAGE);
 
-                    // Chiudiamo il popup di creazione
                     frameAttuale.dispose();
+
+                    JFrame campagnaFrame = new JFrame("Scheda Personaggio - Campagna: " + nomeCampagnaAttuale);
+                    CampagnaGiocatoreGUI campagnaGUI = new CampagnaGiocatoreGUI(
+                            controller,
+                            giocatoreLoggato,
+                            nomeCampagnaAttuale,
+                            campagnaFrame
+                    );
+
+                    campagnaFrame.setContentPane(campagnaGUI.getMainPanel());
+                    campagnaFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    campagnaFrame.setSize(900, 600);
+                    campagnaFrame.setLocationRelativeTo(null); // Centra la schermata dell'inventario/statistiche
+                    campagnaFrame.setVisible(true); // Mostra la plancia operativa del giocatore
 
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
@@ -123,4 +134,4 @@ public class CreaPgGUI {
     public JPanel getMainPanel() {
         return mainPanel;
     }
-   }
+}

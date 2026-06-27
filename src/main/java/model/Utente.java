@@ -79,6 +79,10 @@ public abstract class Utente {
         this.email = nuovaEmail;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     /**
      * Restituisce una rappresentazione testuale dei dati identificativi dell'utente.
      *

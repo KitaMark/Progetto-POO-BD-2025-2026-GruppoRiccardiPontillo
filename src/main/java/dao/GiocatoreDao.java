@@ -9,7 +9,7 @@ import java.util.HashMap;
 public interface GiocatoreDao {
     void iscrivitiACampagna(int codUtente, int codCampagna);
 
-    void salvaPersonaggio(Personaggio pg, int codUtente, int codCampagna);
+    int salvaPersonaggio(Personaggio pg, int codUtente, int codCampagna);
     void aggiornaRisorse(Personaggio pg);
     HashMap<Campagna, Personaggio> caricaTutteLePartecipazioni(int codUtente);
     }

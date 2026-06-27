@@ -119,6 +119,10 @@ public class Campagna {
     /** @param listaPnG la nuova lista di personaggi non giocanti. */
     public void setListaPnG(ArrayList<Personaggio> listaPnG) { this.listaPnG = listaPnG; }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     /**
      * Confronta questa campagna con un altro oggetto per stabilire se sono logicamente uguali.
      * <p>
