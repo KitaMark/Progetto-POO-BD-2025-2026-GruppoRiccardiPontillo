@@ -6,12 +6,12 @@ import java.sql.SQLException;
 
 
 public class ConnessioneDatabase {
-
+//mHgvB17ld1906CG0204!?@#asd!
 	// ATTRIBUTI
 	private static ConnessioneDatabase instance;
 	public Connection connection = null;
 	private String nome = "postgres";
-	private String password = "mHgvB17ld1906CG0204!?@#asd!";
+	private String password = "animeworld.1";
 	private String url = "jdbc:postgresql://localhost:5432/gdr_db";
 	private String driver = "org.postgresql.Driver";
 

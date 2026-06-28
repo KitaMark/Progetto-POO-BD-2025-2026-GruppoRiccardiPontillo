@@ -681,8 +681,16 @@ public class Controller {
         return Collections.unmodifiableMap(listaCampagne);
     }
 
+    /**
+     * Recupera il catalogo del negozio filtrato per la campagna attiva.
+     * @return Una lista di Oggetti acquistabili in questa specifica campagna.
+     */
     public List<Oggetto> getCatalogoNegozio() {
-        return inventarioDAO.caricaCatalogoNegozio();
+        List<Oggetto> catalogo = new ArrayList<>();
+        if (campagnaAttiva != null) {
+            campagnaDAO.leggiCatalogoOggetti(catalogo, campagnaAttiva.getId());
+        }
+        return catalogo;
     }
 
     public void leggiListaCampagne() {
@@ -719,6 +727,38 @@ public class Controller {
     public Campagna getCampagnaAttiva() {
         return campagnaAttiva;
     }
+
+    /**
+     * Recupera l'elenco delle Razze abilitate dal Master per una specifica campagna.
+     *
+     * @param nomeCampagna Il nome della campagna.
+     * @return La lista di Razze disponibili.
+     */
+    public List<Razza> getRazzePerCampagna(String nomeCampagna) {
+        Campagna c = cercaCampagna(nomeCampagna);
+        List<Razza> razzeDisponibili = new ArrayList<>();
+        if (c != null) {
+            campagnaDAO.leggiListaRazze(razzeDisponibili, c.getId());
+        }
+        return razzeDisponibili;
+    }
+
+    /**
+     * Recupera l'elenco delle Classi create dal Master per una specifica campagna.
+     *
+     * @param nomeCampagna Il nome della campagna.
+     * @return La lista di Classi disponibili.
+     */
+    public List<Classe> getClassiPerCampagna(String nomeCampagna) {
+        Campagna c = cercaCampagna(nomeCampagna);
+        List<Classe> classiDisponibili = new ArrayList<>();
+        if (c != null) {
+            campagnaDAO.leggiListaClassi(classiDisponibili, c.getId());
+        }
+        return classiDisponibili;
+    }
+
+
 
     public boolean controllaPrivilegiMaster(Campagna campagna){
         return utenteAttivo.equals((listaCampagne.get(campagna)));

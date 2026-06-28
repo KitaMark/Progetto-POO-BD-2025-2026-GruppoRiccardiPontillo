@@ -24,8 +24,10 @@ public class ImplementazionePostgresStatistica implements StatisticaDAO {
     WHERE codpersonaggio = ?
     """;
 
-        try(Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement stmt = conn.prepareStatement(query)){
+        try{
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+
+            PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setInt(1, modifiche.getForza());
             stmt.setInt(2, modifiche.getDestrezza());
             stmt.setInt(3, modifiche.getCostituzione());

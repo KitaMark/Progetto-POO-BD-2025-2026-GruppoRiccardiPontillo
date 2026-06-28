@@ -44,9 +44,11 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "FROM CAMPAGNA c " +
                 "INNER JOIN UTENTE u ON c.CodMaster = u.CodUtente";
 
-        try (Connection conn = ConnessioneDatabase.getInstance().connection;
+        try {
+
+            Connection conn = ConnessioneDatabase.getInstance().connection;
              PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()){
+             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 int idMaster = rs.getInt("CodUtente");
@@ -96,8 +98,9 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "VALUES (?, ?, 'Non Iniziata', (SELECT CodUtente FROM UTENTE WHERE Username = ?)) " +
                 "RETURNING CodCampagna";
 
-        try (Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try{
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement stmt = conn.prepareStatement(query);
 
             stmt.setString(1, campagna.getNome());
             stmt.setInt(2, campagna.getMaxGiocatori());
@@ -133,8 +136,10 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
     public void eliminaCampagna(Campagna campagnaTarget) throws DatiMancantiException {
         String query = "DELETE FROM CAMPAGNA WHERE Nome = ?";
 
-        try (Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try{
+
+             Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement stmt = conn.prepareStatement(query);
 
             stmt.setString(1, campagnaTarget.getNome());
             int righeModificate = stmt.executeUpdate();
@@ -179,8 +184,10 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "LEFT JOIN STATISTICA sp ON sp.CodPersonaggio = p.CodPersonaggio " +
                 "WHERE p.IsPG = ? AND cam.Nome = ?";
 
-        try (Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+        try{
+
+             Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement pstmt = conn.prepareStatement(query);
 
             pstmt.setBoolean(1, isPg);
             pstmt.setString(2, nomeCampagna);
@@ -244,8 +251,10 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "LEFT JOIN PERSONAGGIO p ON (p.CodUtente = u.CodUtente AND p.CodCampagna = c.CodCampagna) " +
                 "WHERE u.Ruolo = 'Giocatore' AND c.Nome = ?";
 
-        try (Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+        try{
+
+             Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement pstmt = conn.prepareStatement(query);
 
             pstmt.setString(1, nomeCampagna);
 
@@ -276,18 +285,132 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
         }
     }
 
+    /**
+     * Carica il catalogo degli oggetti disponibili per una specifica campagna.
+     * <p>
+     * Effettua una lettura  della tabella OGGETTO filtrando per {@code CodCampagna}.
+     * Durante la lettura, filtra  tra oggetti di tipo "Consumabile"
+     * e "Equipaggiamento", istanziando le relative sottoclassi e popolando i requisiti e i bonus.
+     * </p>
+     *
+     * @param catalogo La lista (che verrà svuotata e ripopolata) destinata a contenere gli oggetti.
+     * @param idCampagna L'identificativo della campagna da cui pescare il catalogo.
+     */
     @Override
     public void leggiCatalogoOggetti(List<Oggetto> catalogo, int idCampagna) {
-        //TODO: implementa
+        catalogo.clear();
+        String query = "SELECT CodOggetto, Nome, Costo, Tipo, ReqForza, ReqDestrezza, BonusForza, RipristinoHp, RipristinoMana " +
+                "FROM OGGETTO WHERE CodCampagna = ?";
+
+        try (Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setInt(1, idCampagna);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("CodOggetto");
+                    String nome = rs.getString("Nome");
+                    int costo = rs.getInt("Costo");
+                    String tipo = rs.getString("Tipo");
+
+                    if ("Consumabile".equalsIgnoreCase(tipo)) {
+                        int hp = rs.getInt("RipristinoHp");
+                        int mana = rs.getInt("RipristinoMana");
+
+                        OggettoConsumabile consumabile = new OggettoConsumabile(id, nome, costo, tipo, hp, mana);
+                        catalogo.add(consumabile);
+
+                    } else if ("Equipaggiamento".equalsIgnoreCase(tipo)) {
+                        Statistica requisiti = new Statistica(0, rs.getInt("ReqForza"), rs.getInt("ReqDestrezza"), 0, 0, 0, 0, 0, 0);
+                        Statistica bonus = new Statistica(0, rs.getInt("BonusForza"), 0, 0, 0, 0, 0, 0, 0);
+
+                        OggettoEquipaggiabile equipaggiabile = new OggettoEquipaggiabile(nome, costo, requisiti, bonus);
+                        equipaggiabile.setId(id);
+                        catalogo.add(equipaggiabile);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Errore durante il caricamento del catalogo oggetti: " + e.getMessage());
+        }
     }
 
+    /**
+     * Recupera l'elenco delle Razze abilitate per una specifica campagna.
+     * <p>
+     * Legge i modificatori di statistica associati alla razza e ricompone l'oggetto
+     * mappando correttamente il suo ID nel database.
+     * </p>
+     *
+     * @param lista La lista di destinazione in cui caricare le razze.
+     * @param idCampagna L'identificativo della campagna di riferimento.
+     */
     @Override
     public void leggiListaRazze(List<Razza> lista, int idCampagna) {
-        //TODO: implementa
+        lista.clear();
+        String query = "SELECT CodRazza, Nome, ModCostituzione, ModForza, ModDestrezza, " +
+                "ModIntelligenza, ModFede, ModCarisma, ModFortuna " +
+                "FROM RAZZA WHERE CodCampagna = ?";
+
+        try{
+              Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement pstmt = conn.prepareStatement(query);
+
+            pstmt.setInt(1, idCampagna);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("CodRazza");
+                    String nome = rs.getString("Nome");
+
+                    Statistica modificatori = new Statistica(
+                            rs.getInt("ModCostituzione"), rs.getInt("ModForza"), rs.getInt("ModDestrezza"),
+                            rs.getInt("ModIntelligenza"), rs.getInt("ModFede"), rs.getInt("ModCarisma"),
+                            rs.getInt("ModFortuna"), 0, 0
+                    );
+
+                    Razza razza = new Razza(nome, modificatori);
+                    razza.setId(id);
+                    lista.add(razza);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Errore durante il caricamento delle razze: " + e.getMessage());
+        }
     }
 
+    /**
+     * Recupera l'elenco delle Classi previste in una specifica campagna.
+     *
+     * @param lista La lista di destinazione per le classi caricate.
+     * @param idCampagna L'identificativo della campagna di riferimento.
+     */
     @Override
     public void leggiListaClassi(List<Classe> lista, int idCampagna) {
-        //TODO: implementa
+        lista.clear();
+        String query = "SELECT CodClasse, Nome FROM CLASSE WHERE CodCampagna = ?";
+
+        try{
+             Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement pstmt = conn.prepareStatement(query);
+
+            pstmt.setInt(1, idCampagna);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("CodClasse");
+                    String nome = rs.getString("Nome");
+
+                    Classe classe = new Classe(id, nome);
+                    lista.add(classe);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Errore durante il caricamento delle classi: " + e.getMessage());
+        }
     }
 }

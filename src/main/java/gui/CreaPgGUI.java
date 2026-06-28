@@ -2,10 +2,13 @@ package gui;
 
 import controller.Controller;
 import model.Giocatore;
+import model.Classe;
+import model.Razza;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 /**
  * Rappresenta l'interfaccia grafica di popup dedicata alla creazione di un nuovo
@@ -14,6 +17,8 @@ import java.awt.event.ActionListener;
  * Viene richiamata quando un {@link Giocatore} accede per la prima volta a una
  * campagna in cui non possiede ancora un PG. L'interfaccia permette di
  * definire l'identità del personaggio raccogliendone il nome, la razza e la classe.
+ * Le opzioni disponibili nei menu a tendina sono generate dinamicamente in base
+ * a ciò che il Master ha configurato per la campagna corrente.
  * </p>
  *
  * @author Riccardi Carmine
@@ -66,10 +71,16 @@ public class CreaPgGUI {
             public void actionPerformed(ActionEvent e) {
                 String nomeInserito = campoNome.getText().trim();
 
-                // Controllo per evitare che l'utente lasci il campo vuoto
                 if (nomeInserito.isEmpty()) {
                     JOptionPane.showMessageDialog(frameAttuale,
                             "Inserisci un nome per il tuo eroe!",
+                            "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                if (razzaComboBox.getSelectedItem() == null || ClasseComboBox.getSelectedItem() == null) {
+                    JOptionPane.showMessageDialog(frameAttuale,
+                            "Il Master non ha ancora creato Razze o Classi per questa campagna!",
                             "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
@@ -108,21 +119,23 @@ public class CreaPgGUI {
     }
 
     /**
-     * Metodo privato che inizializza le opzioni disponibili per
-     * la creazione del personaggio, popolando i selettori di Razza e Classe.
+     * Metodo privato che inizializza le opzioni disponibili per la creazione
+     * del personaggio, interrogando il database (tramite Controller) per estrarre
+     * unicamente le Classi e le Razze abilitate per questa specifica campagna.
      */
     private void popolaMenuATendina() {
-        // Opzioni per la Razza
-        razzaComboBox.addItem("Umano");
-        razzaComboBox.addItem("Elfo");
-        razzaComboBox.addItem("Nano");
-        razzaComboBox.addItem("Orco");
+        razzaComboBox.removeAllItems();
+        ClasseComboBox.removeAllItems();
 
-        // Opzioni per la Classe
-        ClasseComboBox.addItem("Guerriero");
-        ClasseComboBox.addItem("Mago");
-        ClasseComboBox.addItem("Ladro");
-        ClasseComboBox.addItem("Chierico");
+        List<Razza> razzePermesse = controller.getRazzePerCampagna(nomeCampagnaAttuale);
+        List<Classe> classiPermesse = controller.getClassiPerCampagna(nomeCampagnaAttuale);
+
+        for (Razza r : razzePermesse) {
+            razzaComboBox.addItem(r.getNome());
+        }
+        for (Classe c : classiPermesse) {
+            ClasseComboBox.addItem(c.getNome());
+        }
     }
 
     /**
