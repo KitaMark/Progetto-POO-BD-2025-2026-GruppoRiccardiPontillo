@@ -199,6 +199,7 @@ public class CampagnaMasterGUI {
                 try {
                     controller.rimuoviPnG(idPng);
                     JOptionPane.showMessageDialog(frame, "PnG rimosso con successo.");
+                    inizializzaTabellaPnG();
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
