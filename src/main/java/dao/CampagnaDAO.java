@@ -16,5 +16,6 @@ public interface CampagnaDAO {
     void leggiCatalogoOggetti(List<Oggetto> catalogo, int idCampagna);
     void leggiListaRazze(List<Razza> lista, int idCampagna);
     void leggiListaClassi(List<Classe> lista, int idCampagna);
+    void cambiaStato(int id, boolean stato);
     //per ora
 }

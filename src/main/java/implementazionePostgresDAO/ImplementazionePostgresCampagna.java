@@ -413,4 +413,20 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
             throw new RuntimeException("Errore durante il caricamento delle classi: " + e.getMessage());
         }
     }
+
+    @Override
+    public void cambiaStato(int id, boolean stato) {
+        String query = "UPDATE campagna SET stato = ? WHERE codcampagna = ?";
+        String statoStringa = stato ? "In Corso" : "Non Iniziata";
+
+        try(Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement stmt = conn.prepareStatement(query)){
+            stmt.setString(1, statoStringa);
+            stmt.setInt(2, id);
+            stmt.executeUpdate();
+        } catch(SQLException ex){
+            ex.printStackTrace();
+            System.err.println("Impossibile aggiornare lo stato della campagna, dati corrotti.");
+        }
+    }
 }

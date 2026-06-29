@@ -59,6 +59,7 @@ public class CampagnaMasterGUI {
     private JButton catalogoOggettiButton;
     private JButton visualizzaDettagliPGButton;
     private JButton visualizzaDettagliButton1;
+    private JButton modificaButton;
 
     /**
      * Il Controller di riferimento per orchestrare tutte le logiche di modifica e gestione della campagna.
@@ -210,21 +211,15 @@ public class CampagnaMasterGUI {
         statoCampagnaButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String[] opzioni = {"In Corso", "Conclusa"};
-                int scelta = JOptionPane.showOptionDialog(frame,
-                        "Scegli il nuovo stato della campagna:", "Cambia Stato",
-                        JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
-                        null, opzioni, opzioni[0]);
-
-                //fa il cambio stato campagna solo se il master ha premuto il pulsante
-                if (scelta != -1) {
-                    try {
-                        controller.cambiaStatoCampagna(controller.getCampagnaAttiva().getNome(), opzioni[scelta]);
-                        statoCampagna.setText("Stato: " + opzioni[scelta]); // Aggiorna l'etichetta in alto!
-                        JOptionPane.showMessageDialog(frame, "Stato aggiornato a: " + opzioni[scelta]);
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
-                    }
+                try {
+                    controller.cambiaStatoCampagna();
+                    String nuovoStato = controller.getCampagnaAttiva().isIniziata()? "In corso" : "Non iniziata";
+                    statoCampagna.setText("Stato: " + nuovoStato); // Aggiorna l'etichetta in alto!
+                    String testoStato = controller.getCampagnaAttiva().isIniziata()? "Concludi" : "Inizia campagna";
+                    statoCampagnaButton.setText(testoStato); //aggiorna button
+                    JOptionPane.showMessageDialog(frame, "Stato aggiornato a: " + nuovoStato);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });

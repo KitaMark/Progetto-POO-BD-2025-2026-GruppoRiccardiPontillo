@@ -353,8 +353,14 @@ public class Controller {
         campagnaAttiva.getListaPnG().remove(daTrovare);
     }
 
-    public void cambiaStatoCampagna(String nomeCampagna, String nuovoStato) throws Exception {
-        System.out.println("Lo stato della campagna '" + nomeCampagna + "' è ora: " + nuovoStato + " (Simulazione)");
+    public void cambiaStatoCampagna(){
+        if(campagnaAttiva.isIniziata()){
+            campagnaDAO.cambiaStato(campagnaAttiva.getId(),false);
+            campagnaAttiva.setIniziata(false);
+        } else{
+            campagnaDAO.cambiaStato(campagnaAttiva.getId(),true);
+            campagnaAttiva.setIniziata(true);
+        }
     }
 
     public void aumentaStatistica(String statistica) throws StatisticaNonSelezionataException {

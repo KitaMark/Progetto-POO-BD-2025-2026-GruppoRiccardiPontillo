@@ -170,6 +170,12 @@
                       <text value="Visualizza dettagli"/>
                     </properties>
                   </component>
+                  <component id="b88de" class="javax.swing.JButton" binding="modificaButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Modifica"/>
+                    </properties>
+                  </component>
                   <component id="38dc1" class="javax.swing.JButton" binding="creaPngButton">
                     <constraints/>
                     <properties>
