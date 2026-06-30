@@ -59,7 +59,7 @@
           <text value="[classe]"/>
         </properties>
       </component>
-      <tabbedpane id="87118" binding="tabbedPane1" default-binding="true">
+      <tabbedpane id="87118" binding="mainTab">
         <constraints>
           <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
             <preferred-size width="200" height="200"/>
@@ -244,7 +244,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <tabbedpane id="93b8e" binding="tabbedPane2" default-binding="true">
+              <tabbedpane id="93b8e" binding="inventarioTabbedPane">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
                     <preferred-size width="200" height="200"/>

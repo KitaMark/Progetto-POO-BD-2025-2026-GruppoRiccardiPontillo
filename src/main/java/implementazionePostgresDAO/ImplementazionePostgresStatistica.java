@@ -20,11 +20,13 @@ public class ImplementazionePostgresStatistica implements StatisticaDAO {
         carisma = ?,
         fortuna = ?,
         hpmax = ?,
-        manamax = ?
+        manamax = ?,
+        hpattuali = ?,  -- Imposta HP attuali uguali a HP Max
+        manaattuali = ? -- Imposta Mana attuali uguali a Mana Max
     WHERE codpersonaggio = ?
     """;
 
-        try{
+        try {
             Connection conn = ConnessioneDatabase.getInstance().connection;
 
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -37,8 +39,9 @@ public class ImplementazionePostgresStatistica implements StatisticaDAO {
             stmt.setInt(7, modifiche.getFortuna());
             stmt.setInt(8, modifiche.getHpMax());
             stmt.setInt(9, modifiche.getManaMax());
-
-            stmt.setInt(10, idPersonaggio);
+            stmt.setInt(10, modifiche.getHpMax());
+            stmt.setInt(11, modifiche.getManaMax());
+            stmt.setInt(12, idPersonaggio);
 
             int righeCoinvolte = stmt.executeUpdate();
 
@@ -46,7 +49,7 @@ public class ImplementazionePostgresStatistica implements StatisticaDAO {
                 System.out.println("DEBUG: Nessuna statistica trovata per il personaggio con ID: " + idPersonaggio);
             }
 
-        }catch(SQLException ex){
+        } catch (SQLException ex) {
             ex.printStackTrace();
             System.err.println("DEBUG: Errore nell'aggiornamento dati del personaggio all'interno del database.");
         }

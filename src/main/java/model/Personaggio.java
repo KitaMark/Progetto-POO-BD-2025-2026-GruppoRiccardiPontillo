@@ -286,7 +286,10 @@ public class Personaggio {
         this.oro = oro;
     }
 
-    public void setStatisticaBase(Statistica statistica){statisticaBase = statistica;}
+    public void setStatisticaBase(Statistica statistica){
+        statisticaBase = statistica;
+        aggiornaStatoPG();
+    }
 
     public void setHpCorrenti(int hpCorrenti) {
         this.hpCorrenti = hpCorrenti;

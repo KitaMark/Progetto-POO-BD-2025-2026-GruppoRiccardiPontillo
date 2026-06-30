@@ -174,6 +174,7 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "c.Nome AS nome_classe, " +
                 "r.Nome AS nome_razza, " +
                 "sp.HpAttuali, sp.ManaAttuali, sp.PuntiSpendere, " +
+                "sp.HpMax, sp.ManaMax, " + // <-- AGGIUNTI QUI
                 "sp.Forza AS forza_base, sp.Destrezza AS destrezza_base, sp.Costituzione AS costituzione_base, " +
                 "sp.Intelligenza AS intelligenza_base, sp.Fede AS fede_base, sp.Carisma AS carisma_base, sp.Fortuna AS fortuna_base, " +
                 "r.ModForza, r.ModDestrezza, r.ModCostituzione, r.ModIntelligenza, r.ModFede, r.ModCarisma, r.ModFortuna " +
@@ -200,11 +201,13 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                     int manaCorrente = rs.getInt("ManaAttuali");
                     int oro = rs.getInt("Oro");
                     int puntiStatistica = rs.getInt("PuntiSpendere");
+                    int hpMax = rs.getInt("HpMax");
+                    int manaMax = rs.getInt("ManaMax");
 
                     Statistica statBase = new Statistica(
                             rs.getInt("costituzione_base"), rs.getInt("forza_base"), rs.getInt("destrezza_base"),
                             rs.getInt("intelligenza_base"), rs.getInt("fede_base"), rs.getInt("carisma_base"),
-                            rs.getInt("fortuna_base"), 0, 0
+                            rs.getInt("fortuna_base"), hpMax, manaMax
                     );
 
                     Statistica modRazza = new Statistica(

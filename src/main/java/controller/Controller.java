@@ -516,10 +516,10 @@ public class Controller {
         }
         if(daModificare == null) throw new PersonaggioNonTrovatoException("Impossibile trovare il personaggio selezionato.");
         Statistica modifiche = new Statistica(costituzione, forza, destrezza, intelligenza, fede, carisma, fortuna, hpMax, manaMax);
-        daModificare.setHpCorrenti(hpMax);
-        daModificare.setManaCorrente(manaMax);
         personaggioDAO.aggiornaStatistichePersonaggio(daModificare.getId(), modifiche);
         daModificare.setStatisticaBase(modifiche);
+        daModificare.setHpCorrenti(hpMax);
+        daModificare.setManaCorrente(manaMax);
     }
 
     public void equipaggiaOggetto(String nomeOggetto, String nomeCampagna) throws OggettoNonSelezionatoException {
@@ -669,6 +669,20 @@ public class Controller {
 
         abilitaDao.imparaAbilita(pg.getId(), target.getNome());
         pg.addAbilita(target);
+    }
+
+    public Personaggio cercaPersonaggio(int id, boolean isPg) throws Exception{
+        if(campagnaAttiva == null) throw new Exception("Errore critico: campagna relativa al personaggio non trovata!");
+        List<Personaggio> daCercare = (isPg)? campagnaAttiva.getListaPG() : campagnaAttiva.getListaPnG();
+        Personaggio trovato = null;
+        for(Personaggio pg : daCercare){
+            if(pg.getId() == id){
+                trovato = pg;
+                break;
+            }
+        }
+        if(trovato == null) throw new Exception("Impossibile trovare il personaggio selezionato");
+        return trovato;
     }
 
     public Utente cercaUtente(String username, String email, String password){

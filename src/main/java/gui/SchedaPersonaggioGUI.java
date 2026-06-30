@@ -1,6 +1,7 @@
 package gui;
 
 import controller.Controller;
+import model.Personaggio;
 
 import javax.swing.*;
 
@@ -22,7 +23,7 @@ public class SchedaPersonaggioGUI extends JDialog {
     private JLabel classeTesto;
     private JLabel forzaTesto;
     private JLabel destrezzaTesto;
-    private JTabbedPane tabbedPane1;
+    private JTabbedPane mainTab;
     private JLabel costituzioneTesto;
     private JLabel intelligenzaTesto;
     private JLabel carismaTesto;
@@ -37,7 +38,7 @@ public class SchedaPersonaggioGUI extends JDialog {
     private JTable table1;
     private JLabel puntiStatisticaLabel;
     private JLabel puntiTesto;
-    private JTabbedPane tabbedPane2;
+    private JTabbedPane inventarioTabbedPane;
     private JPanel equipaggiabiliPane;
     private JScrollPane equipaggiabiliScrollPane;
     private JTable equipaggiabiliTable;
@@ -46,20 +47,51 @@ public class SchedaPersonaggioGUI extends JDialog {
     private JTable consumabiliTable;
 
     private Controller controller;
+    private Personaggio pgAttivo;
 
-    public SchedaPersonaggioGUI(JFrame frameChiamante, Controller controller, boolean isPg) {
-        super(frameChiamante, "Scheda personaggio", true);
+    public SchedaPersonaggioGUI(JFrame frameChiamante, Controller controller, boolean isPg, Personaggio pg) {
+        super(frameChiamante, "Scheda "+pg.getNome()+ ((isPg)? "" : " - [PnG]"), true);
         this.controller = controller;
-
+        this.pgAttivo = pg;
         super.setContentPane(contentPane);
         super.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         super.setResizable(false);
-        inserisciDati();
+        inizializzaDatiPrincipali();
         super.pack();
         super.setVisible(true);
 
 
     }
 
-    private void inserisciDati(){}
+    private void inizializzaDatiPrincipali(){
+        nomeTesto.setText(pgAttivo.getNome());
+        razzaTesto.setText(pgAttivo.getRazza().toString());
+        classeTesto.setText(pgAttivo.getClasse().toString());
+
+        //metodi per inizializzare la JProgressBar
+        hpBar.setMinimum(0);
+        hpBar.setMaximum(pgAttivo.getStatisticheFinali().getHpMax());
+        hpBar.setValue(pgAttivo.getHpCorrenti());
+        //sovrascrive il testo standard della progress bar
+        hpBar.setStringPainted(true);
+        hpBar.setString(pgAttivo.getHpCorrenti() + "/"+pgAttivo.getStatisticheFinali().getHpMax());
+        //rende la barra puramente estetica
+        hpBar.setEnabled(false);
+
+        manaBar.setMinimum(0);
+        manaBar.setMaximum(pgAttivo.getStatisticheFinali().getManaMax());
+        manaBar.setValue(pgAttivo.getManaCorrente());
+        manaBar.setStringPainted(true);
+        manaBar.setString(pgAttivo.getManaCorrente()+"/"+pgAttivo.getStatisticheFinali().getManaMax());
+        manaBar.setEnabled(false);
+
+        forzaTesto.setText(String.valueOf(pgAttivo.getStatisticheFinali().getForza()));
+        destrezzaTesto.setText(String.valueOf(pgAttivo.getStatisticheFinali().getDestrezza()));
+        costituzioneTesto.setText(String.valueOf(pgAttivo.getStatisticheFinali().getCostituzione()));
+        intelligenzaTesto.setText(String.valueOf(pgAttivo.getStatisticheFinali().getIntelligenza()));
+        carismaTesto.setText(String.valueOf(pgAttivo.getStatisticheFinali().getCarisma()));
+        fedeTesto.setText(String.valueOf(pgAttivo.getStatisticheFinali().getFede()));
+        fortunaTesto.setText(String.valueOf(pgAttivo.getStatisticheFinali().getFortuna()));
+        puntiTesto.setText(String.valueOf(pgAttivo.getPuntiStatistica()));
+    }
 }

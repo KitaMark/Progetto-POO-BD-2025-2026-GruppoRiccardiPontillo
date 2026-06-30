@@ -89,7 +89,7 @@ public class CampagnaMasterGUI {
         this.nomeCampagna.setText("Campagna: " + controller.getCampagnaAttiva().getNome());
         String stato = controller.getCampagnaAttiva().isIniziata() ? "Stato: In corso" : "Stato: Non iniziata";
         this.statoCampagna.setText(stato);
-        String testoStato = controller.getCampagnaAttiva().isIniziata()? "Concludi" : "Inizia campagna";
+        String testoStato = controller.getCampagnaAttiva().isIniziata() ? "Concludi" : "Inizia campagna";
         statoCampagnaButton.setText(testoStato);
 
         inizializzaTabellaPG();
@@ -123,7 +123,7 @@ public class CampagnaMasterGUI {
                     try {
                         controller.rimuoviPGdaCampagna(nomePg, proprietarioPg);
                         inizializzaTabellaPG();
-                        JOptionPane.showMessageDialog(frame, "Hai rimosso "+nomePg+".");
+                        JOptionPane.showMessageDialog(frame, "Hai rimosso " + nomePg + ".");
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                     }
@@ -143,7 +143,7 @@ public class CampagnaMasterGUI {
                 }
 
                 String nomePg = pgTable.getValueAt(riga, 0).toString();
-                int pgId = (Integer)pgTable.getModel().getValueAt(riga, 4);
+                int pgId = (Integer) pgTable.getModel().getValueAt(riga, 4);
 
                 //non rendiamo il frame invisibile, poiché la gui chiamata si comporta come un popup.
                 ModificaStatisticheGUI modificaGUI = new ModificaStatisticheGUI(controller, nomePg, pgId, true, frame);
@@ -182,7 +182,7 @@ public class CampagnaMasterGUI {
         creaPngButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                CreaPngGUI creaPngGUI = new CreaPngGUI(controller, (Master)controller.getUtenteAttivo(), frame);
+                CreaPngGUI creaPngGUI = new CreaPngGUI(controller, (Master) controller.getUtenteAttivo(), frame);
                 inizializzaTabellaPnG(); //aggiorna
             }
         });
@@ -196,7 +196,7 @@ public class CampagnaMasterGUI {
                     JOptionPane.showMessageDialog(frame, "Seleziona un PnG da rimuovere.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                int idPng = (int)pngTable.getModel().getValueAt(riga, 3);
+                int idPng = (int) pngTable.getModel().getValueAt(riga, 3);
                 try {
                     controller.rimuoviPnG(idPng);
                     JOptionPane.showMessageDialog(frame, "PnG rimosso con successo.");
@@ -213,9 +213,9 @@ public class CampagnaMasterGUI {
             public void actionPerformed(ActionEvent e) {
                 try {
                     controller.cambiaStatoCampagna();
-                    String nuovoStato = controller.getCampagnaAttiva().isIniziata()? "In corso" : "Non iniziata";
+                    String nuovoStato = controller.getCampagnaAttiva().isIniziata() ? "In corso" : "Non iniziata";
                     statoCampagna.setText("Stato: " + nuovoStato); // Aggiorna l'etichetta in alto!
-                    String testoStato = controller.getCampagnaAttiva().isIniziata()? "Concludi" : "Inizia campagna";
+                    String testoStato = controller.getCampagnaAttiva().isIniziata() ? "Concludi" : "Inizia campagna";
                     statoCampagnaButton.setText(testoStato); //aggiorna button
                     JOptionPane.showMessageDialog(frame, "Stato aggiornato a: " + nuovoStato);
                 } catch (Exception ex) {
@@ -227,9 +227,22 @@ public class CampagnaMasterGUI {
         visualizzaDettagliPGButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SchedaPersonaggioGUI schedapg = new SchedaPersonaggioGUI(frame, controller, true);
+                int riga = pgTable.getSelectedRow();
+                if (riga == -1) {
+                    JOptionPane.showMessageDialog(frame, "Nessun personaggio selezionato.", "Attenzione", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                int id = (int) pgTable.getModel().getValueAt(riga, 4);
+                try {
+                    Personaggio daVisualizzare = controller.cercaPersonaggio(id, true);
+                    SchedaPersonaggioGUI schedapg = new SchedaPersonaggioGUI(frame, controller, true, daVisualizzare);
+                } catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
+
     }
 
 

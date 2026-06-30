@@ -64,8 +64,7 @@ public class ModificaStatisticheGUI {
         // Usiamo DISPOSE_ON_CLOSE per chiudere solo questo popup e non tutto
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setResizable(false);
-        frame.pack();
-        frame.setVisible(true);
+
 
         inizializzaSpinner();
 
@@ -102,6 +101,9 @@ public class ModificaStatisticheGUI {
                 }
             }
         });
+
+        frame.pack();
+        frame.setVisible(true);
     }
 
 
