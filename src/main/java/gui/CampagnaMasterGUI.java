@@ -223,6 +223,13 @@ public class CampagnaMasterGUI {
                 }
             }
         });
+
+        visualizzaDettagliPGButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SchedaPersonaggioGUI schedapg = new SchedaPersonaggioGUI(frame, controller, true);
+            }
+        });
     }
 
 
