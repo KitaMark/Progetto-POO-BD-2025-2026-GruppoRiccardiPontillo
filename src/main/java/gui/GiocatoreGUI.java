@@ -24,7 +24,6 @@ import java.awt.event.ActionListener;
  * @author Pontillo Salvatore
  */
 public class GiocatoreGUI {
-    // Le tue variabili esatte dell'UI Designer
     private JLabel benvenutoGiocatore;
     private JButton LogoutButton;
     private JTable tableCampagnaGiocatore;
@@ -100,27 +99,15 @@ public class GiocatoreGUI {
                 String nomeCampagnaSelezionata = tableCampagnaGiocatore.getValueAt(rigaSelezionata, 0).toString();
 
                 try {
-                    boolean haGiaIlPersonaggio = controller.visualizzaCampagna(nomeCampagnaSelezionata);
+                    boolean haGiaIlPersonaggio = controller.recuperaDatiCampagna(nomeCampagnaSelezionata);
                     Giocatore giocatore = (Giocatore) controller.getUtenteAttivo();
 
                     frame.dispose();
 
                     if (!haGiaIlPersonaggio) {
-                        JFrame creaPgFrame = new JFrame("Creazione Personaggio - Campagna: " + nomeCampagnaSelezionata);
-                        CreaPgGUI creaPgGUI = new CreaPgGUI(controller, giocatore, nomeCampagnaSelezionata, creaPgFrame);
-                        creaPgFrame.setContentPane(creaPgGUI.getMainPanel());
-                        creaPgFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                        creaPgFrame.setSize(600, 450);
-                        creaPgFrame.setLocationRelativeTo(null);
-                        creaPgFrame.setVisible(true);
+                        CreaPgGUI creaPgGUI = new CreaPgGUI(controller, nomeCampagnaSelezionata, frame);
                     } else {
-                        JFrame campagnaFrame = new JFrame("Scheda Personaggio - Campagna: " + nomeCampagnaSelezionata);
-                        CampagnaGiocatoreGUI campagnaGUI = new CampagnaGiocatoreGUI(controller, giocatore, nomeCampagnaSelezionata, campagnaFrame);
-                        campagnaFrame.setContentPane(campagnaGUI.getMainPanel());
-                        campagnaFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                        campagnaFrame.setSize(900, 600);
-                        campagnaFrame.setLocationRelativeTo(null);
-                        campagnaFrame.setVisible(true);
+                        CampagnaGiocatoreGUI campagnaGUI = new CampagnaGiocatoreGUI(controller, giocatore, nomeCampagnaSelezionata, frame);
                     }
 
                 } catch (Exception ex) {

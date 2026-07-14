@@ -1,6 +1,7 @@
 package gui;
 
 import controller.Controller;
+import model.Campagna;
 import model.Giocatore;
 import model.Classe;
 import model.Razza;
@@ -25,7 +26,6 @@ import java.util.List;
  * @author Pontillo Salvatore
  */
 public class CreaPgGUI {
-    // Variabili generate dal tuo UI Designer
     private JPanel mainPanel;
     private JTextField campoNome;
     private JComboBox razzaComboBox;
@@ -39,14 +39,12 @@ public class CreaPgGUI {
     /** Il Controller di sistema per delegare il salvataggio del nuovo personaggio. */
     private Controller controller;
 
-    /** Il Giocatore attualmente loggato che sta creando il proprio PG. */
-    private Giocatore giocatoreLoggato;
-
     /** Il nome della campagna a cui il nuovo personaggio verrà indissolubilmente legato. */
     private String nomeCampagnaAttuale;
 
-    /** Riferimento alla finestra corrente, utilizzato per chiudere il popup terminata l'operazione. */
-    private JFrame frameAttuale;
+    /** La campagna in cui inserire il personaggio. **/
+
+    private Campagna campagnaAttiva;
 
 
     /**
@@ -54,15 +52,18 @@ public class CreaPgGUI {
      * i menu a tendina e configurando l'ascoltatore per il pulsante di conferma.
      *
      * @param controller   Il {@link Controller} che comunicherà con il database.
-     * @param giocatore    L'oggetto {@link Giocatore} che sta effettuando l'azione.
      * @param nomeCampagna Il nome della campagna di destinazione.
-     * @param frame        Il {@link JFrame} (popup) all'interno del quale è ospitato questo pannello.
      */
-    public CreaPgGUI(Controller controller, Giocatore giocatore, String nomeCampagna, JFrame frame) {
+    public CreaPgGUI(Controller controller, String nomeCampagna, JFrame frameChiamante) {
         this.controller = controller;
-        this.giocatoreLoggato = giocatore;
         this.nomeCampagnaAttuale = nomeCampagna;
-        this.frameAttuale = frame;
+        campagnaAttiva = controller.getCampagnaAttiva();
+
+        JFrame frame = new JFrame("Creazione Personaggio - Campagna: " + nomeCampagna);
+        frame.setContentPane(mainPanel);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
 
         popolaMenuATendina();
 
@@ -72,14 +73,14 @@ public class CreaPgGUI {
                 String nomeInserito = campoNome.getText().trim();
 
                 if (nomeInserito.isEmpty()) {
-                    JOptionPane.showMessageDialog(frameAttuale,
+                    JOptionPane.showMessageDialog(frame,
                             "Inserisci un nome per il tuo eroe!",
                             "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
 
                 if (razzaComboBox.getSelectedItem() == null || ClasseComboBox.getSelectedItem() == null) {
-                    JOptionPane.showMessageDialog(frameAttuale,
+                    JOptionPane.showMessageDialog(frame,
                             "Il Master non ha ancora creato Razze o Classi per questa campagna!",
                             "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
@@ -89,30 +90,19 @@ public class CreaPgGUI {
                 String classeSelezionata = ClasseComboBox.getSelectedItem().toString();
 
                 try {
-                    controller.creaNuovoPersonaggio(nomeInserito, razzaSelezionata, classeSelezionata, nomeCampagnaAttuale);
+                    controller.creaNuovoPersonaggio(nomeInserito, razzaSelezionata, classeSelezionata, campagnaAttiva);
 
-                    JOptionPane.showMessageDialog(frameAttuale,
+                    JOptionPane.showMessageDialog(frame,
                             "Personaggio creato con successo! L'avventura di " + nomeInserito + " sta per iniziare.",
                             "Successo", JOptionPane.INFORMATION_MESSAGE);
 
-                    frameAttuale.dispose();
+                    frame.dispose();
 
-                    JFrame campagnaFrame = new JFrame("Scheda Personaggio - Campagna: " + nomeCampagnaAttuale);
-                    CampagnaGiocatoreGUI campagnaGUI = new CampagnaGiocatoreGUI(
-                            controller,
-                            giocatoreLoggato,
-                            nomeCampagnaAttuale,
-                            campagnaFrame
-                    );
-
-                    campagnaFrame.setContentPane(campagnaGUI.getMainPanel());
-                    campagnaFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    campagnaFrame.setSize(900, 600);
-                    campagnaFrame.setLocationRelativeTo(null); // Centra la schermata dell'inventario/statistiche
-                    campagnaFrame.setVisible(true); // Mostra la plancia operativa del giocatore
+                    CampagnaGiocatoreGUI campagnaGUI = new CampagnaGiocatoreGUI(controller,
+                            (Giocatore)controller.getUtenteAttivo(), nomeCampagnaAttuale, frameChiamante);
 
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -127,8 +117,8 @@ public class CreaPgGUI {
         razzaComboBox.removeAllItems();
         ClasseComboBox.removeAllItems();
 
-        List<Razza> razzePermesse = controller.getRazzePerCampagna(nomeCampagnaAttuale);
-        List<Classe> classiPermesse = controller.getClassiPerCampagna(nomeCampagnaAttuale);
+        List<Razza> razzePermesse = controller.getRazzePerCampagna(campagnaAttiva);
+        List<Classe> classiPermesse = controller.getClassiPerCampagna(campagnaAttiva);
 
         for (Razza r : razzePermesse) {
             razzaComboBox.addItem(r.getNome());
@@ -136,15 +126,5 @@ public class CreaPgGUI {
         for (Classe c : classiPermesse) {
             ClasseComboBox.addItem(c.getNome());
         }
-    }
-
-    /**
-     * Restituisce il pannello principale della finestra di creazione, necessario
-     * per l'inserimento visivo all'interno del {@link JFrame}.
-     *
-     * @return Il {@link JPanel} contenente l'intero form di registrazione del PG.
-     */
-    public JPanel getMainPanel() {
-        return mainPanel;
     }
 }

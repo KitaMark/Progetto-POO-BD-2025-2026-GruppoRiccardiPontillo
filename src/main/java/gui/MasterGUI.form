@@ -32,7 +32,7 @@
           <component id="6e094" class="javax.swing.JButton" binding="creaButton">
             <constraints/>
             <properties>
-              <text value="Crea nuova campagna"/>
+              <text value="Crea campagna"/>
             </properties>
           </component>
           <component id="87d12" class="javax.swing.JButton" binding="eliminaButton">

@@ -1,14 +1,16 @@
 package implementazionePostgresDAO;
 
-import dao.StatisticaDAO;
+import dao.PersonaggioDAO;
 import database.ConnessioneDatabase;
+import model.Personaggio;
 import model.Statistica;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ImplementazionePostgresStatistica implements StatisticaDAO {
+public class ImplementazionePostgresPersonaggio implements PersonaggioDAO {
     public void aggiornaStatistichePersonaggio(int idPersonaggio, Statistica modifiche) {
         String query = """
     UPDATE statistica
@@ -21,15 +23,14 @@ public class ImplementazionePostgresStatistica implements StatisticaDAO {
         fortuna = ?,
         hpmax = ?,
         manamax = ?,
-        hpattuali = ?,  -- Imposta HP attuali uguali a HP Max
-        manaattuali = ? -- Imposta Mana attuali uguali a Mana Max
+        hpattuali = ?,  
+        manaattuali = ? 
     WHERE codpersonaggio = ?
     """;
 
-        try {
-            Connection conn = ConnessioneDatabase.getInstance().connection;
+        try(Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement stmt = conn.prepareStatement(query);) {
 
-            PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setInt(1, modifiche.getForza());
             stmt.setInt(2, modifiche.getDestrezza());
             stmt.setInt(3, modifiche.getCostituzione());
@@ -53,5 +54,30 @@ public class ImplementazionePostgresStatistica implements StatisticaDAO {
             ex.printStackTrace();
             System.err.println("DEBUG: Errore nell'aggiornamento dati del personaggio all'interno del database.");
         }
+    }
+
+    public void leggiInventarioPersonaggio(int idPersonaggio, Personaggio personaggio){
+        String query = """
+                SELECT o.*
+                FROM public.oggetto o
+                JOIN public.inventario i ON o.codoggetto = i.codoggetto
+                WHERE i.codpersonaggio = ?;
+                """;
+        try(Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement stmt = conn.prepareStatement(query);){
+            stmt.setInt(1, idPersonaggio);
+            try(ResultSet rs = stmt.executeQuery()){
+               while(rs.next()){
+                   //TODO
+               }
+            } catch(SQLException ex){
+                ex.printStackTrace();
+                System.err.println("DEBUG: Errore durante la lettura dell'inventario.");
+            }
+        } catch(SQLException ex){
+            ex.printStackTrace();
+            System.err.println("DEBUG: Errore connessione a db per lettura inventario.");
+        }
+
     }
 }

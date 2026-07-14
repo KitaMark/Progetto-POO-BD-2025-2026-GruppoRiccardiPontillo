@@ -61,7 +61,7 @@ public class MasterGUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int conferma = JOptionPane.showConfirmDialog(frame,
-                        "Vuoi davvero fare logout?", "Conferma Uscita",
+                        "Vuoi davvero effettuare il logout?", "Conferma Uscita",
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
                 if (conferma == JOptionPane.YES_OPTION) {
@@ -140,7 +140,7 @@ public class MasterGUI {
                 String nomeCampagnaSelezionata = tableCampagna.getValueAt(rigaSelezionata, 0).toString();
 
                 try {
-                    controller.visualizzaCampagna(nomeCampagnaSelezionata); //setta la campagna, se la trova, come campagna attiva
+                    controller.recuperaDatiCampagna(nomeCampagnaSelezionata); //setta la campagna, se la trova, come campagna attiva
                     frame.setVisible(false);
                     CampagnaMasterGUI regiaGUI = new CampagnaMasterGUI(controller, frame);
                 } catch (Exception ex) {

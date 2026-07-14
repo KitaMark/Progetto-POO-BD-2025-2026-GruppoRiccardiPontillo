@@ -185,10 +185,10 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "LEFT JOIN STATISTICA sp ON sp.CodPersonaggio = p.CodPersonaggio " +
                 "WHERE p.IsPG = ? AND cam.Nome = ?";
 
-        try{
+        try(Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement pstmt = conn.prepareStatement(query);){
 
-             Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement pstmt = conn.prepareStatement(query);
+
 
             pstmt.setBoolean(1, isPg);
             pstmt.setString(2, nomeCampagna);
@@ -357,9 +357,9 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "ModIntelligenza, ModFede, ModCarisma, ModFortuna " +
                 "FROM RAZZA WHERE CodCampagna = ?";
 
-        try{
-              Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement pstmt = conn.prepareStatement(query);
+        try(Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement pstmt = conn.prepareStatement(query);){
+
 
             pstmt.setInt(1, idCampagna);
 

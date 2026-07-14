@@ -64,13 +64,18 @@ public class CampagnaGiocatoreGUI {
      * @param controller   Il {@link Controller} di sistema.
      * @param giocatore    L'oggetto {@link Giocatore} associato.
      * @param nomeCampagna Il nome della campagna attualmente visualizzata.
-     * @param frame        Il {@link JFrame} principale che ospita il pannello.
      */
-    public CampagnaGiocatoreGUI(Controller controller, Giocatore giocatore, String nomeCampagna, JFrame frame) {
+    public CampagnaGiocatoreGUI(Controller controller, Giocatore giocatore, String nomeCampagna, JFrame frameChiamante) {
         this.controller = controller;
         this.giocatoreLoggato = giocatore;
         this.nomeCampagnaAttuale = nomeCampagna;
-        this.frameAttuale = frame;
+
+        JFrame frame = new JFrame("Scheda Personaggio - Campagna: " + nomeCampagna);
+        frame.setContentPane(mainPanel);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(900, 600);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
 
         CampagnanomeJlabel.setText("Campagna: " + nomeCampagnaAttuale);
 

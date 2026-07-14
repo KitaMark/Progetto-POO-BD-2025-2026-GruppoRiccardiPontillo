@@ -4,6 +4,7 @@ import controller.Controller;
 import model.Personaggio;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 public class SchedaPersonaggioGUI extends JDialog {
     private JPanel contentPane;
@@ -93,5 +94,19 @@ public class SchedaPersonaggioGUI extends JDialog {
         fedeTesto.setText(String.valueOf(pgAttivo.getStatisticheFinali().getFede()));
         fortunaTesto.setText(String.valueOf(pgAttivo.getStatisticheFinali().getFortuna()));
         puntiTesto.setText(String.valueOf(pgAttivo.getPuntiStatistica()));
+    }
+
+    private void inizializzaInventarioEquipaggiabili(){
+        String[] colonne = {"Nome", "Stato"};
+        DefaultTableModel model = new DefaultTableModel(null, colonne) {
+            @Override
+            public boolean isCellEditable(int row, int column){return false;}
+        };
+
+        equipaggiabiliTable.setModel(model);
+        equipaggiabiliTable.getTableHeader().setResizingAllowed(false);
+        equipaggiabiliTable.getTableHeader().setReorderingAllowed(false);
+
+
     }
 }

@@ -29,7 +29,7 @@ public class Controller {
     private GiocatoreDao giocatoreDAO;
     private InventarioDao inventarioDAO;
     private AbilitaDao abilitaDao;
-    private StatisticaDAO personaggioDAO;
+    private PersonaggioDAO personaggioDAO;
 
     public Controller() {
         utenteAttivo = null;
@@ -43,7 +43,7 @@ public class Controller {
         giocatoreDAO = new ImplementazionePostgresGiocatore();
         inventarioDAO = new ImplementazionePostgresInventario();
         abilitaDao= new ImplementazionePostgresAbilita();
-        personaggioDAO = new ImplementazionePostgresStatistica();
+        personaggioDAO = new ImplementazionePostgresPersonaggio();
         //eventualmente da inserire altro in seguito
     }
 
@@ -188,7 +188,7 @@ public class Controller {
      * @throws DatiMancantiException Se il nome fornito non è valido.
      * @throws RuntimeException Se non è possibile accedere alla campagna.
      */
-    public boolean visualizzaCampagna(String nomeCampagna) throws DatiMancantiException {
+    public boolean recuperaDatiCampagna(String nomeCampagna) throws DatiMancantiException {
         if (nomeCampagna == null || nomeCampagna.trim().isEmpty()) {
             throw new DatiMancantiException("Nome della campagna non valido.");
         }
@@ -208,25 +208,22 @@ public class Controller {
 
                 if (giocatore.getListaPartecipazioni() != null) {
                     for (Campagna c : giocatore.getListaPartecipazioni().keySet()) {
-                        if (c.getNome().equalsIgnoreCase(campagnaAttiva.getNome())) {
+                        if (c.getId() == campagnaAttiva.getId()) {
                             pg = giocatore.getListaPartecipazioni().get(c);
                             break;
                         }
                     }
-                }
+                } else return false;
 
-                if (pg != null) {
-                    if (pg.getInventarioConsumabili() == null || pg.getInventarioEquipaggiabili() == null) {
-                        System.err.println("ATTENZIONE: Le HashMap in Personaggio sono rimaste a null!");
-                    } else {
-                        aggiornaZainoInMemoria(pg);
-                        abilitaDao.caricaAbilitaSbloccabili(pg.getClasse());
-                        abilitaDao.caricaAbilitaApprese(pg);
-                    }
-                    return true; // AGGIUNTA: Personaggio esistente, plancia sbloccata
+                if (pg == null) return false;
+                if (pg.getInventarioConsumabili() == null || pg.getInventarioEquipaggiabili() == null) {
+                    System.err.println("ATTENZIONE: Le HashMap in Personaggio sono rimaste a null!");
                 } else {
-                    return false; // AGGIUNTA: Personaggio assente, reindirizzamento al form di creazione
+                    aggiornaZainoInMemoria(pg);
+                    abilitaDao.caricaAbilitaSbloccabili(pg.getClasse());
+                    abilitaDao.caricaAbilitaApprese(pg);
                 }
+                return true;
             } catch (Exception e) {
                 System.err.println("==================================================");
                 System.err.println("ERRORE DURANTE IL CARICAMENTO DELLO ZAINO DA DB:");
@@ -417,14 +414,13 @@ public class Controller {
      * @param nome         Il nome del personaggio.
      * @param razza        La razza scelta.
      * @param classe       La classe scelta.
-     * @param nomeCampagna La campagna in cui il PG opererà.
+     * @param campagna La campagna in cui il PG opererà.
      * @throws NomePgNonValidoException Se il nome del PG non è valido.
      */
-    public void creaNuovoPersonaggio(String nome, String razza, String classe, String nomeCampagna) throws NomePgNonValidoException {
+    public void creaNuovoPersonaggio(String nome, String razza, String classe, Campagna campagna) throws NomePgNonValidoException {
         if (nome == null || nome.isEmpty()) {
             throw new NomePgNonValidoException("Nome non valido.");
         }
-        Campagna campagnaIscrizione = cercaCampagna(nomeCampagna);
 
         Classe classeScelta = new Classe(classe);
         Razza razzaScelta = new Razza(razza);
@@ -432,16 +428,14 @@ public class Controller {
         Personaggio nuovoPg = new Personaggio(classeScelta, razzaScelta, nome);
 
         try {
-            // AGGIUNTA: Cattura dell'ID generato dal DB e assegnazione immediata all'oggetto in RAM
-            int idGenerato = giocatoreDAO.salvaPersonaggio(nuovoPg, utenteAttivo.getId(), campagnaIscrizione.getId());
+            int idGenerato = giocatoreDAO.salvaPersonaggio(nuovoPg, utenteAttivo.getId(), campagna.getId());
             nuovoPg.setId(idGenerato);
 
             Giocatore giocatore = (Giocatore) utenteAttivo;
-            giocatore.addPartecipazioneDati(campagnaIscrizione, nuovoPg);
-            campagnaIscrizione.getListaPG().add(nuovoPg);
+            giocatore.addPartecipazioneDati(campagna, nuovoPg);
+            campagna.getListaPG().add(nuovoPg);
 
             System.out.println("Personaggio '" + nome + "' creato con successo! ID DB: " + nuovoPg.getId());
-
         } catch (RuntimeException e) {
             throw new RuntimeException("Errore durante la creazione del personaggio: " + e.getMessage());
         }
@@ -713,10 +707,6 @@ public class Controller {
         return catalogo;
     }
 
-    public void leggiListaCampagne() {
-        campagnaDAO.leggiCampagne(listaCampagne);
-    }
-
     private void aggiornaZainoInMemoria(Personaggio pg) {
         pg.svuotaInventari();
         java.util.Map<Oggetto, Integer> zainoDalDB = inventarioDAO.caricaInventarioPersonaggio(pg.getId());
@@ -751,14 +741,13 @@ public class Controller {
     /**
      * Recupera l'elenco delle Razze abilitate dal Master per una specifica campagna.
      *
-     * @param nomeCampagna Il nome della campagna.
+     * @param campagna l'oggetto Campagna da cui recuperare le informazioni.
      * @return La lista di Razze disponibili.
      */
-    public List<Razza> getRazzePerCampagna(String nomeCampagna) {
-        Campagna c = cercaCampagna(nomeCampagna);
+    public List<Razza> getRazzePerCampagna(Campagna campagna) {
         List<Razza> razzeDisponibili = new ArrayList<>();
-        if (c != null) {
-            campagnaDAO.leggiListaRazze(razzeDisponibili, c.getId());
+        if (campagna != null) {
+            campagnaDAO.leggiListaRazze(razzeDisponibili, campagna.getId());
         }
         return razzeDisponibili;
     }
@@ -766,14 +755,13 @@ public class Controller {
     /**
      * Recupera l'elenco delle Classi create dal Master per una specifica campagna.
      *
-     * @param nomeCampagna Il nome della campagna.
+     * @param campagna l'oggetto Campagna da cui recuperare le informazioni.
      * @return La lista di Classi disponibili.
      */
-    public List<Classe> getClassiPerCampagna(String nomeCampagna) {
-        Campagna c = cercaCampagna(nomeCampagna);
+    public List<Classe> getClassiPerCampagna(Campagna campagna) {
         List<Classe> classiDisponibili = new ArrayList<>();
-        if (c != null) {
-            campagnaDAO.leggiListaClassi(classiDisponibili, c.getId());
+        if (campagna != null) {
+            campagnaDAO.leggiListaClassi(classiDisponibili, campagna.getId());
         }
         return classiDisponibili;
     }
