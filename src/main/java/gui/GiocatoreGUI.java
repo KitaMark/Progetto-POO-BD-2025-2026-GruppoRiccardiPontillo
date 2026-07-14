@@ -97,6 +97,13 @@ public class GiocatoreGUI {
                 }
 
                 String nomeCampagnaSelezionata = tableCampagnaGiocatore.getValueAt(rigaSelezionata, 0).toString();
+                Campagna c = controller.cercaCampagna(nomeCampagnaSelezionata);
+                if(controller.getRazzePerCampagna(c).isEmpty() || controller.getClassiPerCampagna(c).isEmpty()){
+                    JOptionPane.showMessageDialog(frame, "Il master non ha ancora definito le classi " +
+                            "e le razze per questa campagna. Riprova più tardi.",
+                            "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
 
                 try {
                     boolean haGiaIlPersonaggio = controller.recuperaDatiCampagna(nomeCampagnaSelezionata);
