@@ -52,7 +52,7 @@ public class Home {
         UIManager.put("Button.arc", 15);
         // Arrotonda anche i campi di testo per coerenza grafico-visiva
         UIManager.put( "TextComponent.arc", 15 );
-        UIManager.put("Button.background", new Color(50, 130, 195));
+        UIManager.put("Button.background", new Color(50, 123, 195));
         frameHome = new JFrame("GestionaleGDRLogin");
         frameHome.setContentPane(new Home(frameHome).mainPanel);
         frameHome.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

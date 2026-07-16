@@ -44,12 +44,10 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "FROM CAMPAGNA c " +
                 "INNER JOIN UTENTE u ON c.CodMaster = u.CodUtente";
 
-        try {
-
-            Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery();
-
+        try(Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement stmt = conn.prepareStatement(query);
+            ResultSet rs = stmt.executeQuery();)
+        {
             while (rs.next()) {
                 int idMaster = rs.getInt("CodUtente");
                 String username = rs.getString("Username");
@@ -98,9 +96,8 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "VALUES (?, ?, 'Non Iniziata', (SELECT CodUtente FROM UTENTE WHERE Username = ?)) " +
                 "RETURNING CodCampagna";
 
-        try{
-            Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement stmt = conn.prepareStatement(query);
+        try (Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, campagna.getNome());
             stmt.setInt(2, campagna.getMaxGiocatori());
@@ -108,16 +105,20 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt("CodCampagna"); // Restituisce l'ID al Controller
+                    return rs.getInt("CodCampagna");
                 } else {
                     throw new SQLException("Nessun ID generato dal database.");
                 }
             }
 
         } catch (SQLException e) {
+            // Controllo della violazione del vincolo di unicità sul nome della campagna
+            if ("23505".equals(e.getSQLState())) {
+                throw new NomeCampagnaInUsoException("Il nome della campagna è già in uso.");
+            }
             e.printStackTrace();
             System.err.println("DEBUG: Errore salvataggio campagna in db");
-            throw new NomeCampagnaInUsoException("Dati campagna corrotti durante il salvataggio.");
+            throw new RuntimeException("Errore durante il salvataggio della campagna: " + e.getMessage());
         }
     }
 
@@ -302,8 +303,18 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
     @Override
     public void leggiCatalogoOggetti(List<Oggetto> catalogo, int idCampagna) {
         catalogo.clear();
-        String query = "SELECT CodOggetto, Nome, Costo, Tipo, ReqForza, ReqDestrezza, BonusForza, RipristinoHp, RipristinoMana " +
-                "FROM OGGETTO WHERE CodCampagna = ?";
+
+        // Query estesa con tutti gli attributi delle tre tabelle (OGGETTO, OGGETTO_EQUIPAGGIABILE, OGGETTO_CONSUMABILE)
+        String query = "SELECT o.CodOggetto, o.Nome, o.Costo, o.Tipo, " +
+                "eq.req_forza, eq.req_destrezza, eq.req_costituzione, eq.req_intelligenza, " +
+                "eq.req_fede, eq.req_carisma, eq.req_fortuna, eq.req_hpmax, eq.req_manamax, " +
+                "eq.bonus_forza, eq.bonus_destrezza, eq.bonus_costituzione, eq.bonus_intelligenza, " +
+                "eq.bonus_fede, eq.bonus_carisma, eq.bonus_fortuna, eq.bonus_hpmax, eq.bonus_manamax, " +
+                "con.RipristinoHp, con.RipristinoMana " +
+                "FROM OGGETTO o " +
+                "LEFT JOIN OGGETTO_EQUIPAGGIABILE eq ON o.CodOggetto = eq.CodOggetto " +
+                "LEFT JOIN OGGETTO_CONSUMABILE con ON o.CodOggetto = con.CodOggetto " +
+                "WHERE o.CodCampagna = ?";
 
         try (Connection conn = ConnessioneDatabase.getInstance().connection;
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -325,11 +336,33 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                         catalogo.add(consumabile);
 
                     } else if ("Equipaggiamento".equalsIgnoreCase(tipo)) {
-                        Statistica requisiti = new Statistica(0, rs.getInt("ReqForza"), rs.getInt("ReqDestrezza"), 0, 0, 0, 0, 0, 0);
-                        Statistica bonus = new Statistica(0, rs.getInt("BonusForza"), 0, 0, 0, 0, 0, 0, 0);
+                        // Mappatura completa dell'oggetto Statistica per i requisiti d'uso
+                        Statistica requisiti = new Statistica(
+                                rs.getInt("req_costituzione"),
+                                rs.getInt("req_forza"),
+                                rs.getInt("req_destrezza"),
+                                rs.getInt("req_intelligenza"),
+                                rs.getInt("req_fede"),
+                                rs.getInt("req_carisma"),
+                                rs.getInt("req_fortuna"),
+                                rs.getInt("req_hpmax"),
+                                rs.getInt("req_manamax")
+                        );
 
-                        OggettoEquipaggiabile equipaggiabile = new OggettoEquipaggiabile(nome, costo, requisiti, bonus);
-                        equipaggiabile.setId(id);
+                        // Mappatura completa dell'oggetto Statistica per i bonus applicati
+                        Statistica bonus = new Statistica(
+                                rs.getInt("bonus_costituzione"),
+                                rs.getInt("bonus_forza"),
+                                rs.getInt("bonus_destrezza"),
+                                rs.getInt("bonus_intelligenza"),
+                                rs.getInt("bonus_fede"),
+                                rs.getInt("bonus_carisma"),
+                                rs.getInt("bonus_fortuna"),
+                                rs.getInt("bonus_hpmax"),
+                                rs.getInt("bonus_manamax")
+                        );
+
+                        OggettoEquipaggiabile equipaggiabile = new OggettoEquipaggiabile(id, nome, costo, tipo, requisiti, bonus);
                         catalogo.add(equipaggiabile);
                     }
                 }

@@ -62,8 +62,8 @@ public class Controller {
         }
         Utente utenteTrovato = cercaUtente(username, email, password);
         if (utenteTrovato == null) throw new DatiMancantiException("Credenziali non valide.");
-        if(isMaster && utenteTrovato instanceof Giocatore) throw new AutenticazioneException("L'account è registered come Giocatore!");
-        if(!isMaster && utenteTrovato instanceof Master) throw new AutenticazioneException("L'account è registered come Master!");
+        if(isMaster && utenteTrovato instanceof Giocatore) throw new AutenticazioneException("L'account è registrato come Giocatore!");
+        if(!isMaster && utenteTrovato instanceof Master) throw new AutenticazioneException("L'account è registrato come Master!");
 
         if (utenteTrovato instanceof Giocatore) {
             Giocatore giocatore = (Giocatore) utenteTrovato;
@@ -111,7 +111,6 @@ public class Controller {
             nuovoUtente = new Giocatore(email, username, password);
         }
 
-        // AGGIUNTA: Sincronizzazione immediata dell'ID Utente generato dal database
         int idUtente = utenteDAO.aggiungiUtente(nuovoUtente);
         nuovoUtente.setId(idUtente);
 
@@ -146,10 +145,9 @@ public class Controller {
         }
         if(listaCampagne.containsValue((Master) utenteAttivo)) throw new CampagnaAttivaEsistenteException("Hai già una campagna attiva. Concludila prima di crearne una nuova.");
         if(listaCampagne.containsKey(cercaCampagna(nomeCampagna))) throw new NomeCampagnaInUsoException("Nome già in uso.");
-
+        //per semplicità è case sensitive
         Campagna campagna = new Campagna(nomeCampagna, maxGiocatori, (Master) utenteAttivo);
 
-        // AGGIUNTA: Ricezione dell'ID autogenerato e abbinamento sicuro nella mappa
         int idCampagna = campagnaDAO.creaCampagna(campagna);
         campagna.setId(idCampagna);
 
