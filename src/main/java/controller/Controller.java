@@ -732,6 +732,18 @@ public class Controller {
         return campagnaTrovata;
     }
 
+    public Campagna cercaCampagnaPerId(int id){
+        Campagna campagnaTrovata = null;
+        for(Campagna campagna : listaCampagne.keySet()){
+            if(id == campagna.getId()){
+                campagnaTrovata = campagna;
+                break;
+            }
+        }
+        return campagnaTrovata;
+    }
+
+
     public Campagna getCampagnaAttiva() {
         return campagnaAttiva;
     }

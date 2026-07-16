@@ -135,14 +135,14 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
      */
     @Override
     public void eliminaCampagna(Campagna campagnaTarget) throws DatiMancantiException {
-        String query = "DELETE FROM CAMPAGNA WHERE Nome = ?";
+        String query = "DELETE FROM CAMPAGNA WHERE CodCampagna = ?";
 
-        try{
+        try(Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement stmt = conn.prepareStatement(query);){
 
-             Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement stmt = conn.prepareStatement(query);
 
-            stmt.setString(1, campagnaTarget.getNome());
+
+            stmt.setInt(1, campagnaTarget.getId());
             int righeModificate = stmt.executeUpdate();
 
             if (righeModificate == 0) {
@@ -184,7 +184,7 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "JOIN RAZZA r ON p.CodRazza = r.CodRazza " +
                 "JOIN CAMPAGNA cam ON p.CodCampagna = cam.CodCampagna " +
                 "LEFT JOIN STATISTICA sp ON sp.CodPersonaggio = p.CodPersonaggio " +
-                "WHERE p.IsPG = ? AND cam.Nome = ?";
+                "WHERE p.IsPG = ? AND LOWER(cam.Nome) = LOWER(?)";
 
         try(Connection conn = ConnessioneDatabase.getInstance().connection;
             PreparedStatement pstmt = conn.prepareStatement(query);){
@@ -255,10 +255,10 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "LEFT JOIN PERSONAGGIO p ON (p.CodUtente = u.CodUtente AND p.CodCampagna = c.CodCampagna) " +
                 "WHERE u.Ruolo = 'Giocatore' AND c.Nome = ?";
 
-        try{
+        try(Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement pstmt = conn.prepareStatement(query);){
 
-             Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement pstmt = conn.prepareStatement(query);
+
 
             pstmt.setString(1, nomeCampagna);
 
@@ -429,9 +429,9 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
         lista.clear();
         String query = "SELECT CodClasse, Nome FROM CLASSE WHERE CodCampagna = ?";
 
-        try{
-             Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement pstmt = conn.prepareStatement(query);
+        try(Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement pstmt = conn.prepareStatement(query);){
+
 
             pstmt.setInt(1, idCampagna);
 

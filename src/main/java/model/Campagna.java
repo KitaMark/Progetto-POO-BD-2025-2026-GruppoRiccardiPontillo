@@ -172,8 +172,6 @@ public class Campagna {
     @Override
     public int hashCode() {
         if (this.nome != null) {
-            // Convertiamo in minuscolo prima di generare l'hash,
-            // per garantire che "Yo" e "yo" finiscano nello stesso "cassetto" della HashMap
             return this.nome.toLowerCase().hashCode();
         } else {
             return 0;
