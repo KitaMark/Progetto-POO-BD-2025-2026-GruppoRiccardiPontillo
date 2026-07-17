@@ -474,6 +474,8 @@ public class Personaggio {
 
 
 
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -485,5 +487,11 @@ public class Personaggio {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public void svuotaAbilitaApprese() {
+        if (this.listaAbilita != null) {
+            this.listaAbilita.clear();
+        }
     }
 }

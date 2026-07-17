@@ -7,7 +7,7 @@ import java.util.Map;
 public interface InventarioDao {
 
 
-    List<Oggetto> caricaCatalogoNegozio();
+    List<Oggetto> caricaCatalogoNegozio(int idCampagna);
     Map<Oggetto, Integer> caricaInventarioPersonaggio(int codPersonaggio);
     void acquistaOggetto(int codPersonaggio, int codOggetto, int costoOggetto);
     void vendiOggetto(int codPersonaggio, int codOggetto, int ricavoOggetto);

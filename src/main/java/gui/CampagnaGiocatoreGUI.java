@@ -70,12 +70,12 @@ public class CampagnaGiocatoreGUI {
         this.giocatoreLoggato = giocatore;
         this.nomeCampagnaAttuale = nomeCampagna;
 
-        JFrame frame = new JFrame("Scheda Personaggio - Campagna: " + nomeCampagna);
-        frame.setContentPane(mainPanel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(900, 600);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        this.frameAttuale = new JFrame("Scheda Personaggio - Campagna: " + nomeCampagna);
+        this.frameAttuale.setContentPane(mainPanel);
+        this.frameAttuale.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.frameAttuale.setSize(900, 600);
+        this.frameAttuale.setLocationRelativeTo(null);
+        this.frameAttuale.setVisible(true);
 
         CampagnanomeJlabel.setText("Campagna: " + nomeCampagnaAttuale);
 
@@ -130,7 +130,6 @@ public class CampagnaGiocatoreGUI {
         });
 
 
-
         equipaggiaButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -145,11 +144,7 @@ public class CampagnaGiocatoreGUI {
                     JOptionPane.showMessageDialog(frameAttuale, "Hai equipaggiato: " + nomeOggetto);
                     inizializzaTabelle();
                 } catch (Exception ex) {
-                    String messaggioPulito = ex.getMessage().split("\n")[0]
-                            .replace("ERRORE: ", "")
-                            .replace("Requisiti insufficienti: ", "");
-
-                    JOptionPane.showMessageDialog(frameAttuale, messaggioPulito, "Requisiti Insufficienti", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Requisiti Insufficienti", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -267,30 +262,31 @@ public class CampagnaGiocatoreGUI {
         String[] colonneStat = {"Statistica", "Valore Attuale"};
         DefaultTableModel modelStat = new DefaultTableModel(null, colonneStat) {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            public boolean isCellEditable(int row, int column) { return false; }
         };
         statisticheTable.setModel(modelStat);
         statisticheTable.getTableHeader().setReorderingAllowed(false);
         statisticheTable.getTableHeader().setResizingAllowed(false);
 
-        // Inseriamo i dati  del personaggio
         modelStat.addRow(new Object[]{"Oro", pg.getOro()});
         modelStat.addRow(new Object[]{"Punti Spendibili", pg.getPuntiStatistica()});
         modelStat.addRow(new Object[]{"HP Correnti", pg.getHpCorrenti() + " / " + pg.getStatisticheBase().getHpMax()});
         modelStat.addRow(new Object[]{"Mana Corrente", pg.getManaCorrente() + " / " + pg.getStatisticheBase().getManaMax()});
+
+        modelStat.addRow(new Object[]{"Costituzione", pg.getStatisticheBase().getCostituzione()});
         modelStat.addRow(new Object[]{"Forza", pg.getStatisticheBase().getForza()});
         modelStat.addRow(new Object[]{"Destrezza", pg.getStatisticheBase().getDestrezza()});
+        modelStat.addRow(new Object[]{"Intelligenza", pg.getStatisticheBase().getIntelligenza()});
+        modelStat.addRow(new Object[]{"Fede", pg.getStatisticheBase().getFede()});
+        modelStat.addRow(new Object[]{"Carisma", pg.getStatisticheBase().getCarisma()});
+        modelStat.addRow(new Object[]{"Fortuna", pg.getStatisticheBase().getFortuna()});
 
 
         // Tabella Equipaggiamento
         String[] colonneEquip = {"Nome Oggetto", "Bonus", "Equipaggiato"};
         DefaultTableModel modelEquip = new DefaultTableModel(null, colonneEquip) {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            public boolean isCellEditable(int row, int column) { return false; }
         };
         equipaggiamentoTable.setModel(modelEquip);
         equipaggiamentoTable.getTableHeader().setReorderingAllowed(false);
@@ -298,17 +294,14 @@ public class CampagnaGiocatoreGUI {
 
         for (OggettoEquipaggiabile oggettoEquipaggiabile : pg.getInventarioEquipaggiabili().keySet()) {
             String stato = pg.getInventarioEquipaggiabili().get(oggettoEquipaggiabile) ? "Sì" : "No";
-            modelEquip.addRow(new Object[]{oggettoEquipaggiabile.getNome(), "+" + oggettoEquipaggiabile.getBonus().getForza() + " Forza", stato});
+            modelEquip.addRow(new Object[]{oggettoEquipaggiabile.getNome(), formattaBonus(oggettoEquipaggiabile.getBonus()), stato});
         }
 
-
-        //Tabella Consumabili
+        // Tabella Consumabili
         String[] colonneCons = {"Nome Oggetto", "Ripristina HP", "Ripristina Mana", "Quantità"};
         DefaultTableModel modelCons = new DefaultTableModel(null, colonneCons) {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            public boolean isCellEditable(int row, int column) { return false; }
         };
         consumabiliTable.setModel(modelCons);
         consumabiliTable.getTableHeader().setReorderingAllowed(false);
@@ -316,26 +309,20 @@ public class CampagnaGiocatoreGUI {
 
         for (OggettoConsumabile oggettoConsumabile : pg.getInventarioConsumabili().keySet()) {
             int quantita = pg.getInventarioConsumabili().get(oggettoConsumabile);
-
             String hpText = oggettoConsumabile.getRipristinoHP() == 0 ? "-" : String.valueOf(oggettoConsumabile.getRipristinoHP());
             String manaText = oggettoConsumabile.getRipristinoMana() == 0 ? "-" : String.valueOf(oggettoConsumabile.getRipristinoMana());
-
             modelCons.addRow(new Object[]{oggettoConsumabile.getNome(), hpText, manaText, quantita});
         }
 
-
-        //Tabella Negozio
+        // Tabella Negozio
         String[] colonneInv = {"Oggetto in Vendita", "Tipo", "Costo (Oro)"};
         DefaultTableModel modelInv = new DefaultTableModel(null, colonneInv) {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            public boolean isCellEditable(int row, int column) { return false; }
         };
         inventarioTable.setModel(modelInv);
         inventarioTable.getTableHeader().setReorderingAllowed(false);
         inventarioTable.getTableHeader().setResizingAllowed(false);
-
 
         for (Oggetto o : controller.getCatalogoNegozio()) {
             modelInv.addRow(new Object[]{o.getNome(), o.getTipo(), o.getCosto()});
@@ -345,9 +332,7 @@ public class CampagnaGiocatoreGUI {
         String[] colonneAbilita = {"Nome Abilità", "Descrizione", "Appresa"};
         DefaultTableModel modelAbilita = new DefaultTableModel(null, colonneAbilita) {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            public boolean isCellEditable(int row, int column) { return false; }
         };
         abilitaTable.setModel(modelAbilita);
         abilitaTable.getTableHeader().setReorderingAllowed(false);
@@ -355,10 +340,33 @@ public class CampagnaGiocatoreGUI {
 
         if (pg.getClasse().getAbilitaSbloccabili() != null) {
             for (Abilita abilita : pg.getClasse().getAbilitaSbloccabili()) {
-                // Controlla se il personaggio ha già questa abilità nella sua lista
                 String appresa = pg.getListaAbilita().contains(abilita) ? "Sì" : "No";
                 modelAbilita.addRow(new Object[]{abilita.getNome(), abilita.getDescrizione(), appresa});
             }
+        }
+    }
+
+    /**
+     * Costruisce una stringa leggibile elencando solo i bonus effettivamente forniti dall'oggetto.
+     */
+    private String formattaBonus(Statistica b) {
+        String bonus = "";
+
+        if (b.getHpMax() != 0) bonus += "+" + b.getHpMax() + " HpMax  ";
+        if (b.getManaMax() != 0) bonus += "+" + b.getManaMax() + " ManaMax  ";
+        if (b.getCostituzione() != 0) bonus += "+" + b.getCostituzione() + " Cos  ";
+        if (b.getForza() != 0) bonus += "+" + b.getForza() + " For  ";
+        if (b.getDestrezza() != 0) bonus += "+" + b.getDestrezza() + " Des  ";
+        if (b.getIntelligenza() != 0) bonus += "+" + b.getIntelligenza() + " Int  ";
+        if (b.getFede() != 0) bonus += "+" + b.getFede() + " Fede  ";
+        if (b.getCarisma() != 0) bonus += "+" + b.getCarisma() + " Car  ";
+        if (b.getFortuna() != 0) bonus += "+" + b.getFortuna() + " Fort  ";
+
+        // Se la stringa è ancora vuota, significa che l'oggetto non dà nessun bonus
+        if (bonus.isEmpty()) {
+            return "-";
+        } else {
+            return bonus.trim(); // Rimuove gli spazi in eccesso alla fine
         }
     }
 

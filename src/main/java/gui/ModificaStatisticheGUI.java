@@ -1,6 +1,8 @@
 package gui;
 
 import controller.Controller;
+import model.Personaggio;
+import model.Statistica;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -48,33 +50,42 @@ public class ModificaStatisticheGUI {
     private String nomePersonaggioSelezionato;
 
     /**
-     * Costruisce l'interfaccia di modifica statistiche, preimpostando i limiti numerici
-     * dei campi e abilitando l'ascoltatore per il pulsante di conferma.
+     * Costruisce l'interfaccia di modifica statistiche, caricando i valori attuali
+     * del personaggio e abilitando l'ascoltatore per il pulsante di conferma.
      *
-     * @param controller      Il {@link Controller} che comunicherà i nuovi dati al DAO.
-     * @param nomePg Il nome del personaggio bersaglio della modifica.
-     * @param id l'id univoco del personaggio.
+     * @param controller       Il {@link Controller} che comunicherà i nuovi dati al DAO.
+     * @param nomePg           Il nome del personaggio bersaglio della modifica.
+     * @param id               L'id univoco del personaggio.
+     * @param isPg             Booleano per distinguere PG da PnG.
+     * @param frameChiamante   Il Frame chiamante per la gestione del popup.
      */
     public ModificaStatisticheGUI(Controller controller, String nomePg, int id, boolean isPg, JFrame frameChiamante) {
         this.controller = controller;
-        nomePersonaggioSelezionato = nomePg;
+        this.nomePersonaggioSelezionato = nomePg;
+
+        Personaggio pgDaModificare = null;
+        try {
+            pgDaModificare = controller.cercaPersonaggio(id, isPg);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(frameChiamante, "Errore nel caricamento del personaggio: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+            return; // Blocca la creazione della finestra se il personaggio non esiste
+        }
 
         JDialog frame = new JDialog(frameChiamante, "Modifica Statistiche - " + nomePg, true);
         frame.setContentPane(mainPanel);
-        // Usiamo DISPOSE_ON_CLOSE per chiudere solo questo popup e non tutto
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setResizable(false);
 
-
-        inizializzaSpinner();
+        inizializzaSpinner(pgDaModificare);
 
         modificaButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int conferma = JOptionPane.showConfirmDialog(frame, "Le statistiche del personaggio " +
-                        "saranno sovrascritte forzatamente. Vuoi continuare?", "Conferma modifica",
+                                "saranno sovrascritte forzatamente. Vuoi continuare?", "Conferma modifica",
                         JOptionPane.YES_NO_OPTION);
-                if(conferma == JOptionPane.NO_OPTION) return;
+                if (conferma == JOptionPane.NO_OPTION) return;
+
                 try {
                     int forzaVal = (int) forzaSpinner.getValue();
                     int destrezzaVal = (int) destrezzaSpinner.getValue();
@@ -106,24 +117,26 @@ public class ModificaStatisticheGUI {
         frame.setVisible(true);
     }
 
-
     /**
      * Metodo privato che configura i modelli numerici per ciascun {@link JSpinner}.
-     * Imposta il valore di partenza, il limite minimo, il limite massimo e il l' incremento.
+     * Imposta dinamicamente il valore di partenza prelevandolo dalle statistiche
+     * attuali del personaggio selezionato.
+     *
+     * @param pg Il personaggio di cui pre-caricare le statistiche base.
      */
-    private void inizializzaSpinner() {
-        // Immpostazoni di min e max (da definire max)
-        forzaSpinner.setModel(new SpinnerNumberModel(10, 1, 100, 1));
-        destrezzaSpinner.setModel(new SpinnerNumberModel(10, 1, 100, 1));
-        costituzioneSpinner.setModel(new SpinnerNumberModel(10, 1, 100, 1));
-        intelligenzaSpinner.setModel(new SpinnerNumberModel(10, 1, 100, 1));
-        fedeSpinner.setModel(new SpinnerNumberModel(10, 1, 100, 1));
-        carismaSpinner.setModel(new SpinnerNumberModel(10, 1, 100, 1));
-        fortunaSpinner.setModel(new SpinnerNumberModel(10, 1, 100, 1));
+    private void inizializzaSpinner(Personaggio pg) {
+        Statistica statAttuali = pg.getStatisticheBase();
 
-        //(da definire max per hp e mana)
-        maxHpSpinner.setModel(new SpinnerNumberModel(100, 1, 9999, 1));
-        manaMaxSpinner.setModel(new SpinnerNumberModel(50, 1, 9999, 1));
+        forzaSpinner.setModel(new SpinnerNumberModel(statAttuali.getForza(), 1, 100, 1));
+        destrezzaSpinner.setModel(new SpinnerNumberModel(statAttuali.getDestrezza(), 1, 100, 1));
+        costituzioneSpinner.setModel(new SpinnerNumberModel(statAttuali.getCostituzione(), 1, 100, 1));
+        intelligenzaSpinner.setModel(new SpinnerNumberModel(statAttuali.getIntelligenza(), 1, 100, 1));
+        fedeSpinner.setModel(new SpinnerNumberModel(statAttuali.getFede(), 1, 100, 1));
+        carismaSpinner.setModel(new SpinnerNumberModel(statAttuali.getCarisma(), 1, 100, 1));
+        fortunaSpinner.setModel(new SpinnerNumberModel(statAttuali.getFortuna(), 1, 100, 1));
+
+        maxHpSpinner.setModel(new SpinnerNumberModel(statAttuali.getHpMax(), 1, 9999, 1));
+        manaMaxSpinner.setModel(new SpinnerNumberModel(statAttuali.getManaMax(), 1, 9999, 1));
     }
 
     /**
