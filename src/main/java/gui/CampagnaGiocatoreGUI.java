@@ -89,6 +89,7 @@ public class CampagnaGiocatoreGUI {
                 new GiocatoreGUI(controller);
             }
         });
+
         aumentaStatButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -247,6 +248,8 @@ public class CampagnaGiocatoreGUI {
                 }
             }
         });
+
+
     }
 
     /**
@@ -268,18 +271,16 @@ public class CampagnaGiocatoreGUI {
         statisticheTable.getTableHeader().setReorderingAllowed(false);
         statisticheTable.getTableHeader().setResizingAllowed(false);
 
-        modelStat.addRow(new Object[]{"Oro", pg.getOro()});
-        modelStat.addRow(new Object[]{"Punti Spendibili", pg.getPuntiStatistica()});
-        modelStat.addRow(new Object[]{"HP Correnti", pg.getHpCorrenti() + " / " + pg.getStatisticheBase().getHpMax()});
-        modelStat.addRow(new Object[]{"Mana Corrente", pg.getManaCorrente() + " / " + pg.getStatisticheBase().getManaMax()});
+        modelStat.addRow(new Object[]{"HP Correnti", pg.getHpCorrenti() + " / " + pg.getStatisticheFinali().getHpMax()});
+        modelStat.addRow(new Object[]{"Mana Corrente", pg.getManaCorrente() + " / " + pg.getStatisticheFinali().getManaMax()});
 
-        modelStat.addRow(new Object[]{"Costituzione", pg.getStatisticheBase().getCostituzione()});
-        modelStat.addRow(new Object[]{"Forza", pg.getStatisticheBase().getForza()});
-        modelStat.addRow(new Object[]{"Destrezza", pg.getStatisticheBase().getDestrezza()});
-        modelStat.addRow(new Object[]{"Intelligenza", pg.getStatisticheBase().getIntelligenza()});
-        modelStat.addRow(new Object[]{"Fede", pg.getStatisticheBase().getFede()});
-        modelStat.addRow(new Object[]{"Carisma", pg.getStatisticheBase().getCarisma()});
-        modelStat.addRow(new Object[]{"Fortuna", pg.getStatisticheBase().getFortuna()});
+        modelStat.addRow(new Object[]{"Costituzione", pg.getStatisticheFinali().getCostituzione()});
+        modelStat.addRow(new Object[]{"Forza", pg.getStatisticheFinali().getForza()});
+        modelStat.addRow(new Object[]{"Destrezza", pg.getStatisticheFinali().getDestrezza()});
+        modelStat.addRow(new Object[]{"Intelligenza", pg.getStatisticheFinali().getIntelligenza()});
+        modelStat.addRow(new Object[]{"Fede", pg.getStatisticheFinali().getFede()});
+        modelStat.addRow(new Object[]{"Carisma", pg.getStatisticheFinali().getCarisma()});
+        modelStat.addRow(new Object[]{"Fortuna", pg.getStatisticheFinali().getFortuna()});
 
 
         // Tabella Equipaggiamento

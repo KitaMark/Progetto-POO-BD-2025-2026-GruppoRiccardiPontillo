@@ -563,8 +563,8 @@ public class Controller {
         try {
             inventarioDAO.impostaEquipaggiamento(pg.getId(), target.getId(), true);
             pg.impostaStatoEquipaggiabile(target, true);
+            pg.aggiornaStatoPG();
         } catch (RuntimeException e) {
-            // Rilancio diretto senza doppio prefisso
             throw new OggettoNonSelezionatoException(e.getMessage());
         }
     }
