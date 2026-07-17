@@ -17,5 +17,5 @@ public interface CampagnaDAO {
     void leggiListaRazze(List<Razza> lista, int idCampagna);
     void leggiListaClassi(List<Classe> lista, int idCampagna);
     void cambiaStato(int id, boolean stato);
-    //per ora
+    int contaPartecipanti(int codCampagna);
 }

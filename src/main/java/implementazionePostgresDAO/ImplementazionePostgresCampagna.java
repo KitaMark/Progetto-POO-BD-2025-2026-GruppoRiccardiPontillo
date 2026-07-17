@@ -4,7 +4,6 @@ import dao.CampagnaDAO;
 import database.ConnessioneDatabase;
 import exception.NomeCampagnaInUsoException;
 import model.*;
-import database.ConnessioneDatabase;
 import exception.DatiMancantiException;
 
 import java.sql.Connection;
@@ -64,7 +63,7 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 Campagna campagna = new Campagna(nomeCampagna, maxGiocatori, master);
                 campagna.setId(idCampagna);
 
-                if ("Non Iniziata".equals(statoDb)) {
+                if ("Non iniziata".equalsIgnoreCase(statoDb)) {
                     campagna.setIniziata(false);
                 } else {
                     campagna.setIniziata(true);
@@ -464,5 +463,23 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
             ex.printStackTrace();
             System.err.println("Impossibile aggiornare lo stato della campagna, dati corrotti.");
         }
+    }
+
+    @Override
+    public int contaPartecipanti(int codCampagna) {
+        String query = "SELECT COUNT(*) FROM ISCRIZIONE WHERE CodCampagna = ?";
+        try (Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, codCampagna);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Errore durante il conteggio dei partecipanti alla campagna: " + e.getMessage());
+        }
+        return 0;
     }
 }

@@ -51,7 +51,8 @@ public class ImplementazionePostgresGiocatore implements GiocatoreDao {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Errore durante l'iscrizione alla campagna: " + e.getMessage());
+            System.err.println(e.getMessage());
+            throw new RuntimeException("Errore critico: impossibile salvare l'iscrizione alla campagna.");
         }
     }
 

@@ -5,6 +5,7 @@ import exception.*;
 import implementazionePostgresDAO.*;
 import model.*;
 
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -260,21 +261,17 @@ public class Controller {
         if (campagnaIscrizione == null) {
             throw new NomeMancanteCampagnaException("La campagna inserita non esiste.");
         }
+        if(campagnaIscrizione.isIniziata()) throw new RuntimeException("Impossibile completare l'iscrizione: campagna già iniziata.");
 
         try {
+            if(!(campagnaDAO.contaPartecipanti(campagnaIscrizione.getId()) < campagnaIscrizione.getMaxGiocatori())) throw new RuntimeException("Impossibile completare l'iscrizione: limite partecipanti raggiunto");
             giocatoreDAO.iscrivitiACampagna(utenteAttivo.getId(), campagnaIscrizione.getId());
 
-            // AGGIUNTA: Sincronizzazione strutturale della memoria RAM senza ricorrere al logout
             Giocatore giocatore = (Giocatore) utenteAttivo;
             giocatore.addPartecipazioneDati(campagnaIscrizione, null);
-
-            if (campagnaIscrizione.getPartecipanti() != null) {
-                campagnaIscrizione.getPartecipanti().add(giocatore);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            String messaggioErrore = (e.getMessage() == null) ? "Errore imprevisto nella gestione della memoria." : e.getMessage();
-            throw new RuntimeException("Impossibile completare l'iscrizione: " + messaggioErrore);
+            campagnaIscrizione.getPartecipanti().add(giocatore);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
         }
     }
 
@@ -724,7 +721,7 @@ public class Controller {
     public Campagna cercaCampagna(String nomeCampagna){
         Campagna campagnaTrovata = null;
         for(Campagna campagna : listaCampagne.keySet()){
-            if(Objects.equals(nomeCampagna, campagna.getNome())){
+            if(nomeCampagna.equalsIgnoreCase(campagna.getNome())){
                 campagnaTrovata = campagna;
                 break;
             }
