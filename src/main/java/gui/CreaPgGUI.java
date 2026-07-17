@@ -28,8 +28,8 @@ import java.util.List;
 public class CreaPgGUI {
     private JPanel mainPanel;
     private JTextField campoNome;
-    private JComboBox razzaComboBox;
-    private JComboBox ClasseComboBox;
+    private JComboBox<Razza> razzaComboBox;
+    private JComboBox<Classe> ClasseComboBox;
     private JPanel datiPgPanel;
     private JButton creaButton;
     private JLabel nome;
@@ -86,8 +86,8 @@ public class CreaPgGUI {
                     return;
                 }
 
-                String razzaSelezionata = razzaComboBox.getSelectedItem().toString();
-                String classeSelezionata = ClasseComboBox.getSelectedItem().toString();
+                Razza razzaSelezionata = (Razza)razzaComboBox.getSelectedItem();
+                Classe classeSelezionata = (Classe)ClasseComboBox.getSelectedItem();
 
                 try {
                     controller.creaNuovoPersonaggio(nomeInserito, razzaSelezionata, classeSelezionata, campagnaAttiva);
@@ -121,10 +121,10 @@ public class CreaPgGUI {
         List<Classe> classiPermesse = controller.getClassiPerCampagna(campagnaAttiva);
 
         for (Razza r : razzePermesse) {
-            razzaComboBox.addItem(r.getNome());
+            razzaComboBox.addItem(r);
         }
         for (Classe c : classiPermesse) {
-            ClasseComboBox.addItem(c.getNome());
+            ClasseComboBox.addItem(c);
         }
     }
 }

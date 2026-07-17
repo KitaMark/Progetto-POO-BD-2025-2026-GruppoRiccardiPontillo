@@ -412,15 +412,13 @@ public class Controller {
      * @param campagna La campagna in cui il PG opererà.
      * @throws NomePgNonValidoException Se il nome del PG non è valido.
      */
-    public void creaNuovoPersonaggio(String nome, String razza, String classe, Campagna campagna) throws NomePgNonValidoException {
+    public void creaNuovoPersonaggio(String nome, Razza razza, Classe classe, Campagna campagna) throws NomePgNonValidoException {
         if (nome == null || nome.isEmpty()) {
             throw new NomePgNonValidoException("Nome non valido.");
         }
 
-        Classe classeScelta = new Classe(classe);
-        Razza razzaScelta = new Razza(razza);
 
-        Personaggio nuovoPg = new Personaggio(classeScelta, razzaScelta, nome);
+        Personaggio nuovoPg = new Personaggio(classe, razza, nome);
 
         try {
             int idGenerato = giocatoreDAO.salvaPersonaggio(nuovoPg, utenteAttivo.getId(), campagna.getId());
