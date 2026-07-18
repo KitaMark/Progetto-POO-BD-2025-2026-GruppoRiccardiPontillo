@@ -472,7 +472,9 @@ public class Personaggio {
                 statisticaFinali.getFede(), statisticaFinali.getFortuna(), oro, puntiStatistica);
     }
 
-
+    public void ricalcolaStatisticheFinali() {
+        calcolaStatisticheFinali();
+    }
 
 
 

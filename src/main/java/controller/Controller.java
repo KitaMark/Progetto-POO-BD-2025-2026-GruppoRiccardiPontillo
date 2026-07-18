@@ -520,24 +520,37 @@ public class Controller {
         personaggioDAO.aggiornaStatistichePersonaggio(daModificare.getId(), modifiche);
         daModificare.setStatisticaBase(modifiche);
 
-        // CONTROLLO AUTO-UNEQUIP
+        daModificare.setHpCorrenti(hpMax);
+        daModificare.setManaCorrente(manaMax);
+
+        aggiornaZainoInMemoria(daModificare);
+
         if (daModificare.getInventarioEquipaggiabili() != null) {
             List<OggettoEquipaggiabile> daDisequipaggiare = new ArrayList<>();
-            for (OggettoEquipaggiabile eq : daModificare.getInventarioEquipaggiabili().keySet()) {
-                if (daModificare.getInventarioEquipaggiabili().get(eq)) {
-                    Statistica req = eq.getRequisiti();
+
+            // Controlla la mappa degli oggetti e individua quelli che violano i requisiti
+            for (Map.Entry<OggettoEquipaggiabile, Boolean> entry : daModificare.getInventarioEquipaggiabili().entrySet()) {
+                if (entry.getValue()) { // Se lo stato dell'oggetto è 'true' (Equipaggiato)
+                    Statistica req = entry.getKey().getRequisiti();
+
                     if (forza < req.getForza() || destrezza < req.getDestrezza() || costituzione < req.getCostituzione() ||
                             intelligenza < req.getIntelligenza() || fede < req.getFede() || carisma < req.getCarisma() ||
                             fortuna < req.getFortuna() || hpMax < req.getHpMax() || manaMax < req.getManaMax()) {
 
-                        daDisequipaggiare.add(eq);
+                        daDisequipaggiare.add(entry.getKey());
                     }
                 }
             }
+
+            // Esegue il disequipaggiamento
             for (OggettoEquipaggiabile eq : daDisequipaggiare) {
-                inventarioDAO.impostaEquipaggiamento(daModificare.getId(), eq.getId(), false);
-                daModificare.rimuoviEquipaggiamento(eq);
-                System.out.println("Oggetto disequipaggiato automaticamente per requisiti mancanti: " + eq.getNome());
+                try {
+                    inventarioDAO.impostaEquipaggiamento(daModificare.getId(), eq.getId(), false); // Aggiorna DB
+                    daModificare.rimuoviEquipaggiamento(eq); // Imposta a false
+                    System.out.println("Oggetto disequipaggiato automaticamente per requisiti mancanti: " + eq.getNome());
+                } catch (Exception e) {
+                    System.err.println("Errore durante l'auto-disequipaggiamento in DB: " + e.getMessage());
+                }
             }
         }
     }
@@ -770,6 +783,9 @@ public class Controller {
                 pg.impostaStatoEquipaggiabile((OggettoEquipaggiabile) oggetto, oggetto.isEquipaggiato());
             }
         }
+
+        //garantisce che le statisticheFinali rifettano sempre l'inventario letto da DB
+        pg.ricalcolaStatisticheFinali();
     }
 
     public Campagna cercaCampagna(String nomeCampagna){
