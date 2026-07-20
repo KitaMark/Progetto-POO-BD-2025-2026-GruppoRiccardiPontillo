@@ -104,14 +104,12 @@ public class ImplementazionePostgresAbilita implements AbilitaDao {
     @Override
     public void caricaAbilitaApprese(Personaggio pg) {
         pg.svuotaAbilitaApprese();
-        // Legge dalla tabella ponte (PERSONAGGIO_ABILITA)
         String query = "SELECT a.Nome, a.Descrizione FROM PERSONAGGIO_ABILITA pa " +
                 "JOIN ABILITA a ON pa.CodAbilita = a.CodAbilita " +
                 "WHERE pa.CodPersonaggio = ?";
 
-        try {
-            Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement stmt = conn.prepareStatement(query);
+        try (Connection conn = ConnessioneDatabase.getInstance().connection;
+              PreparedStatement stmt = conn.prepareStatement(query);){
             stmt.setInt(1, pg.getId());
             ResultSet rs = stmt.executeQuery();
 
@@ -120,7 +118,7 @@ public class ImplementazionePostgresAbilita implements AbilitaDao {
                 String descrizione = rs.getString("Descrizione");
 
                 Abilita abilitaAppresa = new Abilita(nome, descrizione, pg.getClasse());
-                pg.addAbilita(abilitaAppresa);
+                pg.addAbilitaCaricata(abilitaAppresa); // Utilizza il nuovo metodo
             }
         } catch (SQLException e) {
             System.err.println("Errore caricamento abilità apprese: " + e.getMessage());

@@ -320,7 +320,7 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="50e6e" class="javax.swing.JTable" binding="table1" default-binding="true">
+                  <component id="50e6e" class="javax.swing.JTable" binding="abilitaTable">
                     <constraints/>
                     <properties/>
                   </component>

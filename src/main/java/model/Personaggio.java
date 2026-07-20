@@ -315,6 +315,17 @@ public class Personaggio {
     }
 
     /**
+     * Aggiunge un'abilità alla lista del personaggio, utilizzata per il caricamento dal DB.
+     * Bypassa il controllo sulle abilità sbloccabili dalla classe.
+     *
+     * @param abilita l'abilità da aggiungere.
+     */
+    public void addAbilitaCaricata(Abilita abilita) {
+        if (abilita == null) return;
+        if (!listaAbilita.contains(abilita)) listaAbilita.add(abilita);
+    }
+
+    /**
      * Rimuove un oggetto equipaggiabile dall'inventario.
      *
      * @param oggetto l'oggetto da rimuovere.

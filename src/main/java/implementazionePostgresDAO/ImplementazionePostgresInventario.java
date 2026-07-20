@@ -26,46 +26,6 @@ import java.util.Map;
 public class ImplementazionePostgresInventario implements InventarioDao {
 
     @Override
-    public List<Oggetto> caricaCatalogoNegozio(int idCampagna) {
-        List<Oggetto> catalogo = new ArrayList<>();
-
-        String query = "SELECT o.CodOggetto, o.Nome, o.Costo, o.Tipo, " +
-                "eq.Req_Forza, eq.Req_Destrezza, eq.Req_Costituzione, eq.Req_Intelligenza, " +
-                "eq.Req_Fede, eq.Req_Carisma, eq.Req_Fortuna, eq.Req_HpMax, eq.Req_ManaMax, " +
-                "eq.Bonus_Forza, eq.Bonus_Destrezza, eq.Bonus_Costituzione, eq.Bonus_Intelligenza, " +
-                "eq.Bonus_Fede, eq.Bonus_Carisma, eq.Bonus_Fortuna, eq.Bonus_HpMax, eq.Bonus_ManaMax, " +
-                "con.RipristinoHp, con.RipristinoMana " +
-                "FROM OGGETTO o " +
-                "LEFT JOIN OGGETTO_EQUIPAGGIABILE eq ON o.CodOggetto = eq.CodOggetto " +
-                "LEFT JOIN OGGETTO_CONSUMABILE con ON o.CodOggetto = con.CodOggetto " +
-                "WHERE o.CodCampagna = ?";
-
-        try (PreparedStatement stmt = ConnessioneDatabase.getInstance().connection.prepareStatement(query)) {
-            stmt.setInt(1, idCampagna);
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                int id = rs.getInt("CodOggetto");
-                String nome = rs.getString("Nome");
-                int costo = rs.getInt("Costo");
-                String tipo = rs.getString("Tipo");
-
-                if ("Consumabile".equalsIgnoreCase(tipo)) {
-                    catalogo.add(new OggettoConsumabile(id, nome, costo, tipo, rs.getInt("RipristinoHp"), rs.getInt("RipristinoMana")));
-                } else if ("Equipaggiamento".equalsIgnoreCase(tipo)) {
-                    Statistica req = new Statistica(rs.getInt("Req_Costituzione"), rs.getInt("Req_Forza"), rs.getInt("Req_Destrezza"), rs.getInt("Req_Intelligenza"), rs.getInt("Req_Fede"), rs.getInt("Req_Carisma"), rs.getInt("Req_Fortuna"), rs.getInt("Req_HpMax"), rs.getInt("Req_ManaMax"));
-                    Statistica bon = new Statistica(rs.getInt("Bonus_Costituzione"), rs.getInt("Bonus_Forza"), rs.getInt("Bonus_Destrezza"), rs.getInt("Bonus_Intelligenza"), rs.getInt("Bonus_Fede"), rs.getInt("Bonus_Carisma"), rs.getInt("Bonus_Fortuna"), rs.getInt("Bonus_HpMax"), rs.getInt("Bonus_ManaMax"));
-                    catalogo.add(new OggettoEquipaggiabile(id, nome, costo, tipo, req, bon));
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Errore caricamento catalogo: " + e.getMessage());
-        }
-
-        return catalogo;
-    }
-
-    @Override
     public Map<Oggetto, Integer> caricaInventarioPersonaggio(int idPersonaggio) {
         Map<Oggetto, Integer> inv = new HashMap<>();
 

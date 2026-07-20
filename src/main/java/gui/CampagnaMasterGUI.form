@@ -164,7 +164,7 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="ab838" class="javax.swing.JButton" binding="visualizzaDettagliButton1" default-binding="true">
+                  <component id="ab838" class="javax.swing.JButton" binding="visualizzaDettagliPngButton">
                     <constraints/>
                     <properties>
                       <text value="Visualizza dettagli"/>

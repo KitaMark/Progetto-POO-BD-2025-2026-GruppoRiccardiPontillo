@@ -1,6 +1,8 @@
 package gui;
 
 import controller.Controller;
+import model.Abilita;
+import model.OggettoConsumabile;
 import model.OggettoEquipaggiabile;
 import model.Personaggio;
 
@@ -9,6 +11,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import java.util.Map;
+import java.awt.*;
 
 public class SchedaPersonaggioGUI extends JDialog {
     private JPanel contentPane;
@@ -40,7 +44,7 @@ public class SchedaPersonaggioGUI extends JDialog {
     private JPanel inventarioPane;
     private JLabel nomeLabel;
     private JPanel abilitaPane;
-    private JTable table1;
+    private JTable abilitaTable;
     private JLabel puntiStatisticaLabel;
     private JLabel puntiTesto;
     private JTabbedPane inventarioTabbedPane;
@@ -65,7 +69,9 @@ public class SchedaPersonaggioGUI extends JDialog {
         inizializzaDatiPrincipali();
         aggiungiListenerTabs();
 
+        super.setMinimumSize(new Dimension(800, 600));
         super.pack();
+        super.setLocationRelativeTo(null);
         super.setVisible(true);
     }
 
@@ -75,12 +81,12 @@ public class SchedaPersonaggioGUI extends JDialog {
             public void stateChanged(ChangeEvent e) {
                 int tabSelezionata = mainTab.getSelectedIndex();
 
-                if(tabSelezionata == 1){ //selezione tab Inventario
+                if(tabSelezionata == 1){
                     inizializzaInventarioEquipaggiabili();
-                    //inizializzaInventarioConsumabili();
+                    inizializzaInventarioConsumabili();
                 }
                 else if(tabSelezionata == 2){
-                    //inizializzaListaAbilita();
+                    inizializzaListaAbilita();
                 }
             }
         });
@@ -91,22 +97,30 @@ public class SchedaPersonaggioGUI extends JDialog {
         razzaTesto.setText(pgAttivo.getRazza().toString());
         classeTesto.setText(pgAttivo.getClasse().toString());
 
-        //metodi per inizializzare la JProgressBar
+        Color hpFill = new Color(139, 38, 53);
+        Color hpEmpty = new Color(55, 20, 25);
+        Color manaFill = new Color(112, 66, 122);
+        Color manaEmpty = new Color(45, 25, 50);
+
         hpBar.setMinimum(0);
         hpBar.setMaximum(pgAttivo.getStatisticheFinali().getHpMax());
         hpBar.setValue(pgAttivo.getHpCorrenti());
-        //sovrascrive il testo standard della progress bar
         hpBar.setStringPainted(true);
-        hpBar.setString(pgAttivo.getHpCorrenti() + "/"+pgAttivo.getStatisticheFinali().getHpMax());
-        //rende la barra puramente estetica
-        hpBar.setEnabled(false);
+        hpBar.setString(pgAttivo.getHpCorrenti() + "/" + pgAttivo.getStatisticheFinali().getHpMax());
+        hpBar.setForeground(hpFill);
+        hpBar.setBackground(hpEmpty);
+        hpBar.putClientProperty("JProgressBar.selectionForeground", Color.WHITE);
+        hpBar.putClientProperty("JProgressBar.selectionBackground", Color.LIGHT_GRAY);
 
         manaBar.setMinimum(0);
         manaBar.setMaximum(pgAttivo.getStatisticheFinali().getManaMax());
         manaBar.setValue(pgAttivo.getManaCorrente());
         manaBar.setStringPainted(true);
-        manaBar.setString(pgAttivo.getManaCorrente()+"/"+pgAttivo.getStatisticheFinali().getManaMax());
-        manaBar.setEnabled(false);
+        manaBar.setString(pgAttivo.getManaCorrente() + "/" + pgAttivo.getStatisticheFinali().getManaMax());
+        manaBar.setForeground(manaFill);
+        manaBar.setBackground(manaEmpty);
+        manaBar.putClientProperty("JProgressBar.selectionForeground", Color.WHITE);
+        manaBar.putClientProperty("JProgressBar.selectionBackground", Color.LIGHT_GRAY);
 
         forzaTesto.setText(String.valueOf(pgAttivo.getStatisticheFinali().getForza()));
         destrezzaTesto.setText(String.valueOf(pgAttivo.getStatisticheFinali().getDestrezza()));
@@ -135,6 +149,39 @@ public class SchedaPersonaggioGUI extends JDialog {
             String stato = pgAttivo.getInventarioEquipaggiabili().get(equipaggiabile)? "Equipaggiato" : "Non equipaggiato";
             model.addRow(new Object[]{equipaggiabile.getNome(), stato, equipaggiabile.getId()});
         }
+    }
 
+    private void inizializzaInventarioConsumabili(){
+        String[] colonne = {"Nome", "Quantità", "ID"};
+        DefaultTableModel model = new DefaultTableModel(null, colonne) {
+            @Override
+            public boolean isCellEditable(int row, int column){return false;}
+        };
+
+        consumabiliTable.setModel(model);
+        consumabiliTable.getTableHeader().setResizingAllowed(false);
+        consumabiliTable.getTableHeader().setReorderingAllowed(false);
+        TableColumn colonnaID = consumabiliTable.getColumnModel().getColumn(2);
+        consumabiliTable.removeColumn(colonnaID);
+
+        for(Map.Entry<OggettoConsumabile, Integer> consumabile: pgAttivo.getInventarioConsumabili().entrySet()){
+            model.addRow(new Object[]{consumabile.getKey().getNome(), consumabile.getValue(), consumabile.getKey().getId()});
+        }
+    }
+
+    private void inizializzaListaAbilita(){
+        String[] colonne = {"Nome", "Descrizione"};
+        DefaultTableModel model = new DefaultTableModel(null, colonne) {
+            @Override
+            public boolean isCellEditable(int row, int column){return false;}
+        };
+
+        abilitaTable.setModel(model);
+        abilitaTable.getTableHeader().setResizingAllowed(false);
+        abilitaTable.getTableHeader().setReorderingAllowed(false);
+
+        for(Abilita abilita: pgAttivo.getListaAbilita()){
+            model.addRow(new String[]{abilita.getNome(), abilita.getDescrizione()});
+        }
     }
 }

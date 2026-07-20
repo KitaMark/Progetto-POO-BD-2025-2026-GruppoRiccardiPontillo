@@ -197,7 +197,7 @@ public class Controller {
 
         // DELEGAZIONE ALL'INVENTARIO DAO E PULIZIA
         campagnaAttiva.getCatalogoOggetti().clear();
-        campagnaAttiva.getCatalogoOggetti().addAll(inventarioDAO.caricaCatalogoNegozio(campagnaAttiva.getId()));
+        campagnaAttiva.getCatalogoOggetti().addAll(campagnaDAO.caricaCatalogoNegozio(campagnaAttiva.getId()));
 
         campagnaDAO.leggiListaClassi(campagnaAttiva.getListaClassi(), campagnaAttiva.getId());
         campagnaDAO.leggiListaRazze(campagnaAttiva.getListaRazze(), campagnaAttiva.getId());
@@ -522,7 +522,7 @@ public class Controller {
         daModificare.setHpCorrenti(hpMax);
         daModificare.setManaCorrente(manaMax);
 
-        aggiornaZainoInMemoria(daModificare);
+        leggiInventarioPersonaggio(daModificare);
 
         if (daModificare.getInventarioEquipaggiabili() != null) {
             List<OggettoEquipaggiabile> daDisequipaggiare = new ArrayList<>();
@@ -637,7 +637,7 @@ public class Controller {
             // ROLLBACK IN RAM
             pg.setHpCorrenti(oldHp);
             pg.setManaCorrente(oldMana);
-            aggiornaZainoInMemoria(pg);
+            leggiInventarioPersonaggio(pg);
             throw new RuntimeException("Transazione interrotta durante l'utilizzo dell'oggetto: " + e.getMessage());
         }
     }
@@ -763,7 +763,7 @@ public class Controller {
      */
     public List<Oggetto> getCatalogoNegozio() {
         if (campagnaAttiva != null) {
-            return inventarioDAO.caricaCatalogoNegozio(campagnaAttiva.getId());
+            return campagnaDAO.caricaCatalogoNegozio(campagnaAttiva.getId());
         }
         return new ArrayList<>();
     }
@@ -771,15 +771,16 @@ public class Controller {
     public void leggiInventarioPersonaggio(Personaggio pg) {
         if(pg == null) throw new RuntimeException("Impossibile trovare il personaggio selezionato - possibile corruzione dei dati");
         pg.svuotaInventari();
-        inventarioDAO.caricaInventarioPersonaggio(pg.getId(), pg.getInventarioConsumabili(), pg.getInventarioEquipaggiabili());
+        Map<Oggetto, Integer> zainoPersonaggio = inventarioDAO.caricaInventarioPersonaggio(pg.getId());
 
-        for (java.util.Map.Entry<Oggetto, Integer> entry : zainoDalDB.entrySet()) {
+        for (Map.Entry<Oggetto, Integer> entry : zainoPersonaggio.entrySet()) {
             Oggetto oggetto = entry.getKey();
             int quantita = entry.getValue();
 
             if (oggetto instanceof OggettoConsumabile) {
                 pg.addConsumabile((OggettoConsumabile) oggetto, quantita);
             } else if (oggetto instanceof OggettoEquipaggiabile) {
+                pg.addEquipaggiabile((OggettoEquipaggiabile) oggetto);
                 pg.impostaStatoEquipaggiabile((OggettoEquipaggiabile) oggetto, oggetto.isEquipaggiato());
             }
         }
@@ -847,5 +848,10 @@ public class Controller {
 
     public boolean controllaPrivilegiMaster(Campagna campagna){
         return utenteAttivo.equals((listaCampagne.get(campagna)));
+    }
+
+    public void leggiAbilitaPersonaggio(Personaggio pg) {
+        if(pg == null) throw new RuntimeException("Impossibile trovare il personaggio selezionato - possibile corruzione dei dati.");
+        abilitaDao.caricaAbilitaApprese(pg);
     }
 }

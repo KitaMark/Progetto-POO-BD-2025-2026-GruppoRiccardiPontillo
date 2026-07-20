@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -296,80 +297,45 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
      * e "Equipaggiamento", istanziando le relative sottoclassi e popolando i requisiti e i bonus.
      * </p>
      *
-     * @param catalogo La lista (che verrà svuotata e ripopolata) destinata a contenere gli oggetti.
-     * @param idCampagna L'identificativo della campagna da cui pescare il catalogo.
+     * @param idCampagna L'identificativo della campagna da cui leggere il catalogo.
      */
-    @Override
-    public void leggiCatalogoOggetti(List<Oggetto> catalogo, int idCampagna) {
-        catalogo.clear();
+    public List<Oggetto> caricaCatalogoNegozio(int idCampagna) {
+        List<Oggetto> catalogo = new ArrayList<>();
 
-        // Query estesa con tutti gli attributi delle tre tabelle (OGGETTO, OGGETTO_EQUIPAGGIABILE, OGGETTO_CONSUMABILE)
         String query = "SELECT o.CodOggetto, o.Nome, o.Costo, o.Tipo, " +
-                "eq.req_forza, eq.req_destrezza, eq.req_costituzione, eq.req_intelligenza, " +
-                "eq.req_fede, eq.req_carisma, eq.req_fortuna, eq.req_hpmax, eq.req_manamax, " +
-                "eq.bonus_forza, eq.bonus_destrezza, eq.bonus_costituzione, eq.bonus_intelligenza, " +
-                "eq.bonus_fede, eq.bonus_carisma, eq.bonus_fortuna, eq.bonus_hpmax, eq.bonus_manamax, " +
+                "eq.Req_Forza, eq.Req_Destrezza, eq.Req_Costituzione, eq.Req_Intelligenza, " +
+                "eq.Req_Fede, eq.Req_Carisma, eq.Req_Fortuna, eq.Req_HpMax, eq.Req_ManaMax, " +
+                "eq.Bonus_Forza, eq.Bonus_Destrezza, eq.Bonus_Costituzione, eq.Bonus_Intelligenza, " +
+                "eq.Bonus_Fede, eq.Bonus_Carisma, eq.Bonus_Fortuna, eq.Bonus_HpMax, eq.Bonus_ManaMax, " +
                 "con.RipristinoHp, con.RipristinoMana " +
                 "FROM OGGETTO o " +
                 "LEFT JOIN OGGETTO_EQUIPAGGIABILE eq ON o.CodOggetto = eq.CodOggetto " +
                 "LEFT JOIN OGGETTO_CONSUMABILE con ON o.CodOggetto = con.CodOggetto " +
                 "WHERE o.CodCampagna = ?";
 
-        try (Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+        try (PreparedStatement stmt = ConnessioneDatabase.getInstance().connection.prepareStatement(query)) {
+            stmt.setInt(1, idCampagna);
+            ResultSet rs = stmt.executeQuery();
 
-            pstmt.setInt(1, idCampagna);
+            while (rs.next()) {
+                int id = rs.getInt("CodOggetto");
+                String nome = rs.getString("Nome");
+                int costo = rs.getInt("Costo");
+                String tipo = rs.getString("Tipo");
 
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    int id = rs.getInt("CodOggetto");
-                    String nome = rs.getString("Nome");
-                    int costo = rs.getInt("Costo");
-                    String tipo = rs.getString("Tipo");
-
-                    if ("Consumabile".equalsIgnoreCase(tipo)) {
-                        int hp = rs.getInt("RipristinoHp");
-                        int mana = rs.getInt("RipristinoMana");
-
-                        OggettoConsumabile consumabile = new OggettoConsumabile(id, nome, costo, tipo, hp, mana);
-                        catalogo.add(consumabile);
-
-                    } else if ("Equipaggiamento".equalsIgnoreCase(tipo)) {
-                        // Mappatura completa dell'oggetto Statistica per i requisiti d'uso
-                        Statistica requisiti = new Statistica(
-                                rs.getInt("req_costituzione"),
-                                rs.getInt("req_forza"),
-                                rs.getInt("req_destrezza"),
-                                rs.getInt("req_intelligenza"),
-                                rs.getInt("req_fede"),
-                                rs.getInt("req_carisma"),
-                                rs.getInt("req_fortuna"),
-                                rs.getInt("req_hpmax"),
-                                rs.getInt("req_manamax")
-                        );
-
-                        // Mappatura completa dell'oggetto Statistica per i bonus applicati
-                        Statistica bonus = new Statistica(
-                                rs.getInt("bonus_costituzione"),
-                                rs.getInt("bonus_forza"),
-                                rs.getInt("bonus_destrezza"),
-                                rs.getInt("bonus_intelligenza"),
-                                rs.getInt("bonus_fede"),
-                                rs.getInt("bonus_carisma"),
-                                rs.getInt("bonus_fortuna"),
-                                rs.getInt("bonus_hpmax"),
-                                rs.getInt("bonus_manamax")
-                        );
-
-                        OggettoEquipaggiabile equipaggiabile = new OggettoEquipaggiabile(id, nome, costo, tipo, requisiti, bonus);
-                        catalogo.add(equipaggiabile);
-                    }
+                if ("Consumabile".equalsIgnoreCase(tipo)) {
+                    catalogo.add(new OggettoConsumabile(id, nome, costo, tipo, rs.getInt("RipristinoHp"), rs.getInt("RipristinoMana")));
+                } else if ("Equipaggiamento".equalsIgnoreCase(tipo)) {
+                    Statistica req = new Statistica(rs.getInt("Req_Costituzione"), rs.getInt("Req_Forza"), rs.getInt("Req_Destrezza"), rs.getInt("Req_Intelligenza"), rs.getInt("Req_Fede"), rs.getInt("Req_Carisma"), rs.getInt("Req_Fortuna"), rs.getInt("Req_HpMax"), rs.getInt("Req_ManaMax"));
+                    Statistica bon = new Statistica(rs.getInt("Bonus_Costituzione"), rs.getInt("Bonus_Forza"), rs.getInt("Bonus_Destrezza"), rs.getInt("Bonus_Intelligenza"), rs.getInt("Bonus_Fede"), rs.getInt("Bonus_Carisma"), rs.getInt("Bonus_Fortuna"), rs.getInt("Bonus_HpMax"), rs.getInt("Bonus_ManaMax"));
+                    catalogo.add(new OggettoEquipaggiabile(id, nome, costo, tipo, req, bon));
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Errore durante il caricamento del catalogo oggetti: " + e.getMessage());
+            throw new RuntimeException("Errore caricamento catalogo: " + e.getMessage());
         }
+
+        return catalogo;
     }
 
     /**

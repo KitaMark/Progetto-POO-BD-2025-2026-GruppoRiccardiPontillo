@@ -8,6 +8,7 @@ import model.Personaggio;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -58,7 +59,7 @@ public class CampagnaMasterGUI {
     private JButton editorClassiButton;
     private JButton catalogoOggettiButton;
     private JButton visualizzaDettagliPGButton;
-    private JButton visualizzaDettagliButton1;
+    private JButton visualizzaDettagliPngButton;
     private JButton modificaButton;
 
     /**
@@ -83,6 +84,7 @@ public class CampagnaMasterGUI {
         JFrame frame = new JFrame(controller.getCampagnaAttiva().getNome());
         frame.setContentPane(getMainPanel());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setMinimumSize(new Dimension(800, 600));
         frame.pack();
         frame.setVisible(true);
 
@@ -207,6 +209,28 @@ public class CampagnaMasterGUI {
             }
         });
 
+        visualizzaDettagliPngButton.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e){
+                int riga = pngTable.getSelectedRow();
+                if (riga == -1) {
+                    JOptionPane.showMessageDialog(frame, "Nessun png selezionato.", "Attenzione", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                int id = (int) pngTable.getModel().getValueAt(riga, 3);
+                try {
+                    Personaggio daVisualizzare = controller.cercaPersonaggio(id, false);
+                    controller.leggiInventarioPersonaggio(daVisualizzare);
+                    controller.leggiAbilitaPersonaggio(daVisualizzare);
+                    SchedaPersonaggioGUI schedapg = new SchedaPersonaggioGUI(frame, controller, false, daVisualizzare);
+                } catch(Exception ex){
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+
 
         statoCampagnaButton.addActionListener(new ActionListener() {
             @Override
@@ -236,6 +260,7 @@ public class CampagnaMasterGUI {
                 try {
                     Personaggio daVisualizzare = controller.cercaPersonaggio(id, true);
                     controller.leggiInventarioPersonaggio(daVisualizzare);
+                    controller.leggiAbilitaPersonaggio(daVisualizzare);
                     SchedaPersonaggioGUI schedapg = new SchedaPersonaggioGUI(frame, controller, true, daVisualizzare);
                 } catch(Exception ex){
                     ex.printStackTrace();
