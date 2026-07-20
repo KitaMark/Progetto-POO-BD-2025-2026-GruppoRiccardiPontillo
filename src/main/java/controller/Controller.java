@@ -376,7 +376,8 @@ public class Controller {
         Giocatore giocatore = (Giocatore) utenteAttivo;
         Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
 
-        List<Oggetto> catalogo = inventarioDAO.caricaCatalogoNegozio();
+        List<Oggetto> catalogo = new ArrayList<>();
+        campagnaDAO.leggiCatalogoOggetti(catalogo, campagnaAttiva.getId());
         Oggetto oggettoScelto = null;
 
         for (Oggetto oggetto : catalogo) {
@@ -702,18 +703,8 @@ public class Controller {
 
     private void aggiornaZainoInMemoria(Personaggio pg) {
         pg.svuotaInventari();
-        java.util.Map<Oggetto, Integer> zainoDalDB = inventarioDAO.caricaInventarioPersonaggio(pg.getId());
+        inventarioDAO.caricaInventarioPersonaggio(pg.getId(), pg.getInventarioConsumabili(), pg.getInventarioEquipaggiabili());
 
-        for (java.util.Map.Entry<Oggetto, Integer> entry : zainoDalDB.entrySet()) {
-            Oggetto oggetto = entry.getKey();
-            int quantita = entry.getValue();
-
-            if (oggetto instanceof OggettoConsumabile) {
-                pg.addConsumabile((OggettoConsumabile) oggetto, quantita);
-            } else if (oggetto instanceof OggettoEquipaggiabile) {
-                pg.impostaStatoEquipaggiabile((OggettoEquipaggiabile) oggetto, oggetto.isEquipaggiato());
-            }
-        }
     }
 
     public Campagna cercaCampagna(String nomeCampagna){

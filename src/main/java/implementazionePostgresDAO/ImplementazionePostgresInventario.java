@@ -29,61 +29,6 @@ import java.util.Map;
 public class ImplementazionePostgresInventario implements InventarioDao {
 
     /**
-     * Recupera dal database il catalogo completo di tutti gli oggetti acquistabili nel gioco.
-     * <p>
-     * Effettua il mapping  leggendo il campo {@code tipo}: se il valore è 'Equipaggiamento',
-     * istanzia un {@link OggettoEquipaggiabile} impostando i requisiti e i bonus strutturati;
-     * altrimenti, istanzia un {@link OggettoConsumabile} mappando i valori di ripristino di HP e Mana.
-     * </p>
-     *
-     * @return una {@link List} di oggetti di tipo {@link Oggetto} che rappresentano il catalogo globale del negozio.
-     * @throws RuntimeException se si verifica un errore di comunicazione SQL con il database.
-     */
-    @Override
-    public List<Oggetto> caricaCatalogoNegozio() {
-        List<Oggetto> catalogo = new ArrayList<>();
-        String query = "SELECT * FROM OGGETTO";
-
-        try {
-            Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement stmt = conn.prepareStatement(query);
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                int id = rs.getInt("codoggetto");
-                String nome = rs.getString("nome");
-                int costo = rs.getInt("costo");
-                String tipo = rs.getString("tipo");
-
-                Oggetto oggetto;
-
-                if ("Equipaggiamento".equalsIgnoreCase(tipo)) {
-                    Statistica requisiti = new Statistica(
-                            0, rs.getInt("reqforza"), rs.getInt("reqdestrezza"),
-                            0, 0, 0, 0, 0, 0
-                    );
-                    Statistica bonus = new Statistica(
-                            0, rs.getInt("bonusforza"), 0,
-                            0, 0, 0, 0, 0, 0
-                    );
-                    oggetto = new OggettoEquipaggiabile(id, nome, costo, tipo, requisiti, bonus);
-                } else {
-                    oggetto = new OggettoConsumabile(
-                            id, nome, costo, tipo,
-                            rs.getInt("ripristinohp"), rs.getInt("ripristinomana")
-                    );
-                }
-                catalogo.add(oggetto);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Errore nel caricamento del catalogo negozio: " + e.getMessage());
-        }
-
-        return catalogo;
-    }
-
-    /**
      * Carica lo zaino/inventario corrente di uno specifico personaggio, associando a ciascun oggetto la sua quantità.
      * <p>
      * Esegue un'operazione di {@code JOIN} tra le tabelle {@code INVENTARIO} e {@code OGGETTO} filtrando per l'ID del personaggio.
@@ -91,22 +36,30 @@ public class ImplementazionePostgresInventario implements InventarioDao {
      * </p>
      *
      * @param codPersonaggio l'identificativo univoco del personaggio di cui caricare l'inventario.
-     * @return una {@link Map} contenente come chiavi le istanze di {@link Oggetto} e come valori le relative quantità possedute.
+     * @param inventarioConsumabili Mappa in cui caricare gli oggetti consumabili con le loro quantità.
+     * @param inventarioEquipaggiabili Mappa in cui caricare gli oggetti equipaggiabili con il loro stato (equipaggiato/non equipaggiato).
      * @throws RuntimeException se si verifica un errore durante il recupero dei dati o l'accoppiamento relazionale.
      */
     @Override
-    public Map<Oggetto, Integer> caricaInventarioPersonaggio(int codPersonaggio) {
-        Map<Oggetto, Integer> inventario = new HashMap<>();
-        String query = "SELECT o.codoggetto, o.nome, o.costo, o.tipo, " +
-                "o.reqforza, o.reqdestrezza, o.bonusforza, o.ripristinohp, o.ripristinomana, " +
-                "i.quantita, i.equipaggiato " +
+    public void caricaInventarioPersonaggio(int codPersonaggio, Map<OggettoConsumabile, Integer> inventarioConsumabili,
+                                                             Map<OggettoEquipaggiabile, Boolean> inventarioEquipaggiabili) {
+
+        // Ho corretto la query per includere 'i.quantita' e i nomi delle colonne con underscore
+        String query = "SELECT o.codoggetto, o.nome, o.costo, o.tipo, i.equipaggiato, i.quantita, " +
+                "oe.req_forza, oe.req_destrezza, oe.req_costituzione, oe.req_intelligenza, " +
+                "oe.req_fede, oe.req_carisma, oe.req_fortuna, oe.req_hpmax, oe.req_manamax, " +
+                "oe.bonus_forza, oe.bonus_destrezza, oe.bonus_costituzione, oe.bonus_intelligenza, " +
+                "oe.bonus_fede, oe.bonus_carisma, oe.bonus_fortuna, oe.bonus_hpmax, oe.bonus_manamax, " +
+                "oc.ripristinohp, oc.ripristinomana " +
                 "FROM INVENTARIO i " +
                 "JOIN OGGETTO o ON i.codoggetto = o.codoggetto " +
+                "LEFT JOIN OGGETTO_EQUIPAGGIABILE oe ON o.codoggetto = oe.codoggetto " +
+                "LEFT JOIN OGGETTO_CONSUMABILE oc ON o.codoggetto = oc.codoggetto " +
                 "WHERE i.codpersonaggio = ?";
 
-        try {
-            Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement stmt = conn.prepareStatement(query);
+        try (Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement stmt = conn.prepareStatement(query);){
+
             stmt.setInt(1, codPersonaggio);
             ResultSet rs = stmt.executeQuery();
 
@@ -115,36 +68,47 @@ public class ImplementazionePostgresInventario implements InventarioDao {
                 String nome = rs.getString("nome");
                 int costo = rs.getInt("costo");
                 String tipo = rs.getString("tipo");
-
-                Oggetto oggetto;
+                boolean equipaggiato = rs.getBoolean("equipaggiato");
+                int quantita = rs.getInt("quantita"); // Ora la colonna è selezionata
 
                 if ("Equipaggiamento".equalsIgnoreCase(tipo)) {
                     Statistica requisiti = new Statistica(
-                            0, rs.getInt("reqforza"), rs.getInt("reqdestrezza"),
-                            0, 0, 0, 0, 0, 0
+                            rs.getInt("req_costituzione"),
+                            rs.getInt("req_forza"),
+                            rs.getInt("req_destrezza"),
+                            rs.getInt("req_intelligenza"),
+                            rs.getInt("req_fede"),
+                            rs.getInt("req_carisma"),
+                            rs.getInt("req_fortuna"),
+                            rs.getInt("req_hpmax"),
+                            rs.getInt("req_manamax")
                     );
                     Statistica bonus = new Statistica(
-                            0, rs.getInt("bonusforza"), 0,
-                            0, 0, 0, 0, 0, 0
+                            rs.getInt("bonus_costituzione"),
+                            rs.getInt("bonus_forza"),
+                            rs.getInt("bonus_destrezza"),
+                            rs.getInt("bonus_intelligenza"),
+                            rs.getInt("bonus_fede"),
+                            rs.getInt("bonus_carisma"),
+                            rs.getInt("bonus_fortuna"),
+                            rs.getInt("bonus_hpmax"),
+                            rs.getInt("bonus_manamax")
                     );
-                    oggetto = new OggettoEquipaggiabile(id, nome, costo, tipo, requisiti, bonus);
-                } else {
-                    oggetto = new OggettoConsumabile(
+                    OggettoEquipaggiabile equipaggiabile = new OggettoEquipaggiabile(id, nome, costo, tipo, requisiti, bonus);
+                    inventarioEquipaggiabili.put(equipaggiabile, equipaggiato);
+                } else if ("Consumabile".equalsIgnoreCase(tipo)) {
+                    OggettoConsumabile consumabile = new OggettoConsumabile(
                             id, nome, costo, tipo,
                             rs.getInt("ripristinohp"), rs.getInt("ripristinomana")
                     );
+                    inventarioConsumabili.put(consumabile, quantita);
                 }
-
-                oggetto.setEquipaggiato(rs.getBoolean("equipaggiato"));
-                int quantita = rs.getInt("quantita");
-                inventario.put(oggetto, quantita);
+                // Potresti aggiungere un else per gestire tipi di oggetto sconosciuti o loggare un errore.
             }
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Errore nel caricamento dell'inventario: " + e.getMessage());
         }
-
-        return inventario;
     }
 
 
