@@ -1,10 +1,14 @@
 package gui;
 
 import controller.Controller;
+import model.OggettoEquipaggiabile;
 import model.Personaggio;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 
 public class SchedaPersonaggioGUI extends JDialog {
     private JPanel contentPane;
@@ -57,11 +61,29 @@ public class SchedaPersonaggioGUI extends JDialog {
         super.setContentPane(contentPane);
         super.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         super.setResizable(false);
+
         inizializzaDatiPrincipali();
+        aggiungiListenerTabs();
+
         super.pack();
         super.setVisible(true);
+    }
 
+    private void aggiungiListenerTabs() {
+        mainTab.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int tabSelezionata = mainTab.getSelectedIndex();
 
+                if(tabSelezionata == 1){ //selezione tab Inventario
+                    inizializzaInventarioEquipaggiabili();
+                    //inizializzaInventarioConsumabili();
+                }
+                else if(tabSelezionata == 2){
+                    //inizializzaListaAbilita();
+                }
+            }
+        });
     }
 
     private void inizializzaDatiPrincipali(){
@@ -97,7 +119,7 @@ public class SchedaPersonaggioGUI extends JDialog {
     }
 
     private void inizializzaInventarioEquipaggiabili(){
-        String[] colonne = {"Nome", "Stato"};
+        String[] colonne = {"Nome", "Stato", "ID"};
         DefaultTableModel model = new DefaultTableModel(null, colonne) {
             @Override
             public boolean isCellEditable(int row, int column){return false;}
@@ -106,7 +128,13 @@ public class SchedaPersonaggioGUI extends JDialog {
         equipaggiabiliTable.setModel(model);
         equipaggiabiliTable.getTableHeader().setResizingAllowed(false);
         equipaggiabiliTable.getTableHeader().setReorderingAllowed(false);
+        TableColumn colonnaID = equipaggiabiliTable.getColumnModel().getColumn(2);
+        equipaggiabiliTable.removeColumn(colonnaID);
 
+        for(OggettoEquipaggiabile equipaggiabile : pgAttivo.getInventarioEquipaggiabili().keySet()){
+            String stato = pgAttivo.getInventarioEquipaggiabili().get(equipaggiabile)? "Equipaggiato" : "Non equipaggiato";
+            model.addRow(new Object[]{equipaggiabile.getNome(), stato, equipaggiabile.getId()});
+        }
 
     }
 }

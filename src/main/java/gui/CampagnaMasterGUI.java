@@ -235,6 +235,7 @@ public class CampagnaMasterGUI {
                 int id = (int) pgTable.getModel().getValueAt(riga, 4);
                 try {
                     Personaggio daVisualizzare = controller.cercaPersonaggio(id, true);
+                    controller.leggiInventarioPersonaggio(daVisualizzare);
                     SchedaPersonaggioGUI schedapg = new SchedaPersonaggioGUI(frame, controller, true, daVisualizzare);
                 } catch(Exception ex){
                     ex.printStackTrace();

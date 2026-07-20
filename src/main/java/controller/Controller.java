@@ -5,7 +5,6 @@ import exception.*;
 import implementazionePostgresDAO.*;
 import model.*;
 
-import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -218,7 +217,7 @@ public class Controller {
                 if (pg.getInventarioConsumabili() == null || pg.getInventarioEquipaggiabili() == null) {
                     System.err.println("ATTENZIONE: Le HashMap in Personaggio sono rimaste a null!");
                 } else {
-                    aggiornaZainoInMemoria(pg);
+                    leggiInventarioPersonaggio(pg);
                     abilitaDao.caricaAbilitaSbloccabili(pg.getClasse());
                     abilitaDao.caricaAbilitaApprese(pg);
                 }
@@ -701,7 +700,8 @@ public class Controller {
         return catalogo;
     }
 
-    private void aggiornaZainoInMemoria(Personaggio pg) {
+    public void leggiInventarioPersonaggio(Personaggio pg) {
+        if(pg == null) throw new RuntimeException("Impossibile trovare il personaggio selezionato - possibile corruzione dei dati");
         pg.svuotaInventari();
         inventarioDAO.caricaInventarioPersonaggio(pg.getId(), pg.getInventarioConsumabili(), pg.getInventarioEquipaggiabili());
 

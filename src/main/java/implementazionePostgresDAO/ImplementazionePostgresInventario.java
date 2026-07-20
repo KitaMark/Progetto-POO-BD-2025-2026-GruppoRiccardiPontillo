@@ -44,7 +44,6 @@ public class ImplementazionePostgresInventario implements InventarioDao {
     public void caricaInventarioPersonaggio(int codPersonaggio, Map<OggettoConsumabile, Integer> inventarioConsumabili,
                                                              Map<OggettoEquipaggiabile, Boolean> inventarioEquipaggiabili) {
 
-        // Ho corretto la query per includere 'i.quantita' e i nomi delle colonne con underscore
         String query = "SELECT o.codoggetto, o.nome, o.costo, o.tipo, i.equipaggiato, i.quantita, " +
                 "oe.req_forza, oe.req_destrezza, oe.req_costituzione, oe.req_intelligenza, " +
                 "oe.req_fede, oe.req_carisma, oe.req_fortuna, oe.req_hpmax, oe.req_manamax, " +
@@ -103,7 +102,6 @@ public class ImplementazionePostgresInventario implements InventarioDao {
                     );
                     inventarioConsumabili.put(consumabile, quantita);
                 }
-                // Potresti aggiungere un else per gestire tipi di oggetto sconosciuti o loggare un errore.
             }
         } catch (SQLException e) {
             e.printStackTrace();
