@@ -194,7 +194,11 @@ public class Controller {
         if (campagnaAttiva == null) throw new RuntimeException("Campagna non esistente.");
         campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPG(), true, campagnaAttiva.getNome());
         campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPnG(), false, campagnaAttiva.getNome());
-        campagnaDAO.leggiCatalogoOggetti(campagnaAttiva.getCatalogoOggetti(), campagnaAttiva.getId());
+
+        // DELEGAZIONE ALL'INVENTARIO DAO E PULIZIA
+        campagnaAttiva.getCatalogoOggetti().clear();
+        campagnaAttiva.getCatalogoOggetti().addAll(inventarioDAO.caricaCatalogoNegozio(campagnaAttiva.getId()));
+
         campagnaDAO.leggiListaClassi(campagnaAttiva.getListaClassi(), campagnaAttiva.getId());
         campagnaDAO.leggiListaRazze(campagnaAttiva.getListaRazze(), campagnaAttiva.getId());
         campagnaDAO.leggiGiocatori(campagnaAttiva.getPartecipanti(), campagnaAttiva.getNome());
@@ -375,8 +379,7 @@ public class Controller {
         Giocatore giocatore = (Giocatore) utenteAttivo;
         Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
 
-        List<Oggetto> catalogo = new ArrayList<>();
-        campagnaDAO.leggiCatalogoOggetti(catalogo, campagnaAttiva.getId());
+        List<Oggetto> catalogo = getCatalogoNegozio();
         Oggetto oggettoScelto = null;
 
         for (Oggetto oggetto : catalogo) {
@@ -388,6 +391,15 @@ public class Controller {
 
         if (oggettoScelto == null) throw new OggettoNonSelezionatoException("Oggetto non trovato in negozio.");
         if (pg.getOro() < oggettoScelto.getCosto()) throw new OggettoNonSelezionatoException("Oro insufficiente.");
+
+        // CONTROLLO DUPLICATI EQUIPAGGIAMENTO
+        if (oggettoScelto instanceof OggettoEquipaggiabile) {
+            for (OggettoEquipaggiabile eq : pg.getInventarioEquipaggiabili().keySet()) {
+                if (eq.getNome().equalsIgnoreCase(oggettoScelto.getNome())) {
+                    throw new OggettoNonSelezionatoException("Possiedi già questo pezzo di equipaggiamento.");
+                }
+            }
+        }
 
         inventarioDAO.acquistaOggetto(pg.getId(), oggettoScelto.getId(), oggettoScelto.getCosto());
         pg.setOro(pg.getOro() - oggettoScelto.getCosto());
@@ -488,7 +500,7 @@ public class Controller {
      */
     public void salvaStatisticheModificate(String nomePersonaggio, int idPersonaggio, int forza, int destrezza, int costituzione,
                                            int intelligenza, int fede, int carisma, int fortuna,
-                                           int hpMax, int manaMax, boolean isPg) throws PngNonSelezionatoException {
+                                           int hpMax, int manaMax, boolean isPg) throws PngNonSelezionatoException, PersonaggioNonTrovatoException {
 
         if (nomePersonaggio == null || nomePersonaggio.trim().isEmpty()) {
             throw new PngNonSelezionatoException("Nessun personaggio selezionato.");
@@ -502,11 +514,44 @@ public class Controller {
             }
         }
         if(daModificare == null) throw new PersonaggioNonTrovatoException("Impossibile trovare il personaggio selezionato.");
+
         Statistica modifiche = new Statistica(costituzione, forza, destrezza, intelligenza, fede, carisma, fortuna, hpMax, manaMax);
         personaggioDAO.aggiornaStatistichePersonaggio(daModificare.getId(), modifiche);
         daModificare.setStatisticaBase(modifiche);
+
         daModificare.setHpCorrenti(hpMax);
         daModificare.setManaCorrente(manaMax);
+
+        aggiornaZainoInMemoria(daModificare);
+
+        if (daModificare.getInventarioEquipaggiabili() != null) {
+            List<OggettoEquipaggiabile> daDisequipaggiare = new ArrayList<>();
+
+            // Controlla la mappa degli oggetti e individua quelli che violano i requisiti
+            for (Map.Entry<OggettoEquipaggiabile, Boolean> entry : daModificare.getInventarioEquipaggiabili().entrySet()) {
+                if (entry.getValue()) { // Se lo stato dell'oggetto è 'true' (Equipaggiato)
+                    Statistica req = entry.getKey().getRequisiti();
+
+                    if (forza < req.getForza() || destrezza < req.getDestrezza() || costituzione < req.getCostituzione() ||
+                            intelligenza < req.getIntelligenza() || fede < req.getFede() || carisma < req.getCarisma() ||
+                            fortuna < req.getFortuna() || hpMax < req.getHpMax() || manaMax < req.getManaMax()) {
+
+                        daDisequipaggiare.add(entry.getKey());
+                    }
+                }
+            }
+
+            // Esegue il disequipaggiamento
+            for (OggettoEquipaggiabile eq : daDisequipaggiare) {
+                try {
+                    inventarioDAO.impostaEquipaggiamento(daModificare.getId(), eq.getId(), false); // Aggiorna DB
+                    daModificare.rimuoviEquipaggiamento(eq); // Imposta a false
+                    System.out.println("Oggetto disequipaggiato automaticamente per requisiti mancanti: " + eq.getNome());
+                } catch (Exception e) {
+                    System.err.println("Errore durante l'auto-disequipaggiamento in DB: " + e.getMessage());
+                }
+            }
+        }
     }
 
     public void equipaggiaOggetto(String nomeOggetto, String nomeCampagna) throws OggettoNonSelezionatoException {
@@ -530,8 +575,9 @@ public class Controller {
         try {
             inventarioDAO.impostaEquipaggiamento(pg.getId(), target.getId(), true);
             pg.impostaStatoEquipaggiabile(target, true);
+            pg.aggiornaStatoPG();
         } catch (RuntimeException e) {
-            throw new OggettoNonSelezionatoException("Requisiti insufficienti: " + e.getMessage());
+            throw new OggettoNonSelezionatoException(e.getMessage());
         }
     }
 
@@ -577,11 +623,23 @@ public class Controller {
             throw new OggettoNonSelezionatoException("Non possiedi questo consumabile nel tuo inventario.");
         }
 
-        inventarioDAO.consumaOggetto(pg.getId(), target.getId());
-        pg.ripristinaHP(target.getRipristinoHP());
-        pg.ripristinaMana(target.getRipristinoMana());
-        giocatoreDAO.aggiornaRisorse(pg);
-        pg.rimuoviConsumabile(target, 1);
+        // BACKUP IN RAM
+        int oldHp = pg.getHpCorrenti();
+        int oldMana = pg.getManaCorrente();
+
+        try {
+            inventarioDAO.consumaOggetto(pg.getId(), target.getId());
+            pg.ripristinaHP(target.getRipristinoHP());
+            pg.ripristinaMana(target.getRipristinoMana());
+            giocatoreDAO.aggiornaRisorse(pg);
+            pg.rimuoviConsumabile(target, 1);
+        } catch (Exception e) {
+            // ROLLBACK IN RAM
+            pg.setHpCorrenti(oldHp);
+            pg.setManaCorrente(oldMana);
+            aggiornaZainoInMemoria(pg);
+            throw new RuntimeException("Transazione interrotta durante l'utilizzo dell'oggetto: " + e.getMessage());
+        }
     }
 
     public void vendiOggetto(String nomeOggetto, String nomeCampagna) throws Exception {
@@ -641,7 +699,7 @@ public class Controller {
 
         Abilita target = null;
         for (Abilita abilita : pg.getClasse().getAbilitaSbloccabili()) {
-            if (abilita.getNome().equalsIgnoreCase(nomeAbilita)) {
+            if (abilita.getNome().trim().equalsIgnoreCase(nomeAbilita.trim())) {
                 target = abilita;
                 break;
             }
@@ -650,11 +708,22 @@ public class Controller {
         if (target == null) {
             throw new AbilitaNonSbloccabileException("Questa abilità non è prevista per la tua classe.");
         }
-        if (pg.getListaAbilita().contains(target)) {
-            throw new AbilitaGiaAppresaException("Hai già appreso questa abilità in precedenza!");
+
+        for (Abilita a : pg.getListaAbilita()) {
+            if (a.getNome().trim().equalsIgnoreCase(target.getNome().trim())) {
+                throw new AbilitaGiaAppresaException("Hai già appreso questa abilità in precedenza!");
+            }
         }
 
-        abilitaDao.imparaAbilita(pg.getId(), target.getNome());
+        try {
+            abilitaDao.imparaAbilita(pg.getId(), target.getNome());
+        } catch (RuntimeException e) {
+            if (e.getMessage().toLowerCase().contains("duplicato") || e.getMessage().toLowerCase().contains("esiste già")) {
+                throw new AbilitaGiaAppresaException("Hai già appreso questa abilità in precedenza!");
+            }
+            throw e;
+        }
+
         pg.addAbilita(target);
     }
 
@@ -693,11 +762,10 @@ public class Controller {
      * @return Una lista di Oggetti acquistabili in questa specifica campagna.
      */
     public List<Oggetto> getCatalogoNegozio() {
-        List<Oggetto> catalogo = new ArrayList<>();
         if (campagnaAttiva != null) {
-            campagnaDAO.leggiCatalogoOggetti(catalogo, campagnaAttiva.getId());
+            return inventarioDAO.caricaCatalogoNegozio(campagnaAttiva.getId());
         }
-        return catalogo;
+        return new ArrayList<>();
     }
 
     public void leggiInventarioPersonaggio(Personaggio pg) {
@@ -705,6 +773,19 @@ public class Controller {
         pg.svuotaInventari();
         inventarioDAO.caricaInventarioPersonaggio(pg.getId(), pg.getInventarioConsumabili(), pg.getInventarioEquipaggiabili());
 
+        for (java.util.Map.Entry<Oggetto, Integer> entry : zainoDalDB.entrySet()) {
+            Oggetto oggetto = entry.getKey();
+            int quantita = entry.getValue();
+
+            if (oggetto instanceof OggettoConsumabile) {
+                pg.addConsumabile((OggettoConsumabile) oggetto, quantita);
+            } else if (oggetto instanceof OggettoEquipaggiabile) {
+                pg.impostaStatoEquipaggiabile((OggettoEquipaggiabile) oggetto, oggetto.isEquipaggiato());
+            }
+        }
+
+        //garantisce che le statisticheFinali rifettano sempre l'inventario letto da DB
+        pg.ricalcolaStatisticheFinali();
     }
 
     public Campagna cercaCampagna(String nomeCampagna){

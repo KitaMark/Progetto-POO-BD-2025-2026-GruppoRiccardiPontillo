@@ -31,7 +31,7 @@ public abstract class Utente {
     /**
      * Costruttore creato appositamente per il dao
      *
-     * @param id identificativo univoco dell'utente nel database
+     * @param id       identificativo univoco dell'utente nel database
      * @param email    l'indirizzo email dell'utente.
      * @param username lo username dell'utente.
      * @param password la password di accesso.
@@ -93,15 +93,29 @@ public abstract class Utente {
         return String.format("Utente [email: %s, username: %s]", this.email, this.username);
     }
 
+    /**
+     * Confronta due utenti. Due utenti sono considerati uguali se hanno lo stesso username,
+     * poiché lo username è un campo UNIQUE a livello di database, evitiamo di usare l'id poiché prima del
+     * salvataggio nel database esso è uguale a 0 e si potrebbero creare problemi.
+     */
     @Override
     public boolean equals(Object o) {
+        // se è la stessa identica istanza in memoria, restituisci true
+        if (this == o) return true;
+
+        // Controllo null e classe: se è nullo o di classe diversa, restituisci false
         if (o == null || getClass() != o.getClass()) return false;
+
+        //Confronto logico basato sulla chiave naturale (username)
         Utente utente = (Utente) o;
-        return Objects.equals(email, utente.email) && Objects.equals(username, utente.username) && Objects.equals(password, utente.password);
+        return Objects.equals(username, utente.username);
     }
 
+    /**
+     * Genera l'hash code basato sulla chiave naturale (username).
+     */
     @Override
     public int hashCode() {
-        return Objects.hash(email, username, password);
+        return Objects.hash(username);
     }
 }

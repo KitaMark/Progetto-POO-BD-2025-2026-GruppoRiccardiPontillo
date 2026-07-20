@@ -9,8 +9,9 @@ import java.util.Map;
 
 public interface InventarioDao {
 
-    void caricaInventarioPersonaggio(int codPersonaggio, Map<OggettoConsumabile, Integer> inventarioConsumabili,
-                                     Map<OggettoEquipaggiabile, Boolean> inventarioEquipaggiabili);
+
+    List<Oggetto> caricaCatalogoNegozio(int idCampagna);
+    Map<Oggetto, Integer> caricaInventarioPersonaggio(int codPersonaggio);
     void acquistaOggetto(int codPersonaggio, int codOggetto, int costoOggetto);
     void vendiOggetto(int codPersonaggio, int codOggetto, int ricavoOggetto);
     void impostaEquipaggiamento(int codPersonaggio, int codOggetto, boolean equipaggiato);

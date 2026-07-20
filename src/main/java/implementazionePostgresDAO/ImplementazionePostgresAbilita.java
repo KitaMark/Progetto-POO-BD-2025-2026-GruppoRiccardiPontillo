@@ -71,12 +71,11 @@ public class ImplementazionePostgresAbilita implements AbilitaDao {
         classe.getAbilitaSbloccabili().clear(); // Svuota per evitare doppioni se ricarichi
 
         // Cerca le abilità che corrispondono al nome della classe
-        String query = "SELECT Nome, Descrizione FROM ABILITA WHERE CodClasse = (SELECT CodClasse FROM CLASSE WHERE Nome = ?)";
-
+        String query = "SELECT CodAbilita, Nome, Descrizione FROM ABILITA WHERE CodClasse = ?";
         try {
             Connection conn = ConnessioneDatabase.getInstance().connection;
             PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setString(1, classe.getNome());
+            stmt.setInt(1, classe.getId());
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -104,8 +103,7 @@ public class ImplementazionePostgresAbilita implements AbilitaDao {
      */
     @Override
     public void caricaAbilitaApprese(Personaggio pg) {
-        pg.getListaAbilita().clear(); // Svuota la lista in memoria
-
+        pg.svuotaAbilitaApprese();
         // Legge dalla tabella ponte (PERSONAGGIO_ABILITA)
         String query = "SELECT a.Nome, a.Descrizione FROM PERSONAGGIO_ABILITA pa " +
                 "JOIN ABILITA a ON pa.CodAbilita = a.CodAbilita " +

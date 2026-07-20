@@ -472,6 +472,10 @@ public class Personaggio {
                 statisticaFinali.getFede(), statisticaFinali.getFortuna(), oro, puntiStatistica);
     }
 
+    public void ricalcolaStatisticheFinali() {
+        calcolaStatisticheFinali();
+    }
+
 
 
     @Override
@@ -485,5 +489,11 @@ public class Personaggio {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public void svuotaAbilitaApprese() {
+        if (this.listaAbilita != null) {
+            this.listaAbilita.clear();
+        }
     }
 }
