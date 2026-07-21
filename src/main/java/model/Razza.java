@@ -8,7 +8,7 @@ public class Razza {
     private int id; // Identificativo nel DB
     private String nome;
     private Statistica modificatori;
-
+    private String descrizione;
     /**
      * Crea una razza specificando singolarmente i valori numerici di ciascun modificatore di tratto.
      *
@@ -69,6 +69,10 @@ public class Razza {
         return nome;
     }
 
+    public String getDescrizione() {
+        return descrizione;
+    }
+
     /** @param nome il nuovo nome da impostare per la razza. */
     public void setNome(String nome) {
         this.nome = nome;
@@ -81,6 +85,10 @@ public class Razza {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public void setDescrizione(String descrizione) {
+        this.descrizione = descrizione;
     }
 
     @Override

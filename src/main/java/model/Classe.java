@@ -9,6 +9,7 @@ import java.util.ArrayList;
 public class Classe {
     private int id; // Identificativo nel DB
     private String nome;
+    private String descrizione;
     private ArrayList<Abilita> abilitaSbloccabili;
     private ArrayList<Oggetto> equipaggiamentoIniziale;
 
@@ -49,6 +50,10 @@ public class Classe {
     /** @return la lista dell'equipaggiamento iniziale previsto. */
     public ArrayList<Oggetto> getEquipaggiamentoIniziale() { return equipaggiamentoIniziale; }
 
+    public String getDescrizione() {
+        return descrizione;
+    }
+
     /** @param nome il nuovo nome da impostare per la classe. */
     public void setNome(String nome) { this.nome = nome; }
 
@@ -57,6 +62,14 @@ public class Classe {
 
     /** @param equipaggiamentoIniziale il nuovo equipaggiamento iniziale da associare. */
     public void setEquipaggiamentoIniziale(ArrayList<Oggetto> equipaggiamentoIniziale) { this.equipaggiamentoIniziale = equipaggiamentoIniziale; }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setDescrizione(String descrizione) {
+        this.descrizione = descrizione;
+    }
 
     /** @param abilita l'abilità da aggiungere a quelle sbloccabili. */
     public void addAbilita(Abilita abilita) { abilitaSbloccabili.add(abilita); }

@@ -30,6 +30,9 @@ public class Controller {
     private InventarioDao inventarioDAO;
     private AbilitaDao abilitaDao;
     private PersonaggioDAO personaggioDAO;
+    private RazzaDao razzaDao;
+    private ClasseDao classeDao;
+    private OggettoDao oggettoDao;
 
     public Controller() {
         utenteAttivo = null;
@@ -44,6 +47,9 @@ public class Controller {
         inventarioDAO = new ImplementazionePostgresInventario();
         abilitaDao= new ImplementazionePostgresAbilita();
         personaggioDAO = new ImplementazionePostgresPersonaggio();
+        razzaDao= new ImplementazionePostgresRazza();
+        classeDao= new ImplementazionePostgresClasse();
+        oggettoDao= new ImplementazionePostgresOggetto();
         //eventualmente da inserire altro in seguito
     }
 
@@ -853,5 +859,102 @@ public class Controller {
     public void leggiAbilitaPersonaggio(Personaggio pg) {
         if(pg == null) throw new RuntimeException("Impossibile trovare il personaggio selezionato - possibile corruzione dei dati.");
         abilitaDao.caricaAbilitaApprese(pg);
+    }
+
+    /**
+     * Crea una nuova Razza associata alla campagna attiva e la salva permanentemente nel database.
+     */
+    public void creaNuovaRazza(String nome, String descrizione, int mFor, int mDes, int mCos,
+                               int mInt, int mFed, int mCar, int mForz, int mHp, int mMana) throws Exception {
+
+        if (campagnaAttiva == null) throw new Exception("Nessuna campagna attiva selezionata.");
+
+        Razza nuovaRazza = new Razza(mCos, mFor, mDes, mInt, mFed, mCar, mForz, mHp, mMana, nome);
+
+        int idGenerato = razzaDao.salvaRazza(nuovaRazza, descrizione, campagnaAttiva.getId());
+        nuovaRazza.setId(idGenerato);
+        campagnaAttiva.getListaRazze().add(nuovaRazza);
+    }
+
+    /**
+     * Crea un nuovo Oggetto Consumabile (es. Pozioni) e lo aggiunge al catalogo del negozio.
+     *
+     * @param nome    Il nome del consumabile.
+     * @param costo   Il valore di acquisto in monete d'oro.
+     * @param ripHp   La quantità di Punti Vita ripristinati all'utilizzo.
+     * @param ripMana La quantità di Punti Mana ripristinati all'utilizzo.
+     * @throws DatiMancantiException Se il nome è vuoto o la campagna non è attiva.
+     * @throws RuntimeException      Se la transazione sul database fallisce.
+     */
+    public void creaNuovoConsumabile(String nome, int costo, int ripHp, int ripMana) throws exception.DatiMancantiException {
+        if (campagnaAttiva == null) throw new exception.DatiMancantiException("Nessuna campagna attiva selezionata.");
+        if (nome == null || nome.trim().isEmpty()) throw new exception.DatiMancantiException("Il nome del consumabile è obbligatorio.");
+
+        OggettoConsumabile consumabile = new OggettoConsumabile(nome, costo, ripHp, ripMana);
+
+        int idGenerato = oggettoDao.salvaConsumabile(consumabile, campagnaAttiva.getId());
+        consumabile.setId(idGenerato);
+
+        campagnaAttiva.getCatalogoOggetti().add(consumabile);
+    }
+
+    /**
+     * Crea un nuovo Oggetto Equipaggiabile (es. Armi, Armature) e lo aggiunge al catalogo.
+     * I requisiti minimi vengono attualmente impostati a 0 per default.
+     *
+     * @param nome   Il nome dell'equipaggiamento.
+     * @param costo  Il valore in oro.
+     * @param cos    Il bonus (o malus) conferito alla Costituzione.
+     * @param forz   Il bonus (o malus) conferito alla Forza.
+     * @param des    Il bonus (o malus) conferito alla Destrezza.
+     * @param intell Il bonus (o malus) conferito all'Intelligenza.
+     * @param fede   Il bonus (o malus) conferito alla Fede.
+     * @param car    Il bonus (o malus) conferito al Carisma.
+     * @param fort   Il bonus (o malus) conferito alla Fortuna.
+     * @param hp     L'aumento dei Punti Vita massimi.
+     * @param mana   L'aumento dei Punti Mana massimi.
+     * @throws DatiMancantiException Se il nome è vuoto o la campagna non è attiva.
+     * @throws RuntimeException      Se la transazione sul database fallisce.
+     */
+    public void creaNuovoEquipaggiamento(String nome, int costo, int cos, int forz, int des,
+                                         int intell, int fede, int car, int fort, int hp, int mana) throws exception.DatiMancantiException {
+        if (campagnaAttiva == null) throw new exception.DatiMancantiException("Nessuna campagna attiva selezionata.");
+        if (nome == null || nome.trim().isEmpty()) throw new exception.DatiMancantiException("Il nome dell'equipaggiamento è obbligatorio.");
+
+        model.Statistica requisitiMinimi = new model.Statistica(0,0,0,0,0,0,0,0,0);
+        model.Statistica bonus = new model.Statistica(cos, forz, des, intell, fede, car, fort, hp, mana);
+        OggettoEquipaggiabile equip = new OggettoEquipaggiabile(nome, costo, requisitiMinimi, bonus);
+
+        int idGenerato = oggettoDao.salvaEquipaggiamento(equip, campagnaAttiva.getId());
+        equip.setId(idGenerato);
+
+        campagnaAttiva.getCatalogoOggetti().add(equip);
+    }
+
+    /**
+     * Crea una nuova Classe archetipica, la salva in modo persistente nel database
+     * tramite il DAO dedicato e la aggiunge alla sessione della Campagna attiva.
+     *
+     * @param nome        Il nome identificativo della classe (es. "Guerriero").
+     * @param descrizione La lore o background narrativo della classe.
+     * @throws DatiMancantiException Se il nome della classe è nullo o vuoto,
+     *                               o se non vi è alcuna campagna attiva in sessione.
+     * @throws RuntimeException      Se si verifica un errore durante la transazione SQL.
+     */
+    public void creaNuovaClasse(String nome, String descrizione) throws exception.DatiMancantiException {
+        if (campagnaAttiva == null) {
+            throw new exception.DatiMancantiException("Nessuna campagna attiva selezionata.");
+        }
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new exception.DatiMancantiException("Il nome della classe è obbligatorio.");
+        }
+
+        Classe nuovaClasse = new Classe(nome);
+        nuovaClasse.setDescrizione(descrizione); // Salviamo la descrizione in RAM
+
+        int idGenerato = classeDao.salvaClasse(nuovaClasse, descrizione, campagnaAttiva.getId());
+
+        nuovaClasse.setId(idGenerato);
+        campagnaAttiva.getListaClassi().add(nuovaClasse);
     }
 }
