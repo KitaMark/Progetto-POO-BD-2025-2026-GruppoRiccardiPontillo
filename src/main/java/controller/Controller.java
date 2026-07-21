@@ -854,4 +854,6 @@ public class Controller {
         if(pg == null) throw new RuntimeException("Impossibile trovare il personaggio selezionato - possibile corruzione dei dati.");
         abilitaDao.caricaAbilitaApprese(pg);
     }
+
+
 }

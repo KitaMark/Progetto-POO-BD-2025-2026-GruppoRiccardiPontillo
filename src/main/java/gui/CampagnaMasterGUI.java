@@ -52,7 +52,7 @@ public class CampagnaMasterGUI {
     private JScrollPane partecipantiScrollPane;
     private JTable partecipantiTable;
     private JPanel partecipantiButtonPanel;
-    private JButton rimuoviButton;
+    private JButton rimuoviPartecipantiButton;
     private JPanel impostazioniButtonPanel;
     private JPanel impostazioniPanel;
     private JButton editorRazzeButton;
@@ -98,6 +98,26 @@ public class CampagnaMasterGUI {
         inizializzaTabellaPnG();
         inizializzaTabellaPartecipanti();
 
+        rimuoviPartecipantiButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int riga = partecipantiTable.getSelectedRow();
+                if(riga == -1){
+                    JOptionPane.showMessageDialog(frame, "Devi selezionare un giocatore!", "Errore", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                int idGiocatore = (int) partecipantiTable.getValueAt(riga, 2);
+                try{
+                    int conferma = JOptionPane.showMessageDialog(frame, "Tutti i dati relativi a questa campagna saranno persi per questo giocatore. Vuoi procedere?", "Conferma", JOptionPane.YES_NO_OPTION);
+                    if(conferma == JOptionPane.NO_OPTION) return;
+                    controller.rimuoviGiocatore(idGiocatore, controller.getCampagnaAttiva().getId());
+                    JOptionPane.showMessageDialog(frame, "Il giocatore "+partecipantiTable.getValueAt(riga, 0)+" è stato rimosso correttamente dalla campagna.");
+                } catch(Exception ex){
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
 
         indietroButton.addActionListener(new ActionListener() {
             @Override

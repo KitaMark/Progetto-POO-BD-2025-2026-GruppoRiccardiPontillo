@@ -81,7 +81,7 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="e79e2" class="javax.swing.JButton" binding="rimuoviButton" default-binding="true">
+                  <component id="e79e2" class="javax.swing.JButton" binding="rimuoviPartecipantiButton">
                     <constraints/>
                     <properties>
                       <horizontalAlignment value="0"/>

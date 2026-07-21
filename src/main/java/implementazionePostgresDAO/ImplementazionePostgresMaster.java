@@ -2,6 +2,7 @@ package implementazionePostgresDAO;
 
 import dao.MasterDAO;
 import database.ConnessioneDatabase;
+import model.Giocatore;
 import model.Personaggio;
 
 import java.sql.Connection;
@@ -37,9 +38,9 @@ public class ImplementazionePostgresMaster implements MasterDAO {
     public void assegnaPuntiStatistica(Personaggio personaggio, int quantitaPunti) {
         String query = "UPDATE STATISTICA SET PuntiSpendere = PuntiSpendere + ? WHERE CodPersonaggio = ?";
 
-        try {
-            Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement stmt = conn.prepareStatement(query);
+        try(Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement stmt = conn.prepareStatement(query);) {
+
 
             stmt.setInt(1, quantitaPunti);
             stmt.setInt(2, personaggio.getId());
@@ -57,5 +58,24 @@ public class ImplementazionePostgresMaster implements MasterDAO {
         //TODO: implementare; deve ritornare l'id salvato nel db
     }
 
-    //vuota per ora
+    @Override
+    public void rimuoviGiocatore(int idGiocatore, int idCampagna) {
+        String query = "DELETE FROM PERSONAGGIO WHERE CodUtente = ? AND CodCampagna = ?"+
+        "DELETE FROM ISCRIZIONE WHERE CodUtente = ? AND CodCampagna = ?";
+
+        try(Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement stmt = conn.prepareStatement(query)){
+            stmt.setInt(1, idGiocatore);
+            stmt.setInt(2, idCampagna);
+
+            stmt.setInt(3, idGiocatore);
+            stmt.setInt(4, idCampagna);
+            stmt.executeUpdate();
+        } catch (SQLException ex){
+            ex.printStackTrace();
+            System.err.println(ex.getMessage());
+            throw new RuntimeException("Impossibile rimuovere il giocatore selezionato dalla campagna - dati corrotti.");
+        }
+    }
+
 }
