@@ -31,7 +31,7 @@ public class ImplementazionePostgresOggetto implements OggettoDao {
      */
     @Override
     public int salvaConsumabile(OggettoConsumabile consumabile, int idCampagna) {
-        String insertOggetto = "INSERT INTO OGGETTO (Nome, Costo, Tipo, id_campagna) VALUES (?, ?, 'Consumabile', ?) RETURNING CodOggetto";
+        String insertOggetto = "INSERT INTO OGGETTO (Nome, Costo, Tipo, CodCampagna) VALUES (?, ?, 'Consumabile', ?) RETURNING CodOggetto";
         String insertConsumabile = "INSERT INTO OGGETTO_CONSUMABILE (CodOggetto, RipristinoHp, RipristinoMana) VALUES (?, ?, ?)";
 
         Connection conn = null;
@@ -78,7 +78,7 @@ public class ImplementazionePostgresOggetto implements OggettoDao {
      */
     @Override
     public int salvaEquipaggiamento(OggettoEquipaggiabile equip, int idCampagna) {
-        String insertOggetto = "INSERT INTO OGGETTO (Nome, Costo, Tipo, id_campagna) VALUES (?, ?, 'Equipaggiamento', ?) RETURNING CodOggetto";
+        String insertOggetto = "INSERT INTO OGGETTO (Nome, Costo, Tipo, CodCampagna) VALUES (?, ?, 'Equipaggiamento', ?) RETURNING CodOggetto";
         String insertEquip = "INSERT INTO OGGETTO_EQUIPAGGIABILE " +
                 "(CodOggetto, Bonus_Forza, Bonus_Destrezza, Bonus_Costituzione, Bonus_Intelligenza, " +
                 "Bonus_Fede, Bonus_Carisma, Bonus_Fortuna, Bonus_HpMax, Bonus_ManaMax) " +

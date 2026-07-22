@@ -52,7 +52,7 @@ public class CampagnaMasterGUI {
     private JScrollPane partecipantiScrollPane;
     private JTable partecipantiTable;
     private JPanel partecipantiButtonPanel;
-    private JButton rimuoviButton;
+    private JButton rimuoviPartecipantiButton;
     private JPanel impostazioniButtonPanel;
     private JPanel impostazioniPanel;
     private JButton editorRazzeButton;
@@ -257,6 +257,25 @@ public class CampagnaMasterGUI {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
+            }
+        });
+
+
+        modificaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int riga = pngTable.getSelectedRow();
+
+                if (riga == -1) {
+                    JOptionPane.showMessageDialog(frame, "Seleziona un PnG dalla tabella prima di cliccare Modifica.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                String nomePng = pngTable.getValueAt(riga, 0).toString();
+
+                int pngId = (Integer) pngTable.getModel().getValueAt(riga, 3);
+
+                new ModificaStatisticheGUI(controller, nomePng, pngId, false, frame);
             }
         });
 
