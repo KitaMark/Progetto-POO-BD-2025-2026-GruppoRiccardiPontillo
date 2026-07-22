@@ -856,4 +856,7 @@ public class Controller {
     }
 
 
+    public void rimuoviGiocatore(int idGiocatore, int idCampagna) {
+        //TODO: implementare
+    }
 }

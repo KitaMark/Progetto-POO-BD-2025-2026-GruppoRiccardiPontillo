@@ -109,7 +109,7 @@ public class CampagnaMasterGUI {
 
                 int idGiocatore = (int) partecipantiTable.getValueAt(riga, 2);
                 try{
-                    int conferma = JOptionPane.showMessageDialog(frame, "Tutti i dati relativi a questa campagna saranno persi per questo giocatore. Vuoi procedere?", "Conferma", JOptionPane.YES_NO_OPTION);
+                    int conferma = JOptionPane.showConfirmDialog(frame, "Tutti i dati relativi a questa campagna saranno persi per questo giocatore. Vuoi procedere?", "Conferma", JOptionPane.YES_NO_OPTION);
                     if(conferma == JOptionPane.NO_OPTION) return;
                     controller.rimuoviGiocatore(idGiocatore, controller.getCampagnaAttiva().getId());
                     JOptionPane.showMessageDialog(frame, "Il giocatore "+partecipantiTable.getValueAt(riga, 0)+" è stato rimosso correttamente dalla campagna.");
