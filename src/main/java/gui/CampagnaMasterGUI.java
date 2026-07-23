@@ -71,16 +71,17 @@ public class CampagnaMasterGUI {
      */
     private JFrame frameChiamante;
 
-
-
     /**
      * Costruisce l'interfaccia di Regia del Master, inizializzando le etichette di stato,
      * le tabelle dei personaggi e attivando tutti i Listener per i privilegi amministrativi.
      *
      * @param controller     Il {@link Controller} di sistema.
+     * @param frameChiamante Il {@link JFrame} della finestra precedente.
      */
     public CampagnaMasterGUI(Controller controller, JFrame frameChiamante) {
         this.controller = controller;
+        this.frameChiamante = frameChiamante;
+
         JFrame frame = new JFrame(controller.getCampagnaAttiva().getNome());
         frame.setContentPane(getMainPanel());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -98,27 +99,6 @@ public class CampagnaMasterGUI {
         inizializzaTabellaPnG();
         inizializzaTabellaPartecipanti();
 
-        rimuoviPartecipantiButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int riga = partecipantiTable.getSelectedRow();
-                if(riga == -1){
-                    JOptionPane.showMessageDialog(frame, "Devi selezionare un giocatore!", "Errore", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                int idGiocatore = (int) partecipantiTable.getValueAt(riga, 2);
-                try{
-                    int conferma = JOptionPane.showConfirmDialog(frame, "Tutti i dati relativi a questa campagna saranno persi per questo giocatore. Vuoi procedere?", "Conferma", JOptionPane.YES_NO_OPTION);
-                    if(conferma == JOptionPane.NO_OPTION) return;
-                    controller.rimuoviGiocatore(idGiocatore, controller.getCampagnaAttiva().getId());
-                    JOptionPane.showMessageDialog(frame, "Il giocatore "+partecipantiTable.getValueAt(riga, 0)+" è stato rimosso correttamente dalla campagna.");
-                } catch(Exception ex){
-                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
         indietroButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -126,7 +106,6 @@ public class CampagnaMasterGUI {
                 frameChiamante.setVisible(true);
             }
         });
-
 
         rimuoviPgButton.addActionListener(new ActionListener() {
             @Override
@@ -153,7 +132,6 @@ public class CampagnaMasterGUI {
             }
         });
 
-
         modificaStatisticheButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -167,12 +145,9 @@ public class CampagnaMasterGUI {
                 String nomePg = pgTable.getValueAt(riga, 0).toString();
                 int pgId = (Integer) pgTable.getModel().getValueAt(riga, 4);
 
-                //non rendiamo il frame invisibile, poiché la gui chiamata si comporta come un popup.
                 ModificaStatisticheGUI modificaGUI = new ModificaStatisticheGUI(controller, nomePg, pgId, true, frame);
-
             }
         });
-
 
         assegnaPuntiButton.addActionListener(new ActionListener() {
             @Override
@@ -183,7 +158,7 @@ public class CampagnaMasterGUI {
                     return;
                 }
                 String nomePg = pgTable.getValueAt(riga, 0).toString();
-                String nomeProprietario = pgTable.getValueAt(riga, 1).toString(); //identifica il pg tramite il suo giocatore
+                String nomeProprietario = pgTable.getValueAt(riga, 1).toString();
                 String input = JOptionPane.showInputDialog(frame, "Quanti punti vuoi assegnare a " + nomePg + "?");
 
                 if (input != null && !input.trim().isEmpty()) {
@@ -200,15 +175,13 @@ public class CampagnaMasterGUI {
             }
         });
 
-
         creaPngButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 CreaPngGUI creaPngGUI = new CreaPngGUI(controller, (Master) controller.getUtenteAttivo(), frame);
-                inizializzaTabellaPnG(); //aggiorna
+                inizializzaTabellaPnG();
             }
         });
-
 
         rimuoviPngButton.addActionListener(new ActionListener() {
             @Override
@@ -229,12 +202,12 @@ public class CampagnaMasterGUI {
             }
         });
 
-        visualizzaDettagliPngButton.addActionListener(new ActionListener(){
+        visualizzaDettagliPngButton.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e){
+            public void actionPerformed(ActionEvent e) {
                 int riga = pngTable.getSelectedRow();
                 if (riga == -1) {
-                    JOptionPane.showMessageDialog(frame, "Nessun png selezionato.", "Attenzione", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Nessun png selezionato.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
                 int id = (int) pngTable.getModel().getValueAt(riga, 3);
@@ -243,14 +216,12 @@ public class CampagnaMasterGUI {
                     controller.leggiInventarioPersonaggio(daVisualizzare);
                     controller.leggiAbilitaPersonaggio(daVisualizzare);
                     SchedaPersonaggioGUI schedapg = new SchedaPersonaggioGUI(frame, controller, false, daVisualizzare);
-                } catch(Exception ex){
+                } catch (Exception ex) {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
-
-
 
         statoCampagnaButton.addActionListener(new ActionListener() {
             @Override
@@ -258,9 +229,9 @@ public class CampagnaMasterGUI {
                 try {
                     controller.cambiaStatoCampagna();
                     String nuovoStato = controller.getCampagnaAttiva().isIniziata() ? "In corso" : "Non iniziata";
-                    statoCampagna.setText("Stato: " + nuovoStato); // Aggiorna l'etichetta in alto!
+                    statoCampagna.setText("Stato: " + nuovoStato);
                     String testoStato = controller.getCampagnaAttiva().isIniziata() ? "Concludi" : "Inizia campagna";
-                    statoCampagnaButton.setText(testoStato); //aggiorna button
+                    statoCampagnaButton.setText(testoStato);
                     JOptionPane.showMessageDialog(frame, "Stato aggiornato a: " + nuovoStato);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
@@ -273,7 +244,7 @@ public class CampagnaMasterGUI {
             public void actionPerformed(ActionEvent e) {
                 int riga = pgTable.getSelectedRow();
                 if (riga == -1) {
-                    JOptionPane.showMessageDialog(frame, "Nessun personaggio selezionato.", "Attenzione", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Nessun personaggio selezionato.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
                 int id = (int) pgTable.getModel().getValueAt(riga, 4);
@@ -282,23 +253,63 @@ public class CampagnaMasterGUI {
                     controller.leggiInventarioPersonaggio(daVisualizzare);
                     controller.leggiAbilitaPersonaggio(daVisualizzare);
                     SchedaPersonaggioGUI schedapg = new SchedaPersonaggioGUI(frame, controller, true, daVisualizzare);
-                } catch(Exception ex){
+                } catch (Exception ex) {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
 
-    }
 
+        modificaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int riga = pngTable.getSelectedRow();
+
+                if (riga == -1) {
+                    JOptionPane.showMessageDialog(frame, "Seleziona un PnG dalla tabella prima di cliccare Modifica.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                String nomePng = pngTable.getValueAt(riga, 0).toString();
+
+                int pngId = (Integer) pngTable.getModel().getValueAt(riga, 3);
+
+                new ModificaStatisticheGUI(controller, nomePng, pngId, false, frame);
+            }
+        });
+
+
+
+        editorRazzeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new EditorRazzeGui(controller, frame);
+            }
+        });
+
+        editorClassiButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new EditorClassiGui(controller, frame);
+            }
+        });
+
+        catalogoOggettiButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new EditorOggettiGui(controller, frame);
+            }
+        });
+
+    }
 
     /**
      * Metodo privato che definisce l'intestazione e i modelli dati per le tabelle
      * dei Personaggi Giocanti (PG) e dei Personaggi Non Giocanti (PnG), inibendone la modifica manuale.
      */
     private void inizializzaTabellaPG() {
-        // Tabella PG
-        String[] colonnePG = {"Nome", "Giocatore", "Razza", "Classe", "ID"}; //eliminato livello perchè non l'abbiamo piu inserito in Personaggio
+        String[] colonnePG = {"Nome", "Giocatore", "Razza", "Classe", "ID"};
         DefaultTableModel modelPG = new DefaultTableModel(null, colonnePG) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -312,7 +323,7 @@ public class CampagnaMasterGUI {
         pgTable.getColumnModel().removeColumn(colonna);
         if (controller.getCampagnaAttiva().getListaPG().isEmpty()) return;
         for (Personaggio pg : controller.getCampagnaAttiva().getListaPG()) {
-            String nomeProprietario = "Sconosciuto"; //valore di sicurezza per evitare problemi
+            String nomeProprietario = "Sconosciuto";
             for (Giocatore giocatore : controller.getCampagnaAttiva().getPartecipanti()) {
                 if (giocatore.getListaPartecipazioni().containsValue(pg)) {
                     nomeProprietario = giocatore.getUsername();
@@ -325,7 +336,6 @@ public class CampagnaMasterGUI {
     }
 
     private void inizializzaTabellaPnG() {
-        // Tabella PnG
         String[] colonnePnG = {"Nome", "Razza", "Classe", "ID"};
         DefaultTableModel modelPnG = new DefaultTableModel(null, colonnePnG) {
             @Override
@@ -358,7 +368,6 @@ public class CampagnaMasterGUI {
             modelPartecipanti.addRow(new Object[]{giocatore.getUsername(), giocatore.getEmail(), giocatore.getId()});
         }
     }
-
 
     /**
      * Restituisce il pannello principale dell'interfaccia di regia.

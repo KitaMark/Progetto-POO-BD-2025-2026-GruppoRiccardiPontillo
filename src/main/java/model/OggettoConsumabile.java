@@ -16,7 +16,7 @@ public class OggettoConsumabile extends Oggetto {
      * @param hp    la quantità di punti ferita ripristinati all'uso.
      * @param mana  la quantità di punti mana ripristinati all'uso.
      */
-    public OggettoConsumabile(int costo, String nome, int hp, int mana){
+    public OggettoConsumabile( String nome, int costo, int hp, int mana){
         super(costo, nome);
         this.ripristinoHP = hp;
         this.ripristinoMana = mana;

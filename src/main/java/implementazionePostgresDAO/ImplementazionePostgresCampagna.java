@@ -29,13 +29,6 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
      * Recupera tutte le campagne presenti nel database e popola la mappa fornita in input all'avvio.
-     * <p>
-     * Legge sia i dati della campagna che quelli del Master.
-     * </p>
-     *
-     * @param listaCampagne La mappa (inizialmente vuota) in cui inserire le campagne estratte.
-     * La chiave sarà l'oggetto {@link Campagna}, il valore sarà l'oggetto {@link Master}.
-     * @throws RuntimeException Se si verifica un errore critico durante la comunicazione col database.
      */
     @Override
     public void leggiCampagne(HashMap<Campagna, Master> listaCampagne) {
@@ -44,35 +37,32 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "FROM CAMPAGNA c " +
                 "INNER JOIN UTENTE u ON c.CodMaster = u.CodUtente";
 
-        try(Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement stmt = conn.prepareStatement(query);
-            ResultSet rs = stmt.executeQuery();)
-        {
-            while (rs.next()) {
-                int idMaster = rs.getInt("CodUtente");
-                String username = rs.getString("Username");
-                String email = rs.getString("Email");
-                String password = rs.getString("Password");
-                Master master = new Master(email, username, password);
-                master.setId(idMaster); // Salviamo l'ID reale del Master!
+        try {
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+            try (PreparedStatement stmt = conn.prepareStatement(query);
+                 ResultSet rs = stmt.executeQuery()) {
 
-                int idCampagna = rs.getInt("CodCampagna");
-                String nomeCampagna = rs.getString("Nome");
-                int maxGiocatori = rs.getInt("MaxGiocatori");
-                String statoDb = rs.getString("Stato");
+                while (rs.next()) {
+                    int idMaster = rs.getInt("CodUtente");
+                    String username = rs.getString("Username");
+                    String email = rs.getString("Email");
+                    String password = rs.getString("Password");
+                    Master master = new Master(email, username, password);
+                    master.setId(idMaster);
 
-                Campagna campagna = new Campagna(nomeCampagna, maxGiocatori, master);
-                campagna.setId(idCampagna);
+                    int idCampagna = rs.getInt("CodCampagna");
+                    String nomeCampagna = rs.getString("Nome");
+                    int maxGiocatori = rs.getInt("MaxGiocatori");
+                    String statoDb = rs.getString("Stato");
 
-                if ("Non iniziata".equalsIgnoreCase(statoDb)) {
-                    campagna.setIniziata(false);
-                } else {
-                    campagna.setIniziata(true);
+                    Campagna campagna = new Campagna(nomeCampagna, maxGiocatori, master);
+                    campagna.setId(idCampagna);
+
+                    campagna.setIniziata(!"Non Iniziata".equalsIgnoreCase(statoDb));
+
+                    listaCampagne.put(campagna, master);
                 }
-
-                listaCampagne.put(campagna, master);
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Errore critico durante il caricamento delle campagne dal database.");
@@ -81,14 +71,6 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
      * Inserisce una nuova campagna di gioco all'interno del database generata dal Master.
-     * <p>
-     * Sfrutta una squery per recuperare l'ID del Master e, tramite la clausola {@code RETURNING CodCampagna},
-     * restituisce immediatamente la chiave primaria appena generata da PostgreSQL.
-     * </p>
-     *
-     * @param campagna L'oggetto {@link Campagna} contenente i dati da persistere.
-     * @return L'identificativo numerico (ID) assegnato dal database alla nuova campagna.
-     * @throws NomeCampagnaInUsoException Se il nome scelto per la campagna è già presente nel DB.
      */
     @Override
     public int creaCampagna(Campagna campagna) throws NomeCampagnaInUsoException {
@@ -96,23 +78,23 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "VALUES (?, ?, 'Non Iniziata', (SELECT CodUtente FROM UTENTE WHERE Username = ?)) " +
                 "RETURNING CodCampagna";
 
-        try (Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try {
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setString(1, campagna.getNome());
-            stmt.setInt(2, campagna.getMaxGiocatori());
-            stmt.setString(3, campagna.getMaster().getUsername());
+                stmt.setString(1, campagna.getNome());
+                stmt.setInt(2, campagna.getMaxGiocatori());
+                stmt.setString(3, campagna.getMaster().getUsername());
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("CodCampagna");
-                } else {
-                    throw new SQLException("Nessun ID generato dal database.");
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt("CodCampagna");
+                    } else {
+                        throw new SQLException("Nessun ID generato dal database.");
+                    }
                 }
             }
-
         } catch (SQLException e) {
-            // Controllo della violazione del vincolo di unicità sul nome della campagna
             if ("23505".equals(e.getSQLState())) {
                 throw new NomeCampagnaInUsoException("Il nome della campagna è già in uso.");
             }
@@ -124,31 +106,22 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
      * Rimuove definitivamente una campagna dal database partendo dal suo nome univoco.
-     * <p>
-     * L'eliminazione innesca un effetto a cascata (ON DELETE CASCADE) a livello di database,
-     * distruggendo automaticamente tutte le iscrizioni alla tabella ponte e i personaggi associati.
-     * </p>
-     *
-     * @param campagnaTarget la {@link Campagna} da eliminare.
-     * @throws DatiMancantiException Se nessuna riga viene modificata (la campagna non esiste).
-     * @throws RuntimeException      Se si verifica un errore SQL critico.
      */
     @Override
     public void eliminaCampagna(Campagna campagnaTarget) throws DatiMancantiException {
         String query = "DELETE FROM CAMPAGNA WHERE CodCampagna = ?";
 
-        try(Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement stmt = conn.prepareStatement(query);){
+        try {
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
 
+                stmt.setInt(1, campagnaTarget.getId());
+                int righeModificate = stmt.executeUpdate();
 
-
-            stmt.setInt(1, campagnaTarget.getId());
-            int righeModificate = stmt.executeUpdate();
-
-            if (righeModificate == 0) {
-                throw new DatiMancantiException("Impossibile eliminare: La campagna '" + campagnaTarget.getNome() + "' non esiste.");
+                if (righeModificate == 0) {
+                    throw new DatiMancantiException("Impossibile eliminare: La campagna '" + campagnaTarget.getNome() + "' non esiste.");
+                }
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Errore critico durante l'eliminazione della campagna.");
@@ -157,15 +130,6 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
      * Carica i personaggi appartenenti a una specifica campagna filtrandoli per tipologia (PG o PnG).
-     * <p>
-     * Esegue una serie di {@code JOIN} con le tabelle {@code CLASSE}, {@code RAZZA}, {@code CAMPAGNA}
-     * e {@code STATISTICA} per ricostruire interamente l'albero delle istanze del personaggio.
-     * </p>
-     *
-     * @param listaPersonaggi La lista (svuotata e ripopolata) che conterrà i personaggi trovati.
-     * @param isPg            {@code true} per cercare i Personaggi Giocanti, {@code false} per i Personaggi Non Giocanti (Master).
-     * @param nomeCampagna    Il nome della campagna in cui cercare.
-     * @throws DatiMancantiException In caso di errori durante l'estrazione SQL.
      */
     @Override
     public void leggiListaPersonaggi(List<Personaggio> listaPersonaggi, boolean isPg, String nomeCampagna) throws DatiMancantiException {
@@ -175,7 +139,7 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "c.Nome AS nome_classe, " +
                 "r.Nome AS nome_razza, " +
                 "sp.HpAttuali, sp.ManaAttuali, sp.PuntiSpendere, " +
-                "sp.HpMax, sp.ManaMax, " + // <-- AGGIUNTI QUI
+                "sp.HpMax, sp.ManaMax, " +
                 "sp.Forza AS forza_base, sp.Destrezza AS destrezza_base, sp.Costituzione AS costituzione_base, " +
                 "sp.Intelligenza AS intelligenza_base, sp.Fede AS fede_base, sp.Carisma AS carisma_base, sp.Fortuna AS fortuna_base, " +
                 "r.ModForza, r.ModDestrezza, r.ModCostituzione, r.ModIntelligenza, r.ModFede, r.ModCarisma, r.ModFortuna " +
@@ -186,42 +150,42 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "LEFT JOIN STATISTICA sp ON sp.CodPersonaggio = p.CodPersonaggio " +
                 "WHERE p.IsPG = ? AND LOWER(cam.Nome) = LOWER(?)";
 
-        try(Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement pstmt = conn.prepareStatement(query);){
+        try {
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
 
+                pstmt.setBoolean(1, isPg);
+                pstmt.setString(2, nomeCampagna);
 
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    while (rs.next()) {
+                        int id = rs.getInt("CodPersonaggio");
+                        String nome = rs.getString("Nome");
+                        int hpCorrenti = rs.getInt("HpAttuali");
+                        int manaCorrente = rs.getInt("ManaAttuali");
+                        int oro = rs.getInt("Oro");
+                        int puntiStatistica = rs.getInt("PuntiSpendere");
+                        int hpMax = rs.getInt("HpMax");
+                        int manaMax = rs.getInt("ManaMax");
 
-            pstmt.setBoolean(1, isPg);
-            pstmt.setString(2, nomeCampagna);
+                        Statistica statBase = new Statistica(
+                                rs.getInt("costituzione_base"), rs.getInt("forza_base"), rs.getInt("destrezza_base"),
+                                rs.getInt("intelligenza_base"), rs.getInt("fede_base"), rs.getInt("carisma_base"),
+                                rs.getInt("fortuna_base"), hpMax, manaMax
+                        );
 
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    int id = rs.getInt("CodPersonaggio");
-                    String nome = rs.getString("Nome");
-                    int hpCorrenti = rs.getInt("HpAttuali");
-                    int manaCorrente = rs.getInt("ManaAttuali");
-                    int oro = rs.getInt("Oro");
-                    int puntiStatistica = rs.getInt("PuntiSpendere");
-                    int hpMax = rs.getInt("HpMax");
-                    int manaMax = rs.getInt("ManaMax");
+                        Statistica modRazza = new Statistica(
+                                rs.getInt("ModCostituzione"), rs.getInt("ModForza"), rs.getInt("ModDestrezza"),
+                                rs.getInt("ModIntelligenza"), rs.getInt("ModFede"), rs.getInt("ModCarisma"),
+                                rs.getInt("ModFortuna"), 0, 0
+                        );
 
-                    Statistica statBase = new Statistica(
-                            rs.getInt("costituzione_base"), rs.getInt("forza_base"), rs.getInt("destrezza_base"),
-                            rs.getInt("intelligenza_base"), rs.getInt("fede_base"), rs.getInt("carisma_base"),
-                            rs.getInt("fortuna_base"), hpMax, manaMax
-                    );
+                        Razza razza = new Razza(rs.getString("nome_razza"), modRazza);
+                        Classe classe = new Classe(rs.getString("nome_classe"));
 
-                    Statistica modRazza = new Statistica(
-                            rs.getInt("ModCostituzione"), rs.getInt("ModForza"), rs.getInt("ModDestrezza"),
-                            rs.getInt("ModIntelligenza"), rs.getInt("ModFede"), rs.getInt("ModCarisma"),
-                            rs.getInt("ModFortuna"), 0, 0
-                    );
-
-                    Razza razza = new Razza(rs.getString("nome_razza"), modRazza);
-                    Classe classe = new Classe(rs.getString("nome_classe"));
-
-                    Personaggio pg = new Personaggio(id, nome, classe, razza, statBase, hpCorrenti, manaCorrente, oro, puntiStatistica, isPg);
-                    listaPersonaggi.add(pg);
+                        Personaggio pg = new Personaggio(id, nome, classe, razza, statBase, hpCorrenti, manaCorrente, oro, puntiStatistica, isPg);
+                        listaPersonaggi.add(pg);
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -232,17 +196,6 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
      * Carica i giocatori che partecipano a una campagna specifica per la dashboard del Master.
-     * <p>
-     * Se il giocatore ha già creato un personaggio per la campagna in questione,
-     * viene istanziato un oggetto fittizzio del Personaggio contenente il solo ID.
-     * Grazie all'override del metodo {@code equals()}, il sistema lo riconoscerà automaticamente
-     * come equivalente al personaggio reale caricato nel metodo {@code leggiListaPersonaggi},
-     * permettendo il corretto accoppiamento visivo nella GUI ed evitando il problema dello stato "Sconosciuto".
-     * </p>
-     *
-     * @param partecipanti La lista (svuotata e ripopolata) che conterrà i {@link Giocatore} iscritti.
-     * @param nomeCampagna La stringa che identifica la campagna da analizzare.
-     * @throws DatiMancantiException In caso di errori durante la risoluzione relazionale SQL.
      */
     @Override
     public void leggiGiocatori(List<Giocatore> partecipanti, String nomeCampagna) throws DatiMancantiException {
@@ -253,36 +206,35 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "JOIN ISCRIZIONE i ON u.CodUtente = i.CodUtente " +
                 "JOIN CAMPAGNA c ON i.CodCampagna = c.CodCampagna " +
                 "LEFT JOIN PERSONAGGIO p ON (p.CodUtente = u.CodUtente AND p.CodCampagna = c.CodCampagna) " +
-                "WHERE u.Ruolo = 'Giocatore' AND c.Nome = ?";
+                "WHERE u.Ruolo = 'Giocatore' AND LOWER(c.Nome) = LOWER(?)";
 
-        try(Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement pstmt = conn.prepareStatement(query);){
+        try {
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
 
+                pstmt.setString(1, nomeCampagna);
 
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    while (rs.next()) {
+                        int idGiocatore = rs.getInt("CodUtente");
+                        String username = rs.getString("Username");
+                        String email = rs.getString("Email");
+                        String password = rs.getString("Password");
+                        int idPersonaggio = rs.getInt("CodPersonaggio");
 
-            pstmt.setString(1, nomeCampagna);
+                        Giocatore giocatore = new Giocatore(email, username, password);
+                        giocatore.setId(idGiocatore);
 
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    int idGiocatore = rs.getInt("CodUtente");
-                    String username = rs.getString("Username");
-                    String email = rs.getString("Email");
-                    String password = rs.getString("Password");
-                    int idPersonaggio = rs.getInt("CodPersonaggio");
+                        if (idPersonaggio != 0) {
+                            Personaggio pgFittizio = new Personaggio(idPersonaggio, null, null, null, null, 0, 0, 0, 0, true);
+                            Campagna campagnaFittizia = new Campagna(nomeCampagna, 0, null);
+                            giocatore.addPartecipazioneDati(campagnaFittizia, pgFittizio);
+                        }
 
-                    Giocatore giocatore = new Giocatore(email, username, password);
-                    giocatore.setId(idGiocatore); // Mappiamo l'ID anche per il Giocatore iscritto!
-
-                    if (idPersonaggio != 0) {
-                        Personaggio pgFittizio = new Personaggio(idPersonaggio, null, null, null, null, 0, 0, 0, 0, true);
-                        Campagna campagnaFittizia = new Campagna(nomeCampagna, 0, null);
-                        giocatore.addPartecipazioneDati(campagnaFittizia, pgFittizio);
+                        partecipanti.add(giocatore);
                     }
-
-                    partecipanti.add(giocatore);
                 }
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
             throw new DatiMancantiException("Errore critico durante il caricamento dei giocatori: " + e.getMessage());
@@ -291,14 +243,8 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
      * Carica il catalogo degli oggetti disponibili per una specifica campagna.
-     * <p>
-     * Effettua una lettura  della tabella OGGETTO filtrando per {@code CodCampagna}.
-     * Durante la lettura, filtra  tra oggetti di tipo "Consumabile"
-     * e "Equipaggiamento", istanziando le relative sottoclassi e popolando i requisiti e i bonus.
-     * </p>
-     *
-     * @param idCampagna L'identificativo della campagna da cui leggere il catalogo.
      */
+    @Override
     public List<Oggetto> caricaCatalogoNegozio(int idCampagna) {
         List<Oggetto> catalogo = new ArrayList<>();
 
@@ -313,22 +259,26 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                 "LEFT JOIN OGGETTO_CONSUMABILE con ON o.CodOggetto = con.CodOggetto " +
                 "WHERE o.CodCampagna = ?";
 
-        try (PreparedStatement stmt = ConnessioneDatabase.getInstance().connection.prepareStatement(query)) {
-            stmt.setInt(1, idCampagna);
-            ResultSet rs = stmt.executeQuery();
+        try {
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setInt(1, idCampagna);
 
-            while (rs.next()) {
-                int id = rs.getInt("CodOggetto");
-                String nome = rs.getString("Nome");
-                int costo = rs.getInt("Costo");
-                String tipo = rs.getString("Tipo");
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        int id = rs.getInt("CodOggetto");
+                        String nome = rs.getString("Nome");
+                        int costo = rs.getInt("Costo");
+                        String tipo = rs.getString("Tipo");
 
-                if ("Consumabile".equalsIgnoreCase(tipo)) {
-                    catalogo.add(new OggettoConsumabile(id, nome, costo, tipo, rs.getInt("RipristinoHp"), rs.getInt("RipristinoMana")));
-                } else if ("Equipaggiamento".equalsIgnoreCase(tipo)) {
-                    Statistica req = new Statistica(rs.getInt("Req_Costituzione"), rs.getInt("Req_Forza"), rs.getInt("Req_Destrezza"), rs.getInt("Req_Intelligenza"), rs.getInt("Req_Fede"), rs.getInt("Req_Carisma"), rs.getInt("Req_Fortuna"), rs.getInt("Req_HpMax"), rs.getInt("Req_ManaMax"));
-                    Statistica bon = new Statistica(rs.getInt("Bonus_Costituzione"), rs.getInt("Bonus_Forza"), rs.getInt("Bonus_Destrezza"), rs.getInt("Bonus_Intelligenza"), rs.getInt("Bonus_Fede"), rs.getInt("Bonus_Carisma"), rs.getInt("Bonus_Fortuna"), rs.getInt("Bonus_HpMax"), rs.getInt("Bonus_ManaMax"));
-                    catalogo.add(new OggettoEquipaggiabile(id, nome, costo, tipo, req, bon));
+                        if ("Consumabile".equalsIgnoreCase(tipo)) {
+                            catalogo.add(new OggettoConsumabile(id, nome, costo, tipo, rs.getInt("RipristinoHp"), rs.getInt("RipristinoMana")));
+                        } else if ("Equipaggiamento".equalsIgnoreCase(tipo)) {
+                            Statistica req = new Statistica(rs.getInt("Req_Costituzione"), rs.getInt("Req_Forza"), rs.getInt("Req_Destrezza"), rs.getInt("Req_Intelligenza"), rs.getInt("Req_Fede"), rs.getInt("Req_Carisma"), rs.getInt("Req_Fortuna"), rs.getInt("Req_HpMax"), rs.getInt("Req_ManaMax"));
+                            Statistica bon = new Statistica(rs.getInt("Bonus_Costituzione"), rs.getInt("Bonus_Forza"), rs.getInt("Bonus_Destrezza"), rs.getInt("Bonus_Intelligenza"), rs.getInt("Bonus_Fede"), rs.getInt("Bonus_Carisma"), rs.getInt("Bonus_Fortuna"), rs.getInt("Bonus_HpMax"), rs.getInt("Bonus_ManaMax"));
+                            catalogo.add(new OggettoEquipaggiabile(id, nome, costo, tipo, req, bon));
+                        }
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -340,41 +290,37 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
      * Recupera l'elenco delle Razze abilitate per una specifica campagna.
-     * <p>
-     * Legge i modificatori di statistica associati alla razza e ricompone l'oggetto
-     * mappando correttamente il suo ID nel database.
-     * </p>
-     *
-     * @param lista La lista di destinazione in cui caricare le razze.
-     * @param idCampagna L'identificativo della campagna di riferimento.
      */
     @Override
     public void leggiListaRazze(List<Razza> lista, int idCampagna) {
         lista.clear();
-        String query = "SELECT CodRazza, Nome, ModCostituzione, ModForza, ModDestrezza, " +
-                "ModIntelligenza, ModFede, ModCarisma, ModFortuna " +
+        String query = "SELECT CodRazza, Nome, Descrizione, ModCostituzione, ModForza, ModDestrezza, " +
+                "ModIntelligenza, ModFede, ModCarisma, ModFortuna, ModHpMax, ModManaMax " +
                 "FROM RAZZA WHERE CodCampagna = ?";
 
-        try(Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement pstmt = conn.prepareStatement(query);){
+        try {
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
 
+                pstmt.setInt(1, idCampagna);
 
-            pstmt.setInt(1, idCampagna);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    while (rs.next()) {
+                        int id = rs.getInt("CodRazza");
+                        String nome = rs.getString("Nome");
+                        String descrizione = rs.getString("Descrizione");
 
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    int id = rs.getInt("CodRazza");
-                    String nome = rs.getString("Nome");
+                        Statistica modificatori = new Statistica(
+                                rs.getInt("ModCostituzione"), rs.getInt("ModForza"), rs.getInt("ModDestrezza"),
+                                rs.getInt("ModIntelligenza"), rs.getInt("ModFede"), rs.getInt("ModCarisma"),
+                                rs.getInt("ModFortuna"), rs.getInt("ModHpMax"), rs.getInt("ModManaMax")
+                        );
 
-                    Statistica modificatori = new Statistica(
-                            rs.getInt("ModCostituzione"), rs.getInt("ModForza"), rs.getInt("ModDestrezza"),
-                            rs.getInt("ModIntelligenza"), rs.getInt("ModFede"), rs.getInt("ModCarisma"),
-                            rs.getInt("ModFortuna"), 0, 0
-                    );
-
-                    Razza razza = new Razza(nome, modificatori);
-                    razza.setId(id);
-                    lista.add(razza);
+                        Razza razza = new Razza(nome, modificatori);
+                        razza.setId(id);
+                        razza.setDescrizione(descrizione);
+                        lista.add(razza);
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -385,28 +331,28 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
      * Recupera l'elenco delle Classi previste in una specifica campagna.
-     *
-     * @param lista La lista di destinazione per le classi caricate.
-     * @param idCampagna L'identificativo della campagna di riferimento.
      */
     @Override
     public void leggiListaClassi(List<Classe> lista, int idCampagna) {
         lista.clear();
-        String query = "SELECT CodClasse, Nome FROM CLASSE WHERE CodCampagna = ?";
+        String query = "SELECT CodClasse, Nome, Descrizione FROM CLASSE WHERE CodCampagna = ?";
 
-        try(Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement pstmt = conn.prepareStatement(query);){
+        try {
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
 
+                pstmt.setInt(1, idCampagna);
 
-            pstmt.setInt(1, idCampagna);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    while (rs.next()) {
+                        int id = rs.getInt("CodClasse");
+                        String nome = rs.getString("Nome");
+                        String descrizione = rs.getString("Descrizione");
 
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    int id = rs.getInt("CodClasse");
-                    String nome = rs.getString("Nome");
-
-                    Classe classe = new Classe(id, nome);
-                    lista.add(classe);
+                        Classe classe = new Classe(id, nome);
+                        classe.setDescrizione(descrizione);
+                        lista.add(classe);
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -417,15 +363,17 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     @Override
     public void cambiaStato(int id, boolean stato) {
-        String query = "UPDATE campagna SET stato = ? WHERE codcampagna = ?";
+        String query = "UPDATE CAMPAGNA SET Stato = ? WHERE CodCampagna = ?";
         String statoStringa = stato ? "In Corso" : "Non Iniziata";
 
-        try(Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement stmt = conn.prepareStatement(query)){
-            stmt.setString(1, statoStringa);
-            stmt.setInt(2, id);
-            stmt.executeUpdate();
-        } catch(SQLException ex){
+        try {
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, statoStringa);
+                stmt.setInt(2, id);
+                stmt.executeUpdate();
+            }
+        } catch (SQLException ex) {
             ex.printStackTrace();
             System.err.println("Impossibile aggiornare lo stato della campagna, dati corrotti.");
         }
@@ -434,12 +382,15 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
     @Override
     public int contaPartecipanti(int codCampagna) {
         String query = "SELECT COUNT(*) FROM ISCRIZIONE WHERE CodCampagna = ?";
-        try (Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-            pstmt.setInt(1, codCampagna);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1);
+
+        try {
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+            try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                pstmt.setInt(1, codCampagna);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
                 }
             }
         } catch (SQLException e) {
