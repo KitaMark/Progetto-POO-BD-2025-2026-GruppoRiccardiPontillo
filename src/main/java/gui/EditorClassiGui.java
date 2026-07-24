@@ -49,7 +49,7 @@ public class EditorClassiGui {
 
         frameAttuale = new JFrame("Editor Classi - " + controller.getCampagnaAttiva().getNome());
         frameAttuale.setContentPane(mainPanel);
-        frameAttuale.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frameAttuale.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frameAttuale.setSize(800, 600);
         frameAttuale.setLocationRelativeTo(null);
 

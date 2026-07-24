@@ -73,7 +73,7 @@ public class EditorOggettiGui {
         // Configurazione della finestra
         frameAttuale = new JFrame("Catalogo Oggetti - " + controller.getCampagnaAttiva().getNome());
         frameAttuale.setContentPane(panel1);
-        frameAttuale.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frameAttuale.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frameAttuale.setSize(950, 700);
         frameAttuale.setLocationRelativeTo(null);
 

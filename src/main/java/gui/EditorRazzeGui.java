@@ -60,7 +60,7 @@ public class EditorRazzeGui {
         // Configurazione della finestra (JFrame)
         frameAttuale = new JFrame("Editor Razze - " + controller.getCampagnaAttiva().getNome());
         frameAttuale.setContentPane(mainPanel);
-        frameAttuale.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frameAttuale.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frameAttuale.setSize(850, 650);
         frameAttuale.setLocationRelativeTo(null); // Centra la finestra nello schermo
 
