@@ -11,7 +11,8 @@ import java.util.*;
  * Il suo compito è ricevere le richieste provenienti dalle interfacce grafiche (Boundary),
  * orchestrare i Casi d'Uso manipolando le classi del dominio di gioco (Entity/model) e,
  * infine, delegare il salvataggio o il recupero dei dati al livello di persistenza (DAO).
- * * @author Riccardi Carmine
+ *
+ * @author Riccardi Carmine
  * @author Pontillo Salvatore
  */
 public class Controller {
@@ -50,7 +51,6 @@ public class Controller {
         razzaDao= new ImplementazionePostgresRazza();
         classeDao= new ImplementazionePostgresClasse();
         oggettoDao= new ImplementazionePostgresOggetto();
-        //eventualmente da inserire altro in seguito
     }
 
     /**
@@ -151,7 +151,7 @@ public class Controller {
         }
         if(listaCampagne.containsValue((Master) utenteAttivo)) throw new CampagnaAttivaEsistenteException("Hai già una campagna attiva. Concludila prima di crearne una nuova.");
         if(listaCampagne.containsKey(cercaCampagna(nomeCampagna))) throw new NomeCampagnaInUsoException("Nome già in uso.");
-        //per semplicità è case sensitive
+
         Campagna campagna = new Campagna(nomeCampagna, maxGiocatori, (Master) utenteAttivo);
 
         int idCampagna = campagnaDAO.creaCampagna(campagna);
@@ -201,7 +201,6 @@ public class Controller {
         campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPG(), true, campagnaAttiva.getNome());
         campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPnG(), false, campagnaAttiva.getNome());
 
-        // DELEGAZIONE ALL'INVENTARIO DAO E PULIZIA
         campagnaAttiva.getCatalogoOggetti().clear();
         campagnaAttiva.getCatalogoOggetti().addAll(campagnaDAO.caricaCatalogoNegozio(campagnaAttiva.getId()));
 
@@ -435,7 +434,6 @@ public class Controller {
             throw new NomePgNonValidoException("Nome non valido.");
         }
 
-
         Personaggio nuovoPg = new Personaggio(classe, razza, nome);
 
         try {
@@ -466,12 +464,14 @@ public class Controller {
         }
         if(razza == null || classe == null) throw new DatiMancantiException("Devi selezionare razza e classe prima di procedere.");
         Personaggio png = new Personaggio(classe, razza, nome);
+
+        // Sincronizzato con il metodo del collega che richiede anche l'id della campagna
         masterDAO.creaPnG(png, campagnaAttiva.getId());
         campagnaAttiva.getListaPnG().add(png);
     }
 
     /**
-     * Crea un Personaggio Non Giocante (PnG) andando a definire anche i campi  oro e punti statistica.
+     * Crea un Personaggio Non Giocante (PnG) andando a definire anche i campi oro e punti statistica.
      *
      * @param nome         Il nome del PnG.
      * @param razza        La razza del PnG.
@@ -486,6 +486,8 @@ public class Controller {
         }
         if(razza == null || classe == null) throw new DatiMancantiException("Devi selezionare razza e classe prima di procedere.");
         Personaggio png = new Personaggio(classe, razza, statBase, nome, oro, punti);
+
+        // Sincronizzato con il metodo del collega che richiede anche l'id della campagna
         masterDAO.creaPnG(png, campagnaAttiva.getId());
         campagnaAttiva.getListaPnG().add(png);
     }
@@ -533,9 +535,8 @@ public class Controller {
         if (daModificare.getInventarioEquipaggiabili() != null) {
             List<OggettoEquipaggiabile> daDisequipaggiare = new ArrayList<>();
 
-            // Controlla la mappa degli oggetti e individua quelli che violano i requisiti
             for (Map.Entry<OggettoEquipaggiabile, Boolean> entry : daModificare.getInventarioEquipaggiabili().entrySet()) {
-                if (entry.getValue()) { // Se lo stato dell'oggetto è 'true' (Equipaggiato)
+                if (entry.getValue()) {
                     Statistica req = entry.getKey().getRequisiti();
 
                     if (forza < req.getForza() || destrezza < req.getDestrezza() || costituzione < req.getCostituzione() ||
@@ -547,11 +548,10 @@ public class Controller {
                 }
             }
 
-            // Esegue il disequipaggiamento
             for (OggettoEquipaggiabile eq : daDisequipaggiare) {
                 try {
-                    inventarioDAO.impostaEquipaggiamento(daModificare.getId(), eq.getId(), false); // Aggiorna DB
-                    daModificare.rimuoviEquipaggiamento(eq); // Imposta a false
+                    inventarioDAO.impostaEquipaggiamento(daModificare.getId(), eq.getId(), false);
+                    daModificare.rimuoviEquipaggiamento(eq);
                     System.out.println("Oggetto disequipaggiato automaticamente per requisiti mancanti: " + eq.getNome());
                 } catch (Exception e) {
                     System.err.println("Errore durante l'auto-disequipaggiamento in DB: " + e.getMessage());
@@ -629,7 +629,6 @@ public class Controller {
             throw new OggettoNonSelezionatoException("Non possiedi questo consumabile nel tuo inventario.");
         }
 
-        // BACKUP IN RAM
         int oldHp = pg.getHpCorrenti();
         int oldMana = pg.getManaCorrente();
 
@@ -640,7 +639,6 @@ public class Controller {
             giocatoreDAO.aggiornaRisorse(pg);
             pg.rimuoviConsumabile(target, 1);
         } catch (Exception e) {
-            // ROLLBACK IN RAM
             pg.setHpCorrenti(oldHp);
             pg.setManaCorrente(oldMana);
             leggiInventarioPersonaggio(pg);
@@ -648,6 +646,13 @@ public class Controller {
         }
     }
 
+    /**
+     * Gestisce la transazione di vendita di un oggetto al negozio.
+     *
+     * @param nomeOggetto  Il nome dell'oggetto da vendere.
+     * @param nomeCampagna Il nome della campagna attuale.
+     * @throws Exception Se il nome dell'oggetto è vuoto, non posseduto o attualmente equipaggiato.
+     */
     public void vendiOggetto(String nomeOggetto, String nomeCampagna) throws Exception {
         if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
             throw new Exception("Seleziona un oggetto da vendere.");
@@ -791,7 +796,6 @@ public class Controller {
             }
         }
 
-        //garantisce che le statisticheFinali rifettano sempre l'inventario letto da DB
         pg.ricalcolaStatisticheFinali();
     }
 
@@ -816,7 +820,6 @@ public class Controller {
         }
         return campagnaTrovata;
     }
-
 
     public Campagna getCampagnaAttiva() {
         return campagnaAttiva;
@@ -849,8 +852,6 @@ public class Controller {
         }
         return classiDisponibili;
     }
-
-
 
     public boolean controllaPrivilegiMaster(Campagna campagna){
         return utenteAttivo.equals((listaCampagne.get(campagna)));
@@ -950,7 +951,7 @@ public class Controller {
         }
 
         Classe nuovaClasse = new Classe(nome);
-        nuovaClasse.setDescrizione(descrizione); // Salviamo la descrizione in RAM
+        nuovaClasse.setDescrizione(descrizione);
 
         int idGenerato = classeDao.salvaClasse(nuovaClasse, descrizione, campagnaAttiva.getId());
 

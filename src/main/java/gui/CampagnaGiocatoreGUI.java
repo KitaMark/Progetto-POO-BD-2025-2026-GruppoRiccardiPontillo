@@ -1,7 +1,6 @@
 package gui;
 
 import controller.Controller;
-import exception.AbilitaGiaAppresaException;
 import model.*;
 
 import javax.swing.*;
@@ -14,10 +13,8 @@ import java.awt.event.ActionListener;
  * {@link Giocatore} durante lo svolgimento di una campagna.
  * <p>
  * Mette a disposizione del giocatore tutti gli strumenti necessari per l'interazione
- * nel mondo di gioco: visualizzazione e potenziamento delle statistiche (tramite la
- * spesa dei Punti progressione), gestione dell'inventario (equipaggiamento e consumabili),
- * apprendimento di nuove abilità di classe e l'interazione commerciale con il Negozio
- * per l'acquisto e la vendita di oggetti.
+ * nel mondo di gioco: visualizzazione e potenziamento delle statistiche,
+ * gestione dell'equipaggiamento, e l'accesso alla finestra del Negozio.
  * </p>
  *
  * @author Riccardi Carmine
@@ -31,40 +28,25 @@ public class CampagnaGiocatoreGUI {
     private JTable statisticheTable;
     private JPanel buttonPanel;
     private JButton aumentaStatButton;
-    private JTable inventarioTable; // Ora è il Negozio
-    private JPanel buttonPanel1;
-    private JButton acquistaButton;
 
     private JTable equipaggiamentoTable;
-    private JButton vendiButton;
     private JButton rimuoviButton;
     private JButton equipaggiaButton;
+
     private JTable consumabiliTable;
-    private JButton vendiButton1;
     private JButton usaButton;
+
     private JTable abilitaTable;
     private JButton imparaButton;
     private JLabel CampagnanomeJlabel;
 
-    /** Il Controller di riferimento per l'orchestrazione delle meccaniche di gioco. */
+    private JButton negozioButton;
+
     private Controller controller;
-    /** Il Giocatore attualmente autenticato che sta visualizzando la scheda del proprio PG. */
     private Giocatore giocatoreLoggato;
-    /** Il nome della campagna in corso. */
     private String nomeCampagnaAttuale;
-    /** Il frame corrente che ospita l'interfaccia della scheda personaggio. */
     private JFrame frameAttuale;
 
-
-    /**
-     * Costruisce l'interfaccia della Scheda Personaggio, inizializzando le tabelle
-     * informative e configurando tutti i Listener per le azioni di gioco (crescita,
-     * equipaggiamento, acquisti, uso di consumabili).
-     *
-     * @param controller   Il {@link Controller} di sistema.
-     * @param giocatore    L'oggetto {@link Giocatore} associato.
-     * @param nomeCampagna Il nome della campagna attualmente visualizzata.
-     */
     public CampagnaGiocatoreGUI(Controller controller, Giocatore giocatore, String nomeCampagna, JFrame frameChiamante) {
         this.controller = controller;
         this.giocatoreLoggato = giocatore;
@@ -81,11 +63,27 @@ public class CampagnaGiocatoreGUI {
 
         inizializzaTabelle();
 
+        negozioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                NegozioGui negozio = new NegozioGui(controller, nomeCampagnaAttuale);
+
+                negozio.getFrame().addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                        Personaggio pg = giocatoreLoggato.getPersonaggioInCampagna(controller.getCampagnaAttiva());
+                        controller.leggiInventarioPersonaggio(pg);
+
+                        inizializzaTabelle();
+                    }
+                });
+            }
+        });
+
         tornaAllaSchermataPrecedenteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                frameAttuale.dispose(); // Chiude la scheda personaggio attuale
-
+                frameAttuale.dispose();
                 new GiocatoreGUI(controller);
             }
         });
@@ -110,26 +108,6 @@ public class CampagnaGiocatoreGUI {
                 }
             }
         });
-
-        acquistaButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int riga = inventarioTable.getSelectedRow();
-                if (riga == -1) {
-                    JOptionPane.showMessageDialog(frameAttuale, "Seleziona un oggetto per comprarlo.", "Attenzione", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-                String nomeOggetto = inventarioTable.getValueAt(riga, 0).toString();
-                try {
-                    controller.compraOggetto(nomeOggetto);
-                    JOptionPane.showMessageDialog(frameAttuale, "Hai acquistato: " + nomeOggetto);
-                    inizializzaTabelle(); // ricarica negozio e zaino
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
 
         equipaggiaButton.addActionListener(new ActionListener() {
             @Override
@@ -162,32 +140,12 @@ public class CampagnaGiocatoreGUI {
                 try {
                     controller.rimuoviEquipaggiamento(nomeOggetto, nomeCampagnaAttuale);
                     JOptionPane.showMessageDialog(frameAttuale, "Hai rimosso: " + nomeOggetto);
-                    inizializzaTabelle(); //  Cambia "Sì" in "No" nella tabella
+                    inizializzaTabelle();
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
-
-        vendiButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int riga = equipaggiamentoTable.getSelectedRow();
-                if (riga == -1) {
-                    JOptionPane.showMessageDialog(frameAttuale, "Seleziona un oggetto da vendere.", "Attenzione", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-                String nomeOggetto = equipaggiamentoTable.getValueAt(riga, 0).toString();
-                try {
-                    controller.vendiOggetto(nomeOggetto, nomeCampagnaAttuale);
-                    JOptionPane.showMessageDialog(frameAttuale, "Hai venduto: " + nomeOggetto);
-                    inizializzaTabelle(); // Toglie l'oggetto dalla tabella e aumenta l'oro
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
 
         usaButton.addActionListener(new ActionListener() {
             @Override
@@ -201,32 +159,12 @@ public class CampagnaGiocatoreGUI {
                 try {
                     controller.usaConsumabile(nomeOggetto, nomeCampagnaAttuale);
                     JOptionPane.showMessageDialog(frameAttuale, "Hai utilizzato: " + nomeOggetto);
-                    inizializzaTabelle(); //Scala la quantità e aggiorna HP/Mana
+                    inizializzaTabelle();
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
-
-        vendiButton1.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int riga = consumabiliTable.getSelectedRow();
-                if (riga == -1) {
-                    JOptionPane.showMessageDialog(frameAttuale, "Seleziona un consumabile da vendere.", "Attenzione", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-                String nomeOggetto = consumabiliTable.getValueAt(riga, 0).toString();
-                try {
-                    controller.vendiOggetto(nomeOggetto, nomeCampagnaAttuale);
-                    JOptionPane.showMessageDialog(frameAttuale, "Hai venduto: " + nomeOggetto);
-                    inizializzaTabelle(); //  Scala la quantità e aumenta l'oro
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
 
         imparaButton.addActionListener(new ActionListener() {
             @Override
@@ -242,21 +180,12 @@ public class CampagnaGiocatoreGUI {
                     inizializzaTabelle();
                     JOptionPane.showMessageDialog(frameAttuale, "Hai appreso una nuova abilità: " + nomeAbilita);
                 } catch (Exception ex) {
-                    // Cattura TUTTE le tue eccezioni (GiaAppresa, NonSbloccabile, NonSelezionata)
-                    // e mostra il messaggio personalizzato che hai scritto nel Controller
                     JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore Apprendimento", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
-
-
     }
 
-    /**
-     * Metodo  privato che definisce l'intestazione e i modelli dati per
-     * tutte le tabelle presenti nella scheda (Statistiche, Negozio, Equipaggiamento,
-     * Consumabili, Abilità), rendendole non modificabili direttamente.
-     */
     private void inizializzaTabelle() {
         Personaggio pg = giocatoreLoggato.getPersonaggioInCampagna(controller.getCampagnaAttiva());
         if (pg == null) return;
@@ -273,7 +202,6 @@ public class CampagnaGiocatoreGUI {
 
         modelStat.addRow(new Object[]{"HP Correnti", pg.getHpCorrenti() + " / " + pg.getStatisticheFinali().getHpMax()});
         modelStat.addRow(new Object[]{"Mana Corrente", pg.getManaCorrente() + " / " + pg.getStatisticheFinali().getManaMax()});
-
         modelStat.addRow(new Object[]{"Costituzione", pg.getStatisticheFinali().getCostituzione()});
         modelStat.addRow(new Object[]{"Forza", pg.getStatisticheFinali().getForza()});
         modelStat.addRow(new Object[]{"Destrezza", pg.getStatisticheFinali().getDestrezza()});
@@ -315,20 +243,6 @@ public class CampagnaGiocatoreGUI {
             modelCons.addRow(new Object[]{oggettoConsumabile.getNome(), hpText, manaText, quantita});
         }
 
-        // Tabella Negozio
-        String[] colonneInv = {"Oggetto in Vendita", "Tipo", "Costo (Oro)"};
-        DefaultTableModel modelInv = new DefaultTableModel(null, colonneInv) {
-            @Override
-            public boolean isCellEditable(int row, int column) { return false; }
-        };
-        inventarioTable.setModel(modelInv);
-        inventarioTable.getTableHeader().setReorderingAllowed(false);
-        inventarioTable.getTableHeader().setResizingAllowed(false);
-
-        for (Oggetto o : controller.getCatalogoNegozio()) {
-            modelInv.addRow(new Object[]{o.getNome(), o.getTipo(), o.getCosto()});
-        }
-
         // Tabella Abilità
         String[] colonneAbilita = {"Nome Abilità", "Descrizione", "Appresa"};
         DefaultTableModel modelAbilita = new DefaultTableModel(null, colonneAbilita) {
@@ -347,12 +261,8 @@ public class CampagnaGiocatoreGUI {
         }
     }
 
-    /**
-     * Costruisce una stringa leggibile elencando solo i bonus effettivamente forniti dall'oggetto.
-     */
     private String formattaBonus(Statistica b) {
         String bonus = "";
-
         if (b.getHpMax() != 0) bonus += "+" + b.getHpMax() + " HpMax  ";
         if (b.getManaMax() != 0) bonus += "+" + b.getManaMax() + " ManaMax  ";
         if (b.getCostituzione() != 0) bonus += "+" + b.getCostituzione() + " Cos  ";
@@ -363,19 +273,13 @@ public class CampagnaGiocatoreGUI {
         if (b.getCarisma() != 0) bonus += "+" + b.getCarisma() + " Car  ";
         if (b.getFortuna() != 0) bonus += "+" + b.getFortuna() + " Fort  ";
 
-        // Se la stringa è ancora vuota, significa che l'oggetto non dà nessun bonus
         if (bonus.isEmpty()) {
             return "-";
         } else {
-            return bonus.trim(); // Rimuove gli spazi in eccesso alla fine
+            return bonus.trim();
         }
     }
 
-    /**
-     * Restituisce il pannello principale della Scheda Personaggio.
-     *
-     * @return Il {@link JPanel} utilizzato per il rendering visivo dell'interfaccia.
-     */
     public JPanel getMainPanel() {
         return mainPanel;
     }
