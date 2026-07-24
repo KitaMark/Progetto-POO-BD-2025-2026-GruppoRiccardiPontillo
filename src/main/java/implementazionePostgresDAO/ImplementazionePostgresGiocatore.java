@@ -89,9 +89,9 @@ public class ImplementazionePostgresGiocatore implements GiocatoreDao {
         RETURNING CodPersonaggio;
         """;
 
-        try {
-            Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement stmt = conn.prepareStatement(query);
+        try(Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement stmt = conn.prepareStatement(query);) {
+
 
             // Parametri per la tabella PERSONAGGIO
             stmt.setString(1, pg.getNome());

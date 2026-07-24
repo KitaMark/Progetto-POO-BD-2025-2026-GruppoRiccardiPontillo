@@ -466,7 +466,7 @@ public class Controller {
         }
         if(razza == null || classe == null) throw new DatiMancantiException("Devi selezionare razza e classe prima di procedere.");
         Personaggio png = new Personaggio(classe, razza, nome);
-        png.setId(masterDAO.creaPnG(png));
+        masterDAO.creaPnG(png, campagnaAttiva.getId());
         campagnaAttiva.getListaPnG().add(png);
     }
 
@@ -486,7 +486,7 @@ public class Controller {
         }
         if(razza == null || classe == null) throw new DatiMancantiException("Devi selezionare razza e classe prima di procedere.");
         Personaggio png = new Personaggio(classe, razza, statBase, nome, oro, punti);
-        png.setId(masterDAO.creaPnG(png));
+        masterDAO.creaPnG(png, campagnaAttiva.getId());
         campagnaAttiva.getListaPnG().add(png);
     }
 
