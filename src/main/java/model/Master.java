@@ -1,7 +1,5 @@
 package model;
 
-import java.util.Objects;
-
 /**
  * Rappresenta un utente con privilegi di Master.
  * Ha la responsabilità di creare, moderare e gestire una singola campagna di gioco attiva.
@@ -22,10 +20,10 @@ public class Master extends Utente {
     }
 
     /**
-     * costruttore d'appoggio creato per il dao
+     * Costruttore d'appoggio creato per il DAO.
      *
-     * @param id identificativo univoco del Master nel database
-     * @param email l'indirizzo email dell'account.
+     * @param id       identificativo univoco del Master nel database.
+     * @param email    l'indirizzo email dell'account.
      * @param username lo username univoco dell'utente.
      * @param password la password di accesso.
      */
@@ -33,8 +31,6 @@ public class Master extends Utente {
         super(id, email, username, password);
         this.campagna = null;
     }
-
-
 
     /** @return la campagna attualmente gestita dal Master, o {@code null} se assente. */
     public Campagna getCampagna() {

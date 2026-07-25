@@ -96,12 +96,18 @@ public class CampagnaGiocatoreGUI {
                     JOptionPane.showMessageDialog(frameAttuale, "Seleziona una statistica dalla tabella.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
+
                 String nomeStatistica = statisticheTable.getValueAt(riga, 0).toString();
+
                 int conferma = JOptionPane.showConfirmDialog(frameAttuale, "Vuoi spendere 1 Punto per aumentare " + nomeStatistica + "?", "Conferma", JOptionPane.YES_NO_OPTION);
                 if (conferma == JOptionPane.YES_OPTION) {
                     try {
                         controller.aumentaStatistica(nomeStatistica);
+
                         JOptionPane.showMessageDialog(frameAttuale, "Statistica potenziata con successo!");
+
+                        inizializzaTabelle();
+
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                     }
@@ -200,6 +206,7 @@ public class CampagnaGiocatoreGUI {
         statisticheTable.getTableHeader().setReorderingAllowed(false);
         statisticheTable.getTableHeader().setResizingAllowed(false);
 
+        modelStat.addRow(new Object[]{"Punti da spendere", pg.getPuntiStatistica()});
         modelStat.addRow(new Object[]{"HP Correnti", pg.getHpCorrenti() + " / " + pg.getStatisticheFinali().getHpMax()});
         modelStat.addRow(new Object[]{"Mana Corrente", pg.getManaCorrente() + " / " + pg.getStatisticheFinali().getManaMax()});
         modelStat.addRow(new Object[]{"Costituzione", pg.getStatisticheFinali().getCostituzione()});

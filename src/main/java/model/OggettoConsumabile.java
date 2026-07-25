@@ -11,17 +11,16 @@ public class OggettoConsumabile extends Oggetto {
     /**
      * Crea un nuovo oggetto consumabile impostandone costi, identificativi ed effetti di recupero.
      *
-     * @param costo il costo in oro dell'oggetto.
      * @param nome  il nome del consumabile.
+     * @param costo il costo in oro dell'oggetto.
      * @param hp    la quantità di punti ferita ripristinati all'uso.
      * @param mana  la quantità di punti mana ripristinati all'uso.
      */
-    public OggettoConsumabile( String nome, int costo, int hp, int mana){
+    public OggettoConsumabile(String nome, int costo, int hp, int mana){
         super(costo, nome);
         this.ripristinoHP = hp;
         this.ripristinoMana = mana;
     }
-
 
     /**
      * Costruttore utilizzato dal DAO per il caricamento dei dati dal database.
@@ -35,21 +34,16 @@ public class OggettoConsumabile extends Oggetto {
      */
     public OggettoConsumabile(int id, String nome, int costo, String tipo,
                               int ripristinoHp, int ripristinoMana) {
-
         super(id, nome, costo, tipo);
         this.ripristinoHP = ripristinoHp;
         this.ripristinoMana = ripristinoMana;
     }
 
-    /** @return la quantità di punti mana ripristinati dall'oggetto. */
-    public int getRipristinoMana() {
-        return ripristinoMana;
-    }
-
     /** @return la quantità di punti ferita ripristinati dall'oggetto. */
-    public int getRipristinoHP() {
-        return ripristinoHP;
-    }
+    public int getRipristinoHP() { return ripristinoHP; }
+
+    /** @return la quantità di punti mana ripristinati dall'oggetto. */
+    public int getRipristinoMana() { return ripristinoMana; }
 
     /**
      * Restituisce la rappresentazione testuale completa dell'oggetto consumabile e dei suoi effetti.

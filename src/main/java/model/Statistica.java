@@ -75,94 +75,58 @@ public class Statistica {
     }
 
     /** @return il punteggio di forza. */
-    public int getForza() {
-        return forza;
-    }
+    public int getForza() { return forza; }
 
     /** @return il punteggio di destrezza. */
-    public int getDestrezza() {
-        return destrezza;
-    }
+    public int getDestrezza() { return destrezza; }
 
     /** @return il punteggio di costituzione. */
-    public int getCostituzione() {
-        return costituzione;
-    }
+    public int getCostituzione() { return costituzione; }
 
     /** @return il punteggio di intelligenza. */
-    public int getIntelligenza() {
-        return intelligenza;
-    }
+    public int getIntelligenza() { return intelligenza; }
 
     /** @return il punteggio di fede. */
-    public int getFede() {
-        return fede;
-    }
+    public int getFede() { return fede; }
 
     /** @return il punteggio di carisma. */
-    public int getCarisma() {
-        return carisma;
-    }
+    public int getCarisma() { return carisma; }
 
     /** @return il punteggio di fortuna. */
-    public int getFortuna() {
-        return fortuna;
-    }
+    public int getFortuna() { return fortuna; }
 
     /** @return il valore massimo di HP. */
-    public int getHpMax() {
-        return hpMax;
-    }
+    public int getHpMax() { return hpMax; }
 
     /** @return il valore massimo di mana. */
-    public int getManaMax() {
-        return manaMax;
-    }
+    public int getManaMax() { return manaMax; }
 
     /** @param forza il nuovo valore di forza da impostare. */
-    public void setForza(int forza) {
-        this.forza = forza;
-    }
+    public void setForza(int forza) { this.forza = forza; }
 
     /** @param destrezza il nuovo valore di destrezza da impostare. */
-    public void setDestrezza(int destrezza) {
-        this.destrezza = destrezza;
-    }
+    public void setDestrezza(int destrezza) { this.destrezza = destrezza; }
 
     /** @param costituzione il nuovo valore di costituzione da impostare. */
-    public void setCostituzione(int costituzione) {
-        this.costituzione = costituzione;
-    }
+    public void setCostituzione(int costituzione) { this.costituzione = costituzione; }
 
     /** @param intelligenza il nuovo valore di intelligenza da impostare. */
-    public void setIntelligenza(int intelligenza) {
-        this.intelligenza = intelligenza;
-    }
+    public void setIntelligenza(int intelligenza) { this.intelligenza = intelligenza; }
 
     /** @param fede il nuovo valore di fede da impostare. */
-    public void setFede(int fede) {
-        this.fede = fede;
-    }
+    public void setFede(int fede) { this.fede = fede; }
 
     /** @param carisma il nuovo valore di carisma da impostare. */
-    public void setCarisma(int carisma) {
-        this.carisma = carisma;
-    }
+    public void setCarisma(int carisma) { this.carisma = carisma; }
 
     /** @param fortuna il nuovo valore di fortuna da impostare. */
-    public void setFortuna(int fortuna) {
-        this.fortuna = fortuna;
-    }
+    public void setFortuna(int fortuna) { this.fortuna = fortuna; }
 
     /** @param hpMax la nuova soglia massima di HP da impostare. */
-    public void setHpMax(int hpMax) {
-        this.hpMax = hpMax;
-    }
+    public void setHpMax(int hpMax) { this.hpMax = hpMax; }
 
     /** @param manaMax la nuova soglia massima di mana da impostare. */
-    public void setManaMax(int manaMax) {
-        this.manaMax = manaMax;
-    }
+    public void setManaMax(int manaMax) { this.manaMax = manaMax; }
 
     /**
      * Somma i valori di un secondo oggetto Statistica a quella corrente.

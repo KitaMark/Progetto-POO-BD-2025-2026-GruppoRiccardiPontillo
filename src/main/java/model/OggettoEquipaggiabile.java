@@ -39,11 +39,11 @@ public class OggettoEquipaggiabile extends Oggetto {
         this.bonus = bonus;
     }
 
-    /** @return l'oggetto Statistica contenente i bonus applicati. */
-    public Statistica getBonus() { return bonus; }
-
     /** @return l'oggetto Statistica contenente i requisiti minimi di utilizzo. */
     public Statistica getRequisiti() { return requisiti; }
+
+    /** @return l'oggetto Statistica contenente i bonus applicati. */
+    public Statistica getBonus() { return bonus; }
 
     /**
      * Restituisce la descrizione testuale dettagliata dell'oggetto, inclusi requisiti e modificatori associati.

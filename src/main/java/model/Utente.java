@@ -27,61 +27,44 @@ public abstract class Utente {
         this.password = password;
     }
 
-
     /**
-     * Costruttore creato appositamente per il dao
+     * Costruttore creato appositamente per il DAO.
      *
-     * @param id       identificativo univoco dell'utente nel database
+     * @param id       identificativo univoco dell'utente nel database.
      * @param email    l'indirizzo email dell'utente.
      * @param username lo username dell'utente.
      * @param password la password di accesso.
      */
     public Utente(int id, String email, String username, String password){
-        this.id=id;
+        this.id = id;
         this.email = email;
         this.username = username;
         this.password = password;
     }
 
-
-    /** @return l'identificativo dell'utente */
-    public int getId(){
-        return this.id;
-    }
+    /** @return l'identificativo dell'utente nel database. */
+    public int getId(){ return this.id; }
 
     /** @return lo username dell'utente. */
-    public String getUsername(){
-        return this.username;
-    }
+    public String getUsername(){ return this.username; }
 
     /** @return l'indirizzo email dell'utente. */
-    public String getEmail() {
-        return this.email;
-    }
+    public String getEmail() { return this.email; }
 
     /** @return la password dell'utente. */
-    public String getPassword() {
-        return this.password;
-    }
+    public String getPassword() { return this.password; }
+
+    /** @param id il nuovo identificativo univoco da assegnare all'utente nel database. */
+    public void setId(int id) { this.id = id; }
 
     /** @param nuovoUsername il nuovo username da impostare. */
-    public void setUsername(String nuovoUsername) {
-        this.username = nuovoUsername;
-    }
+    public void setUsername(String nuovoUsername) { this.username = nuovoUsername; }
 
     /** @param nuovaPassword la nuova password da impostare. */
-    public void setPassword(String nuovaPassword){
-        this.password = nuovaPassword;
-    }
+    public void setPassword(String nuovaPassword){ this.password = nuovaPassword; }
 
     /** @param nuovaEmail la nuova email da impostare. */
-    public void setEmail(String nuovaEmail) {
-        this.email = nuovaEmail;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+    public void setEmail(String nuovaEmail) { this.email = nuovaEmail; }
 
     /**
      * Restituisce una rappresentazione testuale dei dati identificativi dell'utente.
@@ -95,24 +78,25 @@ public abstract class Utente {
 
     /**
      * Confronta due utenti. Due utenti sono considerati uguali se hanno lo stesso username,
-     * poiché lo username è un campo UNIQUE a livello di database, evitiamo di usare l'id poiché prima del
-     * salvataggio nel database esso è uguale a 0 e si potrebbero creare problemi.
+     * poiché lo username è un campo UNIQUE a livello di database. Evitiamo di usare l'id
+     * poiché prima del salvataggio nel database esso è uguale a 0 e si potrebbero creare problemi.
+     *
+     * @param o L'oggetto da confrontare.
+     * @return {@code true} se gli utenti hanno lo stesso username, {@code false} altrimenti.
      */
     @Override
     public boolean equals(Object o) {
-        // se è la stessa identica istanza in memoria, restituisci true
         if (this == o) return true;
-
-        // Controllo null e classe: se è nullo o di classe diversa, restituisci false
         if (o == null || getClass() != o.getClass()) return false;
 
-        //Confronto logico basato sulla chiave naturale (username)
         Utente utente = (Utente) o;
         return Objects.equals(username, utente.username);
     }
 
     /**
      * Genera l'hash code basato sulla chiave naturale (username).
+     *
+     * @return il codice hash calcolato.
      */
     @Override
     public int hashCode() {

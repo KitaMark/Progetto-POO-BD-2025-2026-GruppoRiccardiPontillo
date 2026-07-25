@@ -62,5 +62,4 @@ public class Abilita {
         return String.format("Abilità: %s%n Effetto: %s%n Classe: %s%n", nome, descrizione, classe);
     }
 
-
 }

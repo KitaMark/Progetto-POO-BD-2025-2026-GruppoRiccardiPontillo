@@ -8,10 +8,23 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Implementazione specifica per PostgreSQL dell'interfaccia {@link ClasseDao}.
+ * <p>
+ * Si occupa dell'inserimento e la corretta propagazione nel database delle configurazioni
+ * riguardanti le nuove Classi generate dal Master all'interno di una specifica Campagna.
+ * </p>
+ */
 public class ImplementazionePostgresClasse implements ClasseDao {
 
     /**
      * Crea una nuova Classe associata alla campagna attiva e la salva nel database.
+     *
+     * @param classe      l'istanza di tipo {@link Classe} popolata dal controller.
+     * @param descrizione una stringa di approfondimento della lore e background di tale classe.
+     * @param idCampagna  l'identificativo della campagna che conterrà la classe.
+     * @return l'identificativo intero della chiave primaria autogenerata all'interno del DB.
+     * @throws RuntimeException se un problema relativo alla connessione impedisce la scrittura o fallisce la restituzione dell'ID.
      */
     @Override
     public int salvaClasse(Classe classe, String descrizione, int idCampagna) {

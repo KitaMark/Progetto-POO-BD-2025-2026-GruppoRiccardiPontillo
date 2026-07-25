@@ -16,6 +16,7 @@ import java.util.*;
  * @author Pontillo Salvatore
  */
 public class Controller {
+
     /**
      * L'utente (Giocatore o Master) attualmente autenticato nel sistema.
      * Mantiene la sessione attiva durante l'utilizzo dell'applicazione.
@@ -46,12 +47,17 @@ public class Controller {
         campagnaDAO.leggiCampagne(listaCampagne);
         giocatoreDAO = new ImplementazionePostgresGiocatore();
         inventarioDAO = new ImplementazionePostgresInventario();
-        abilitaDao= new ImplementazionePostgresAbilita();
+        abilitaDao = new ImplementazionePostgresAbilita();
         personaggioDAO = new ImplementazionePostgresPersonaggio();
-        razzaDao= new ImplementazionePostgresRazza();
-        classeDao= new ImplementazionePostgresClasse();
-        oggettoDao= new ImplementazionePostgresOggetto();
+        razzaDao = new ImplementazionePostgresRazza();
+        classeDao = new ImplementazionePostgresClasse();
+        oggettoDao = new ImplementazionePostgresOggetto();
     }
+
+
+    // =========================================================================================
+    // AUTENTICAZIONE E SESSIONE
+    // =========================================================================================
 
     /**
      * Autentica un utente nel sistema verificandone le credenziali.
@@ -59,24 +65,24 @@ public class Controller {
      * @param username L'username dell'utente.
      * @param email    L'email associata all'account.
      * @param password La password di accesso.
+     * @param isMaster Flag per determinare se il login richiesto è per il ruolo Master.
      * @return L'istanza dell'{@link Utente} (strutturata come Master o Giocatore) recuperata dal sistema.
      * @throws DatiMancantiException Se uno dei campi di testo risulta vuoto o se le credenziali non sono valide.
+     * @throws AutenticazioneException Se si tenta di loggare con un ruolo errato rispetto a quello registrato.
      */
-    public Utente faiLogin(String username, String email, String password, boolean isMaster) throws DatiMancantiException {
+    public Utente faiLogin(String username, String email, String password, boolean isMaster) throws DatiMancantiException, AutenticazioneException {
         if (username.trim().isEmpty() || email.trim().isEmpty() || password.trim().isEmpty()) {
             throw new DatiMancantiException("Per favore, inserisci le tue credenziali (username, email e password) per accedere");
         }
         Utente utenteTrovato = cercaUtente(username, email, password);
         if (utenteTrovato == null) throw new DatiMancantiException("Credenziali non valide.");
-        if(isMaster && utenteTrovato instanceof Giocatore) throw new AutenticazioneException("L'account è registrato come Giocatore!");
-        if(!isMaster && utenteTrovato instanceof Master) throw new AutenticazioneException("L'account è registrato come Master!");
+        if (isMaster && utenteTrovato instanceof Giocatore) throw new AutenticazioneException("L'account è registrato come Giocatore!");
+        if (!isMaster && utenteTrovato instanceof Master) throw new AutenticazioneException("L'account è registrato come Master!");
 
         if (utenteTrovato instanceof Giocatore) {
             Giocatore giocatore = (Giocatore) utenteTrovato;
             System.out.println("DEBUG: L'ID del giocatore " + giocatore.getUsername() + " è: " + giocatore.getId());
             giocatore.setListaPartecipazioni(giocatoreDAO.caricaTutteLePartecipazioni(giocatore.getId()));
-        } else if (utenteTrovato instanceof Master) {
-            Master m = (Master) utenteTrovato;
         }
 
         this.utenteAttivo = utenteTrovato;
@@ -102,10 +108,10 @@ public class Controller {
             throw new DatiMancantiException("Tutti i campi sono obbligatori.");
         }
 
-        for(Utente utente : listaUtenti) {
-            if (Objects.equals(utente.getUsername(), username)){
+        for (Utente utente : listaUtenti) {
+            if (Objects.equals(utente.getUsername(), username)) {
                 throw new AutenticazioneException("Username già in uso.");
-            } else if(Objects.equals(utente.getEmail(), email)){
+            } else if (Objects.equals(utente.getEmail(), email)) {
                 throw new AutenticazioneException("Email già in uso.");
             }
         }
@@ -124,6 +130,14 @@ public class Controller {
     }
 
     /**
+     * Disconnette l'utente attivo, azzerando la sessione corrente.
+     */
+    public void logout() {
+        this.utenteAttivo = null;
+        System.out.println("Logout effettuato. Utente scollegato.");
+    }
+
+    /**
      * Restituisce l'utente attualmente loggato e attivo nella sessione.
      *
      * @return L'oggetto {@link Utente} attivo.
@@ -131,6 +145,32 @@ public class Controller {
     public Utente getUtenteAttivo() {
         return utenteAttivo;
     }
+
+    /**
+     * Cerca un utente all'interno della lista caricata in memoria verificandone le credenziali.
+     * Metodo di supporto privato alla fase di login.
+     *
+     * @param username Lo username dell'utente da cercare.
+     * @param email L'email associata all'account.
+     * @param password La password di autenticazione.
+     * @return L'oggetto {@link Utente} se le credenziali corrispondono, altrimenti {@code null}.
+     */
+    private Utente cercaUtente(String username, String email, String password) {
+        Utente utenteTrovato = null;
+        for (Utente utente : listaUtenti) {
+            if (Objects.equals(utente.getUsername(), username) &&
+                    Objects.equals(utente.getEmail(), email) &&
+                    Objects.equals(utente.getPassword(), password)) {
+                utenteTrovato = utente;
+            }
+        }
+        return utenteTrovato;
+    }
+
+
+    // =========================================================================================
+    //GESTIONE CAMPAGNA
+    // =========================================================================================
 
     /**
      * Permette a un Master di creare una nuova campagna di gioco.
@@ -149,8 +189,8 @@ public class Controller {
         if (nomeCampagna == null || nomeCampagna.trim().isEmpty()) {
             throw new NomeMancanteCampagnaException("Il nome della campagna non può essere vuoto.");
         }
-        if(listaCampagne.containsValue((Master) utenteAttivo)) throw new CampagnaAttivaEsistenteException("Hai già una campagna attiva. Concludila prima di crearne una nuova.");
-        if(listaCampagne.containsKey(cercaCampagna(nomeCampagna))) throw new NomeCampagnaInUsoException("Nome già in uso.");
+        if (listaCampagne.containsValue((Master) utenteAttivo)) throw new CampagnaAttivaEsistenteException("Hai già una campagna attiva. Concludila prima di crearne una nuova.");
+        if (listaCampagne.containsKey(cercaCampagna(nomeCampagna))) throw new NomeCampagnaInUsoException("Nome già in uso.");
 
         Campagna campagna = new Campagna(nomeCampagna, maxGiocatori, (Master) utenteAttivo);
 
@@ -164,24 +204,17 @@ public class Controller {
      * Elimina definitivamente una campagna dal sistema.
      *
      * @param nomeCampagna Il nome della campagna da rimuovere.
-     * @throws DatiMancantiException Se si verifica un errore durante l'eliminazione dal database.
      * @return {@code true} se viene eliminata correttamente.
+     * @throws DatiMancantiException Se la campagna non esiste.
+     * @throws Exception Se l'operazione non è autorizzata.
      */
     public boolean eliminaCampagna(String nomeCampagna) throws DatiMancantiException, Exception {
         Campagna campagnaTarget = cercaCampagna(nomeCampagna);
-        if(campagnaTarget == null) throw new DatiMancantiException("Campagna non esistente.");
-        if(!controllaPrivilegiMaster(campagnaTarget)) throw new Exception("Operazione non autorizzata: non sei il proprietario di questa campagna.");
+        if (campagnaTarget == null) throw new DatiMancantiException("Campagna non esistente.");
+        if (!controllaPrivilegiMaster(campagnaTarget)) throw new Exception("Operazione non autorizzata: non sei il proprietario di questa campagna.");
         listaCampagne.remove(campagnaTarget);
         campagnaDAO.eliminaCampagna(campagnaTarget);
         return true;
-    }
-
-    /**
-     * Disconnette l'utente attivo, azzerando la sessione corrente.
-     */
-    public void logout() {
-        this.utenteAttivo = null;
-        System.out.println("Logout effettuato. Utente scollegato.");
     }
 
     /**
@@ -198,6 +231,7 @@ public class Controller {
         }
         this.campagnaAttiva = cercaCampagna(nomeCampagna);
         if (campagnaAttiva == null) throw new RuntimeException("Campagna non esistente.");
+
         campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPG(), true, campagnaAttiva.getNome());
         campagnaDAO.leggiListaPersonaggi(campagnaAttiva.getListaPnG(), false, campagnaAttiva.getNome());
 
@@ -242,13 +276,85 @@ public class Controller {
     }
 
     /**
-     * Recupera l'elenco delle campagne associate all'utente attualmente loggato.
-     *
-     * @return Una lista di oggetti {@link Campagna}.
+     * Modifica lo stato della campagna attiva ("Non Iniziata" / "In Corso") per permettere o bloccare le iscrizioni.
+     * Sincronizza il cambiamento sia in RAM che sul Database tramite il DAO.
      */
-    public List<Campagna> getCampagne() {
-        return new ArrayList<>();
+    public void cambiaStatoCampagna() {
+        if (campagnaAttiva.isIniziata()) {
+            campagnaDAO.cambiaStato(campagnaAttiva.getId(), false);
+            campagnaAttiva.setIniziata(false);
+        } else {
+            campagnaDAO.cambiaStato(campagnaAttiva.getId(), true);
+            campagnaAttiva.setIniziata(true);
+        }
     }
+
+    /**
+     * Recupera l'istanza della campagna attualmente selezionata e in corso di esecuzione.
+     *
+     * @return La {@link Campagna} attiva nella sessione corrente.
+     */
+    public Campagna getCampagnaAttiva() {
+        return campagnaAttiva;
+    }
+
+    /**
+     * Restituisce la mappa completa delle campagne disponibili nel sistema e dei Master proprietari.
+     *
+     * @return Una Map non modificabile di tipo {@code Campagna -> Master}.
+     */
+    public Map<Campagna, Master> getListaCampagne() {
+        return Collections.unmodifiableMap(listaCampagne);
+    }
+
+    /**
+     * Ricerca una specifica campagna tramite il suo nome all'interno dei dati in RAM.
+     *
+     * @param nomeCampagna Il nome testuale della campagna da cercare.
+     * @return La {@link Campagna} corrispondente, o {@code null} se inesistente.
+     */
+    public Campagna cercaCampagna(String nomeCampagna) {
+        Campagna campagnaTrovata = null;
+        for (Campagna campagna : listaCampagne.keySet()) {
+            if (nomeCampagna.equalsIgnoreCase(campagna.getNome())) {
+                campagnaTrovata = campagna;
+                break;
+            }
+        }
+        return campagnaTrovata;
+    }
+
+    /**
+     * Cerca una specifica campagna in memoria tramite il suo identificativo numerico univoco (ID).
+     *
+     * @param id L'identificativo della campagna assegnato dal database.
+     * @return L'istanza di {@link Campagna} trovata, o {@code null} altrimenti.
+     */
+    public Campagna cercaCampagnaPerId(int id) {
+        Campagna campagnaTrovata = null;
+        for (Campagna campagna : listaCampagne.keySet()) {
+            if (id == campagna.getId()) {
+                campagnaTrovata = campagna;
+                break;
+            }
+        }
+        return campagnaTrovata;
+    }
+
+    /**
+     * Verifica se l'utente attualmente connesso è il creatore e il Master della campagna selezionata.
+     *
+     * @param campagna La campagna da controllare.
+     * @return {@code true} se l'utente attivo è il Master autorizzato per questa campagna, {@code false} altrimenti.
+     */
+    public boolean controllaPrivilegiMaster(Campagna campagna) {
+        return utenteAttivo.equals((listaCampagne.get(campagna)));
+    }
+
+
+    // =========================================================================================
+    //GIOCATORE — ISCRIZIONE E PERSONAGGIO
+    // =========================================================================================
 
     /**
      * Permette a un Giocatore di iscriversi a una campagna non ancora iniziata.
@@ -269,10 +375,10 @@ public class Controller {
         if (campagnaIscrizione == null) {
             throw new NomeMancanteCampagnaException("La campagna inserita non esiste.");
         }
-        if(campagnaIscrizione.isIniziata()) throw new RuntimeException("Impossibile completare l'iscrizione: campagna già iniziata.");
+        if (campagnaIscrizione.isIniziata()) throw new RuntimeException("Impossibile completare l'iscrizione: campagna già iniziata.");
 
         try {
-            if(!(campagnaDAO.contaPartecipanti(campagnaIscrizione.getId()) < campagnaIscrizione.getMaxGiocatori())) throw new RuntimeException("Impossibile completare l'iscrizione: limite partecipanti raggiunto");
+            if (!(campagnaDAO.contaPartecipanti(campagnaIscrizione.getId()) < campagnaIscrizione.getMaxGiocatori())) throw new RuntimeException("Impossibile completare l'iscrizione: limite partecipanti raggiunto");
             giocatoreDAO.iscrivitiACampagna(utenteAttivo.getId(), campagnaIscrizione.getId());
 
             Giocatore giocatore = (Giocatore) utenteAttivo;
@@ -284,18 +390,199 @@ public class Controller {
     }
 
     /**
+     * Inizializza un nuovo Personaggio Giocante (PG) associandolo alla campagna e al giocatore.
+     * <p>
+     * Cattura l'ID univoco autogenerato restituito dall'operazione di inserimento del DAO
+     * e lo assegna all'entità per salvaguardare la logica relazionale delle mappe in RAM.
+     * </p>
+     *
+     * @param nome         Il nome del personaggio.
+     * @param razza        La razza scelta.
+     * @param classe       La classe scelta.
+     * @param campagna     La campagna in cui il PG opererà.
+     * @throws NomePgNonValidoException Se il nome del PG non è valido.
+     */
+    public void creaNuovoPersonaggio(String nome, Razza razza, Classe classe, Campagna campagna) throws NomePgNonValidoException {
+        if (nome == null || nome.isEmpty()) {
+            throw new NomePgNonValidoException("Nome non valido.");
+        }
+
+        Personaggio nuovoPg = new Personaggio(classe, razza, nome);
+
+        try {
+            int idGenerato = giocatoreDAO.salvaPersonaggio(nuovoPg, utenteAttivo.getId(), campagna.getId());
+            nuovoPg.setId(idGenerato);
+
+            Giocatore giocatore = (Giocatore) utenteAttivo;
+            giocatore.addPartecipazioneDati(campagna, nuovoPg);
+            campagna.getListaPG().add(nuovoPg);
+
+            System.out.println("Personaggio '" + nome + "' creato con successo! ID DB: " + nuovoPg.getId());
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Errore durante la creazione del personaggio: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Consuma un punto statistica guadagnato per incrementare permanentemente
+     * una caratteristica base del personaggio.
+     *
+     * @param nomeStatistica Il nome della statistica da potenziare.
+     * @throws StatisticaNonSelezionataException Se non viene passata una statistica valida.
+     * @throws RuntimeException Se i punti sono esauriti o la statistica non è potenziabile.
+     */
+    public void aumentaStatistica(String nomeStatistica) throws StatisticaNonSelezionataException, RuntimeException {
+        if (nomeStatistica == null || nomeStatistica.trim().isEmpty()) {
+            throw new StatisticaNonSelezionataException("Seleziona una statistica valida.");
+        }
+
+        Giocatore giocatore = (Giocatore) utenteAttivo;
+        Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
+
+        if (pg.getPuntiStatistica() <= 0) {
+            throw new RuntimeException("Non hai abbastanza Punti Statistica da spendere!");
+        }
+
+        Statistica base = pg.getStatisticheBase();
+
+        switch (nomeStatistica) {
+            case "Forza":
+                base.setForza(base.getForza() + 1);
+                break;
+            case "Destrezza":
+                base.setDestrezza(base.getDestrezza() + 1);
+                break;
+            case "Costituzione":
+                base.setCostituzione(base.getCostituzione() + 1);
+                break;
+            case "Intelligenza":
+                base.setIntelligenza(base.getIntelligenza() + 1);
+                break;
+            case "Fede":
+                base.setFede(base.getFede() + 1);
+                break;
+            case "Carisma":
+                base.setCarisma(base.getCarisma() + 1);
+                break;
+            case "Fortuna":
+                base.setFortuna(base.getFortuna() + 1);
+                break;
+            default:
+                throw new StatisticaNonSelezionataException("Non puoi usare i punti per potenziare: " + nomeStatistica);
+        }
+
+        pg.setPuntiStatistica(pg.getPuntiStatistica() - 1);
+        personaggioDAO.aggiornaStatistichePersonaggio(pg.getId(), base);
+        masterDAO.assegnaPuntiStatistica(pg.getId(), -1);
+        pg.ricalcolaStatisticheFinali();
+    }
+
+    /**
+     * Svuota l'inventario locale del personaggio in RAM per evitare inconsistenze e lo ripopola
+     * leggendo i dati freschi direttamente dal database. Calcola automaticamente i ricalcoli delle statistiche finali.
+     *
+     * @param pg L'oggetto {@link Personaggio} da riallineare col database.
+     * @throws RuntimeException Se il pg è nullo e corrotto in memoria.
+     */
+    public void leggiInventarioPersonaggio(Personaggio pg) {
+        if (pg == null) throw new RuntimeException("Impossibile trovare il personaggio selezionato - possibile corruzione dei dati");
+        pg.svuotaInventari();
+        Map<Oggetto, Integer> zainoPersonaggio = inventarioDAO.caricaInventarioPersonaggio(pg.getId());
+
+        for (Map.Entry<Oggetto, Integer> entry : zainoPersonaggio.entrySet()) {
+            Oggetto oggetto = entry.getKey();
+            int quantita = entry.getValue();
+
+            if (oggetto instanceof OggettoConsumabile) {
+                pg.addConsumabile((OggettoConsumabile) oggetto, quantita);
+            } else if (oggetto instanceof OggettoEquipaggiabile) {
+                pg.addEquipaggiabile((OggettoEquipaggiabile) oggetto);
+                pg.impostaStatoEquipaggiabile((OggettoEquipaggiabile) oggetto, oggetto.isEquipaggiato());
+            }
+        }
+
+        pg.ricalcolaStatisticheFinali();
+    }
+
+    /**
+     * Recupera l'elenco delle Abilità precedentemente apprese da un personaggio consultando il database
+     * tramite il relativo DAO.
+     *
+     * @param pg Il personaggio da ispezionare.
+     * @throws RuntimeException Se il riferimento al personaggio fornito è nullo.
+     */
+    public void leggiAbilitaPersonaggio(Personaggio pg) {
+        if (pg == null) throw new RuntimeException("Impossibile trovare il personaggio selezionato - possibile corruzione dei dati.");
+        abilitaDao.caricaAbilitaApprese(pg);
+    }
+
+    /**
+     * Associa al personaggio una nuova abilità compatibile con la sua classe, garantendo che non l'abbia
+     * già appresa in precedenza, e sincronizza tale assegnazione anche sulla rispettiva tabella relazionale nel database.
+     *
+     * @param nomeAbilita Il nome esatto dell'abilità che si intende imparare.
+     * @param nomeCampagna Il nome della campagna attuale nel cui contesto l'abilità viene appresa.
+     * @throws AbilitaNonSelezionataException Se non viene specificata un'abilità testuale valida.
+     * @throws AbilitaGiaAppresaException Se il personaggio possiede già l'abilità.
+     * @throws AbilitaNonSbloccabileException Se l'abilità ricercata non fa parte dei talenti previsti dalla classe.
+     */
+    public void imparaAbilita(String nomeAbilita, String nomeCampagna) throws AbilitaNonSelezionataException, AbilitaGiaAppresaException, AbilitaNonSbloccabileException {
+        if (nomeAbilita == null || nomeAbilita.trim().isEmpty()) {
+            throw new AbilitaNonSelezionataException("Seleziona un'abilità valida dalla tabella.");
+        }
+
+        Giocatore giocatore = (Giocatore) utenteAttivo;
+        Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
+
+        Abilita target = null;
+        for (Abilita abilita : pg.getClasse().getAbilitaSbloccabili()) {
+            if (abilita.getNome().trim().equalsIgnoreCase(nomeAbilita.trim())) {
+                target = abilita;
+                break;
+            }
+        }
+
+        if (target == null) {
+            throw new AbilitaNonSbloccabileException("Questa abilità non è prevista per la tua classe.");
+        }
+
+        for (Abilita a : pg.getListaAbilita()) {
+            if (a.getNome().trim().equalsIgnoreCase(target.getNome().trim())) {
+                throw new AbilitaGiaAppresaException("Hai già appreso questa abilità in precedenza!");
+            }
+        }
+
+        try {
+            abilitaDao.imparaAbilita(pg.getId(), target.getNome());
+        } catch (RuntimeException e) {
+            if (e.getMessage().toLowerCase().contains("duplicato") || e.getMessage().toLowerCase().contains("esiste già")) {
+                throw new AbilitaGiaAppresaException("Hai già appreso questa abilità in precedenza!");
+            }
+            throw e;
+        }
+
+        pg.addAbilita(target);
+    }
+
+
+    // =========================================================================================
+    //MASTER — GESTIONE PARTECIPANTI E PERSONAGGI
+    // =========================================================================================
+
+    /**
      * Rimuove un Personaggio Giocante (PG) dalla Campagna gestita dal Master.
      *
      * @param nomePersonaggio Il nome del PG da rimuovere.
      * @param nomeProprietario Il nome del Giocatore che interpreta il PG.
-     * @throws DatiMancantiException Se non viene specificato alcun personaggio o proprietario.
+     * @throws PgNonSelezionatoException Se non viene specificato alcun personaggio o stringa vuota.
+     * @throws DatiMancantiException Se il nome del proprietario è invalido o inesistente.
      * @throws PersonaggioNonTrovatoException Se la ricerca del PG fallisce.
      */
-    public void rimuoviPGdaCampagna(String nomePersonaggio, String nomeProprietario) throws PersonaggioNonTrovatoException, DatiMancantiException {
+    public void rimuoviPGdaCampagna(String nomePersonaggio, String nomeProprietario) throws PersonaggioNonTrovatoException, DatiMancantiException, PgNonSelezionatoException {
         if (nomePersonaggio == null || nomePersonaggio.trim().isEmpty()) {
-            throw new DatiMancantiException("Seleziona un personaggio da rimuovere.");
+            throw new PgNonSelezionatoException("Seleziona un personaggio da rimuovere.");
         }
-        if(nomeProprietario == null || nomeProprietario.trim().isEmpty() || Objects.equals(nomeProprietario, "Sconosciuto"))
+        if (nomeProprietario == null || nomeProprietario.trim().isEmpty() || Objects.equals(nomeProprietario, "Sconosciuto"))
             throw new DatiMancantiException("ATTENZIONE: personaggio non associato a nessun giocatore.");
 
         Personaggio daRimuovere = cercaPg(nomePersonaggio, nomeProprietario);
@@ -304,6 +591,15 @@ public class Controller {
         campagnaAttiva.getListaPG().remove(daRimuovere);
     }
 
+    /**
+     * Cerca all'interno della lista giocatori e personaggi una corrispondenza esatta per individuare il Personaggio.
+     * Metodo di utilità privato impiegato per operazioni di rimozione o modifica statistica dei PG da parte del Master.
+     *
+     * @param nomePersonaggio Il nome del personaggio giocante nel mondo fittizio.
+     * @param nomeProprietario Lo username del giocatore reale a cui esso appartiene.
+     * @return L'oggetto {@link Personaggio} corrispondente.
+     * @throws PersonaggioNonTrovatoException Se l'attraversamento delle associazioni Giocatore-PG non fornisce risultati validi.
+     */
     private Personaggio cercaPg(String nomePersonaggio, String nomeProprietario) throws PersonaggioNonTrovatoException {
         Personaggio personaggio = null;
         for (Giocatore giocatore : campagnaAttiva.getPartecipanti()) {
@@ -316,63 +612,229 @@ public class Controller {
         return personaggio;
     }
 
-    public void modificaStatistichePG(String nomePersonaggio) throws Exception {
-        System.out.println("Apertura finestra di modifica statistiche per: " + nomePersonaggio);
+    /**
+     * Rimuove un Personaggio Non Giocante (PnG) dal sistema.
+     *
+     * @param id L'identificativo del PnG da eliminare.
+     * @throws PersonaggioNonTrovatoException Se l'id non esiste o la ricerca fallisce.
+     */
+    public void rimuoviPnG(int id) throws PersonaggioNonTrovatoException {
+        Personaggio daTrovare = null;
+        for (Personaggio png : campagnaAttiva.getListaPnG()) {
+            if (png.getId() == id) {
+                daTrovare = png;
+                break;
+            }
+        }
+        if (daTrovare == null) throw new PersonaggioNonTrovatoException("Id non esistente, impossibile trovare il png.");
+        masterDAO.rimuoviPersonaggio(daTrovare);
+        campagnaAttiva.getListaPnG().remove(daTrovare);
     }
 
-    public void assegnaPuntiStatistica(int idPersonaggio, boolean isPg, int quantitaPunti) throws PersonaggioNonTrovatoException, RuntimeException {
-        if(quantitaPunti < 0) throw new RuntimeException("Non è possibile assegnare valori negativi.");
+    /**
+     * Crea un Personaggio Non Giocante (PnG) standard gestito dal Master.
+     *
+     * @param nome         Il nome del PnG.
+     * @param razza        La razza del PnG.
+     * @param classe       La classe del PnG.
+     * @throws NomeMancantePngException Se il nome del PnG non viene inserito.
+     * @throws DatiMancantiException Se mancano razza o classe.
+     */
+    public void creaPnG(String nome, Razza razza, Classe classe) throws NomeMancantePngException, DatiMancantiException {
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new NomeMancantePngException("Il nome del PnG non può essere vuoto.");
+        }
+        if (razza == null || classe == null) throw new DatiMancantiException("Devi selezionare razza e classe prima di procedere.");
+        Personaggio png = new Personaggio(classe, razza, nome);
+
+        masterDAO.creaPnG(png, campagnaAttiva.getId());
+        campagnaAttiva.getListaPnG().add(png);
+    }
+
+    /**
+     * Crea un Personaggio Non Giocante (PnG) andando a definire anche i campi oro e punti statistica.
+     *
+     * @param nome         Il nome del PnG.
+     * @param razza        La razza del PnG.
+     * @param classe       La classe del PnG.
+     * @param oro          La quantità di oro iniziale.
+     * @param punti        I punti statistica disponibili fin dall'inizio.
+     * @param statBase     La struttura iniziale delle statistiche base per il personaggio.
+     * @throws NomeMancantePngException Se il nome del PnG non viene inserito.
+     * @throws DatiMancantiException Se mancano razza o classe.
+     */
+    public void creaPnG(String nome, Razza razza, Classe classe, int oro, int punti, Statistica statBase) throws NomeMancantePngException, DatiMancantiException {
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new NomeMancantePngException("Il nome del PnG non può essere vuoto.");
+        }
+        if (razza == null || classe == null) throw new DatiMancantiException("Devi selezionare razza e classe prima di procedere.");
+        Personaggio png = new Personaggio(classe, razza, statBase, nome, oro, punti);
+
+        masterDAO.creaPnG(png, campagnaAttiva.getId());
+        campagnaAttiva.getListaPnG().add(png);
+    }
+
+    /**
+     * Espelle un Giocatore partecipante dall'attuale sessione di campagna, eliminandone l'iscrizione sia in RAM
+     * che a livello persistente e slegando di conseguenza le interazioni del suo Personaggio.
+     *
+     * @param idGiocatore L'identificativo numerico del Giocatore da allontanare.
+     * @throws GiocatoreNonTrovatoException Se il Giocatore in questione non risulta regolarmente iscritto alla Campagna.
+     * @throws RuntimeException Se si verifica un impedimento o un errore DB durante la fase di aggiornamento.
+     */
+    public void rimuoviGiocatoreDaCampagna(int idGiocatore) {
+        Giocatore daRimuovere = null;
+        for (Giocatore g : campagnaAttiva.getPartecipanti()) {
+            if (g.getId() == idGiocatore) {
+                daRimuovere = g;
+                break;
+            }
+        }
+        if (daRimuovere == null) throw new GiocatoreNonTrovatoException("Giocatore non esistente.");
+
+        Personaggio pgDaRimuovere = daRimuovere.getPersonaggioInCampagna(campagnaAttiva);
+
         try {
-            Personaggio personaggio = cercaPersonaggio(idPersonaggio, isPg);
-            personaggio.addPuntiStatistica(quantitaPunti);
-            masterDAO.assegnaPuntiStatistica(personaggio.getId(), quantitaPunti);
-            personaggio.ricalcolaStatisticheFinali();
-        } catch(Exception ex){
+            masterDAO.rimuoviGiocatore(idGiocatore, campagnaAttiva.getId());
+            daRimuovere.getListaPartecipazioni().remove(campagnaAttiva);
+
+            if (pgDaRimuovere != null) {
+                campagnaAttiva.getListaPG().remove(pgDaRimuovere);
+            }
+            campagnaAttiva.getPartecipanti().remove(daRimuovere);
+        } catch (RuntimeException ex) {
+            if (ex.getMessage() == null || ex.getMessage().trim().isEmpty())
+                throw new RuntimeException("Impossibile aggiornare i dati in memoria.");
             throw new RuntimeException(ex.getMessage());
         }
     }
 
     /**
-     * Rimuove un Personaggio Non Giocante (PnG) dal sistema.
+     * Eroga un ammontare cumulativo di punti statistica extra che un determinato personaggio potrà utilizzare
+     * in seguito per innalzare manualmente le proprie caratteristiche. Il cambiamento viene salvato su database.
      *
-     * @param id L'identificativo del PnG da eliminare.
-     * @throws DatiMancantiException Se l'id non esiste nel database.
+     * @param idPersonaggio L'ID del personaggio che beneficerà di questi punti.
+     * @param isPg Determina flag logicamente la ricerca del personaggio su target giocanti o non giocanti.
+     * @param quantitaPunti Il numero di punti da assegnare (deve essere superiore o uguale a zero).
+     * @throws PersonaggioNonTrovatoException Se l'identificativo non produce alcun hit fra i ranghi del party attivo.
+     * @throws RuntimeException Se il numero di punti è negativo o si fallisce la persistenza del DAO.
      */
-    public void rimuoviPnG(int id) throws DatiMancantiException {
-        Personaggio daTrovare = null;
-        for(Personaggio png : campagnaAttiva.getListaPnG()){
-            if(png.getId() == id){
-                daTrovare = png;
+    public void assegnaPuntiStatistica(int idPersonaggio, boolean isPg, int quantitaPunti) throws PersonaggioNonTrovatoException, RuntimeException {
+        if (quantitaPunti < 0) throw new RuntimeException("Non è possibile assegnare valori negativi.");
+        try {
+            Personaggio personaggio = cercaPersonaggio(idPersonaggio, isPg);
+            personaggio.addPuntiStatistica(quantitaPunti);
+            masterDAO.assegnaPuntiStatistica(personaggio.getId(), quantitaPunti);
+            personaggio.ricalcolaStatisticheFinali();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
+    }
+
+    /**
+     * Aggiorna e salva le nuove statistiche di un PG o PnG nel database.
+     * @param nomePersonaggio Il nome stringa del personaggio.
+     * @param idPersonaggio   L'identificativo univoco del personaggio.
+     * @param forza           Il nuovo valore della statistica Forza.
+     * @param destrezza       Il nuovo valore della statistica Destrezza.
+     * @param costituzione    Il nuovo valore della statistica Costituzione.
+     * @param intelligenza    Il nuovo valore della statistica Intelligenza.
+     * @param fede            Il nuovo valore della statistica Fede.
+     * @param carisma         Il nuovo valore della statistica Carisma.
+     * @param fortuna         Il nuovo valore della statistica Fortuna.
+     * @param hpMax           I nuovi Punti Vita (HP) massimi.
+     * @param manaMax         I nuovi punti Mana massimi.
+     * @param isPg            Booleano per definire la directory appropriata di ricerca.
+     * @throws PngNonSelezionatoException Se il personaggio testuale non è stato selezionato correttamente.
+     * @throws PersonaggioNonTrovatoException Se la ricerca del personaggio non ha successo per l'ID dato.
+     */
+    public void salvaStatisticheModificate(String nomePersonaggio, int idPersonaggio, int forza, int destrezza, int costituzione,
+                                           int intelligenza, int fede, int carisma, int fortuna,
+                                           int hpMax, int manaMax, boolean isPg) throws PngNonSelezionatoException, PersonaggioNonTrovatoException {
+
+        if (nomePersonaggio == null || nomePersonaggio.trim().isEmpty()) {
+            throw new PngNonSelezionatoException("Nessun personaggio selezionato.");
+        }
+        Personaggio daModificare = null;
+        ArrayList<Personaggio> listaPersonaggi = isPg ? campagnaAttiva.getListaPG() : campagnaAttiva.getListaPnG();
+        for (Personaggio pg : listaPersonaggi) {
+            if (pg.getId() == idPersonaggio) {
+                daModificare = pg;
                 break;
             }
         }
-        if(daTrovare == null) throw new DatiMancantiException("Id non esistente, impossibile trovare il png.");
-        masterDAO.rimuoviPersonaggio(daTrovare);
-        campagnaAttiva.getListaPnG().remove(daTrovare);
-    }
+        if (daModificare == null) throw new PersonaggioNonTrovatoException("Impossibile trovare il personaggio selezionato.");
 
-    public void cambiaStatoCampagna(){
-        if(campagnaAttiva.isIniziata()){
-            campagnaDAO.cambiaStato(campagnaAttiva.getId(),false);
-            campagnaAttiva.setIniziata(false);
-        } else{
-            campagnaDAO.cambiaStato(campagnaAttiva.getId(),true);
-            campagnaAttiva.setIniziata(true);
+        Statistica modifiche = new Statistica(costituzione, forza, destrezza, intelligenza, fede, carisma, fortuna, hpMax, manaMax);
+        personaggioDAO.aggiornaStatistichePersonaggio(daModificare.getId(), modifiche);
+        daModificare.setStatisticaBase(modifiche);
+
+        daModificare.setHpCorrenti(hpMax);
+        daModificare.setManaCorrente(manaMax);
+
+        leggiInventarioPersonaggio(daModificare);
+
+        if (daModificare.getInventarioEquipaggiabili() != null) {
+            List<OggettoEquipaggiabile> daDisequipaggiare = new ArrayList<>();
+
+            for (Map.Entry<OggettoEquipaggiabile, Boolean> entry : daModificare.getInventarioEquipaggiabili().entrySet()) {
+                if (entry.getValue()) {
+                    Statistica req = entry.getKey().getRequisiti();
+
+                    if (forza < req.getForza() || destrezza < req.getDestrezza() || costituzione < req.getCostituzione() ||
+                            intelligenza < req.getIntelligenza() || fede < req.getFede() || carisma < req.getCarisma() ||
+                            fortuna < req.getFortuna() || hpMax < req.getHpMax() || manaMax < req.getManaMax()) {
+
+                        daDisequipaggiare.add(entry.getKey());
+                    }
+                }
+            }
+
+            for (OggettoEquipaggiabile eq : daDisequipaggiare) {
+                try {
+                    inventarioDAO.impostaEquipaggiamento(daModificare.getId(), eq.getId(), false);
+                    daModificare.rimuoviEquipaggiamento(eq);
+                    System.out.println("Oggetto disequipaggiato automaticamente per requisiti mancanti: " + eq.getNome());
+                } catch (Exception e) {
+                    System.err.println("Errore durante l'auto-disequipaggiamento in DB: " + e.getMessage());
+                }
+            }
         }
     }
 
-    public void aumentaStatistica(String statistica) throws StatisticaNonSelezionataException {
-        if (statistica == null || statistica.trim().isEmpty()) {
-            throw new StatisticaNonSelezionataException("Inserisci una statistica valida.");
+    /**
+     * Interroga le tabelle del Master alla ricerca di una entità Personaggio che condivida l'id specificato.
+     * Serve ad agganciare l'oggetto esatto dalle collezioni residenti su cui applicare aggiornamenti statistici.
+     *
+     * @param id Il CodPersonaggio da verificare.
+     * @param isPg Un booleano in cui true fa cercare nella lista dei Giocanti e false nella lista Non Giocanti.
+     * @return Il {@link Personaggio} trovato e identificato con successo.
+     * @throws Exception Se non esiste una sessione campagna associabile, o in assenza del parametro di target ricercato.
+     */
+    public Personaggio cercaPersonaggio(int id, boolean isPg) throws Exception {
+        if (campagnaAttiva == null) throw new Exception("Errore critico: campagna relativa al personaggio non trovata!");
+        List<Personaggio> daCercare = (isPg) ? campagnaAttiva.getListaPG() : campagnaAttiva.getListaPnG();
+        Personaggio trovato = null;
+        for (Personaggio pg : daCercare) {
+            if (pg.getId() == id) {
+                trovato = pg;
+                break;
+            }
         }
-        System.out.println("Statistica '" + statistica + "' aumentata con successo! (Simulazione)");
+        if (trovato == null) throw new Exception("Impossibile trovare il personaggio selezionato");
+        return trovato;
     }
+
+
+    // =========================================================================================
+    //ECONOMIA / NEGOZIO
+    // =========================================================================================
 
     /**
      * Esegue la transazione per far acquistare un oggetto a un personaggio.
      *
      * @param nomeOggetto Il nome dell'oggetto da acquistare.
-     * @throws OggettoNonSelezionatoException Se l'oggetto specificato non è valido.
+     * @throws OggettoNonSelezionatoException Se l'oggetto specificato non è valido o se l'oro è insufficiente.
      */
     public void compraOggetto(String nomeOggetto) throws OggettoNonSelezionatoException {
         if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
@@ -415,149 +877,75 @@ public class Controller {
     }
 
     /**
-     * Inizializza un nuovo Personaggio Giocante (PG) associandolo alla campagna e al giocatore.
+     * Gestisce la transazione di vendita di un oggetto al negozio.
      * <p>
-     * Cattura l'ID univoco autogenerato restituito dall'operazione di inserimento del DAO
-     * e lo assegna all'entità per salvaguardare la logica relazionale delle mappe in RAM.
+     * 1. Identifica se l'oggetto e' equipaggiabile o consumabile e ne verifica lo stato.
+     * 2. Calcola il ricavo dimezzando il costo base.
+     * 3. Esegue un UPDATE tramite DAO per scalare o rimuovere l'oggetto dall'inventario.
+     * 4. Esegue un UPDATE tramite DAO aggiornando le monete d'oro del Personaggio.
+     * 5. Mantiene coerenti i dati in RAM aggiornando le Hashmap in locale.
      * </p>
      *
-     * @param nome         Il nome del personaggio.
-     * @param razza        La razza scelta.
-     * @param classe       La classe scelta.
-     * @param campagna La campagna in cui il PG opererà.
-     * @throws NomePgNonValidoException Se il nome del PG non è valido.
+     * @param nomeOggetto  Il nome dell'oggetto da vendere.
+     * @param nomeCampagna Il nome della campagna attuale.
+     * @throws OggettoNonSelezionatoException Se il nome dell'oggetto e' vuoto, non posseduto o attualmente equipaggiato.
      */
-    public void creaNuovoPersonaggio(String nome, Razza razza, Classe classe, Campagna campagna) throws NomePgNonValidoException {
-        if (nome == null || nome.isEmpty()) {
-            throw new NomePgNonValidoException("Nome non valido.");
+    public void vendiOggetto(String nomeOggetto, String nomeCampagna) throws OggettoNonSelezionatoException {
+        if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
+            throw new OggettoNonSelezionatoException("Seleziona un oggetto da vendere.");
         }
 
-        Personaggio nuovoPg = new Personaggio(classe, razza, nome);
+        Giocatore giocatore = (Giocatore) utenteAttivo;
+        Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
 
-        try {
-            int idGenerato = giocatoreDAO.salvaPersonaggio(nuovoPg, utenteAttivo.getId(), campagna.getId());
-            nuovoPg.setId(idGenerato);
+        OggettoConsumabile targetConsumabile = null;
+        OggettoEquipaggiabile targetEquipaggiabile = null;
 
-            Giocatore giocatore = (Giocatore) utenteAttivo;
-            giocatore.addPartecipazioneDati(campagna, nuovoPg);
-            campagna.getListaPG().add(nuovoPg);
-
-            System.out.println("Personaggio '" + nome + "' creato con successo! ID DB: " + nuovoPg.getId());
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Errore durante la creazione del personaggio: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Crea un Personaggio Non Giocante (PnG) standard gestito dal Master.
-     *
-     * @param nome         Il nome del PnG.
-     * @param razza        La razza del PnG.
-     * @param classe       La classe del PnG.
-     * @throws DatiMancantiException Se ci sono parametri null.
-     */
-    public void creaPnG(String nome, Razza razza, Classe classe) throws DatiMancantiException {
-        if (nome == null || nome.trim().isEmpty()) {
-            throw new DatiMancantiException("nome PnG non valido.");
-        }
-        if(razza == null || classe == null) throw new DatiMancantiException("Devi selezionare razza e classe prima di procedere.");
-        Personaggio png = new Personaggio(classe, razza, nome);
-
-        // Sincronizzato con il metodo del collega che richiede anche l'id della campagna
-        masterDAO.creaPnG(png, campagnaAttiva.getId());
-        campagnaAttiva.getListaPnG().add(png);
-    }
-
-    /**
-     * Crea un Personaggio Non Giocante (PnG) andando a definire anche i campi oro e punti statistica.
-     *
-     * @param nome         Il nome del PnG.
-     * @param razza        La razza del PnG.
-     * @param classe       La classe del PnG.
-     * @param oro          La quantità di oro iniziale.
-     * @param punti        I punti statistica disponibili fin dall'inizio.
-     * @throws DatiMancantiException se i dati non sono validi.
-     */
-    public void creaPnG(String nome, Razza razza, Classe classe, int oro, int punti, Statistica statBase) throws DatiMancantiException {
-        if (nome == null || nome.trim().isEmpty()) {
-            throw new DatiMancantiException("nome PnG non valido.");
-        }
-        if(razza == null || classe == null) throw new DatiMancantiException("Devi selezionare razza e classe prima di procedere.");
-        Personaggio png = new Personaggio(classe, razza, statBase, nome, oro, punti);
-
-        // Sincronizzato con il metodo del collega che richiede anche l'id della campagna
-        masterDAO.creaPnG(png, campagnaAttiva.getId());
-        campagnaAttiva.getListaPnG().add(png);
-    }
-
-    /**
-     * Aggiorna e salva le nuove statistiche di un PG o PnG nel database.
-     * @param idPersonaggio   L'identificativo univoco del personaggio.
-     * @param forza           Il nuovo valore della statistica Forza.
-     * @param destrezza       Il nuovo valore della statistica Destrezza.
-     * @param costituzione    Il nuovo valore della statistica Costituzione.
-     * @param intelligenza    Il nuovo valore della statistica Intelligenza.
-     * @param fede            Il nuovo valore della statistica Fede.
-     * @param carisma         Il nuovo valore della statistica Carisma.
-     * @param fortuna         Il nuovo valore della statistica Fortuna.
-     * @param hpMax           I nuovi Punti Vita (HP) massimi.
-     * @param manaMax         I nuovi punti Mana massimi.
-     * @throws PngNonSelezionatoException Se il personaggio non è stato selezionato correttamente.
-     */
-    public void salvaStatisticheModificate(String nomePersonaggio, int idPersonaggio, int forza, int destrezza, int costituzione,
-                                           int intelligenza, int fede, int carisma, int fortuna,
-                                           int hpMax, int manaMax, boolean isPg) throws PngNonSelezionatoException, PersonaggioNonTrovatoException {
-
-        if (nomePersonaggio == null || nomePersonaggio.trim().isEmpty()) {
-            throw new PngNonSelezionatoException("Nessun personaggio selezionato.");
-        }
-        Personaggio daModificare = null;
-        ArrayList<Personaggio> listaPersonaggi = isPg? campagnaAttiva.getListaPG() : campagnaAttiva.getListaPnG();
-        for(Personaggio pg : listaPersonaggi){
-            if(pg.getId() == idPersonaggio){
-                daModificare = pg;
+        for (OggettoConsumabile consumabile : pg.getInventarioConsumabili().keySet()) {
+            if (consumabile.getNome().equalsIgnoreCase(nomeOggetto)) {
+                targetConsumabile = consumabile;
                 break;
             }
         }
-        if(daModificare == null) throw new PersonaggioNonTrovatoException("Impossibile trovare il personaggio selezionato.");
 
-        Statistica modifiche = new Statistica(costituzione, forza, destrezza, intelligenza, fede, carisma, fortuna, hpMax, manaMax);
-        personaggioDAO.aggiornaStatistichePersonaggio(daModificare.getId(), modifiche);
-        daModificare.setStatisticaBase(modifiche);
-
-        daModificare.setHpCorrenti(hpMax);
-        daModificare.setManaCorrente(manaMax);
-
-        leggiInventarioPersonaggio(daModificare);
-
-        if (daModificare.getInventarioEquipaggiabili() != null) {
-            List<OggettoEquipaggiabile> daDisequipaggiare = new ArrayList<>();
-
-            for (Map.Entry<OggettoEquipaggiabile, Boolean> entry : daModificare.getInventarioEquipaggiabili().entrySet()) {
-                if (entry.getValue()) {
-                    Statistica req = entry.getKey().getRequisiti();
-
-                    if (forza < req.getForza() || destrezza < req.getDestrezza() || costituzione < req.getCostituzione() ||
-                            intelligenza < req.getIntelligenza() || fede < req.getFede() || carisma < req.getCarisma() ||
-                            fortuna < req.getFortuna() || hpMax < req.getHpMax() || manaMax < req.getManaMax()) {
-
-                        daDisequipaggiare.add(entry.getKey());
+        if (targetConsumabile == null) {
+            for (OggettoEquipaggiabile equipaggiabile : pg.getInventarioEquipaggiabili().keySet()) {
+                if (equipaggiabile.getNome().equalsIgnoreCase(nomeOggetto)) {
+                    if (pg.getInventarioEquipaggiabili().get(equipaggiabile)) {
+                        throw new OggettoNonSelezionatoException("Non puoi vendere un oggetto attualmente equipaggiato!");
                     }
-                }
-            }
-
-            for (OggettoEquipaggiabile eq : daDisequipaggiare) {
-                try {
-                    inventarioDAO.impostaEquipaggiamento(daModificare.getId(), eq.getId(), false);
-                    daModificare.rimuoviEquipaggiamento(eq);
-                    System.out.println("Oggetto disequipaggiato automaticamente per requisiti mancanti: " + eq.getNome());
-                } catch (Exception e) {
-                    System.err.println("Errore durante l'auto-disequipaggiamento in DB: " + e.getMessage());
+                    targetEquipaggiabile = equipaggiabile;
+                    break;
                 }
             }
         }
+
+        if (targetConsumabile == null && targetEquipaggiabile == null) {
+            throw new OggettoNonSelezionatoException("Non possiedi questo oggetto.");
+        }
+
+        Oggetto target = (targetConsumabile != null) ? targetConsumabile : targetEquipaggiabile;
+        int ricavo = target.getCosto() / 2;
+
+        inventarioDAO.vendiOggetto(pg.getId(), target.getId(), ricavo);
+        pg.setOro(pg.getOro() + ricavo);
+
+        if (targetConsumabile != null) {
+            pg.rimuoviConsumabile(targetConsumabile, 1);
+        } else {
+            pg.rimuoviEquipaggiabile(targetEquipaggiabile);
+        }
     }
 
+    /**
+     * Imposta il flag di utilizzo al vero su un pezzo di equipaggiamento dopo aver validato
+     * con il database l'effettivo soddisfacimento dei requisiti statistici del giocatore.
+     * L'interazione sincronizza istantaneamente in RAM l'impatto dei bonus passivi di tale oggetto.
+     *
+     * @param nomeOggetto Stringa nominale associata al tassello di equipaggiamento.
+     * @param nomeCampagna Il nome della campagna di gioco dove è inquadrato l'evento.
+     * @throws OggettoNonSelezionatoException Qualora il puntamento sia incongruente o carente di requisiti.
+     */
     public void equipaggiaOggetto(String nomeOggetto, String nomeCampagna) throws OggettoNonSelezionatoException {
         if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
             throw new OggettoNonSelezionatoException("Seleziona un oggetto da equipaggiare.");
@@ -567,9 +955,9 @@ public class Controller {
         Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
 
         OggettoEquipaggiabile target = null;
-        for (OggettoEquipaggiabile e : pg.getInventarioEquipaggiabili().keySet()) {
-            if (e.getNome().equalsIgnoreCase(nomeOggetto)) {
-                target = e;
+        for (OggettoEquipaggiabile equipaggiabile : pg.getInventarioEquipaggiabili().keySet()) {
+            if (equipaggiabile.getNome().equalsIgnoreCase(nomeOggetto)) {
+                target = equipaggiabile;
                 break;
             }
         }
@@ -585,6 +973,14 @@ public class Controller {
         }
     }
 
+    /**
+     * Stacca l'oggetto dai calcoli delle statistiche in real-time, svuotando i flag
+     * e liberando il corpo del personaggio da tale armamento per riporlo nello zaino.
+     *
+     * @param nomeOggetto Stringa nominale associata al tassello di equipaggiamento.
+     * @param nomeCampagna Il nome della campagna di gioco interconnessa.
+     * @throws OggettoNonSelezionatoException Qualora il puntamento sia incongruente.
+     */
     public void rimuoviEquipaggiamento(String nomeOggetto, String nomeCampagna) throws OggettoNonSelezionatoException {
         if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
             throw new OggettoNonSelezionatoException("Seleziona un oggetto da rimuovere.");
@@ -594,9 +990,9 @@ public class Controller {
         Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
 
         OggettoEquipaggiabile target = null;
-        for (OggettoEquipaggiabile e : pg.getInventarioEquipaggiabili().keySet()) {
-            if (e.getNome().equalsIgnoreCase(nomeOggetto)) {
-                target = e;
+        for (OggettoEquipaggiabile equipaggiabile : pg.getInventarioEquipaggiabili().keySet()) {
+            if (equipaggiabile.getNome().equalsIgnoreCase(nomeOggetto)) {
+                target = equipaggiabile;
                 break;
             }
         }
@@ -607,6 +1003,15 @@ public class Controller {
         }
     }
 
+    /**
+     * Scala e decrementa l'inventario dal database ad un oggetto consumabile valido (es. pozioni)
+     * e implementa matematicamente il boost della cura sui profili fisici correnti del personaggio (Hp, Mana).
+     * Dispone di una routine difensiva in memoria nel caso in cui fallisca il check lato server (Rollback).
+     *
+     * @param nomeOggetto Stringa che definisce cosa sta per ingerire/usare l'utente.
+     * @param nomeCampagna Campagna correlata allo scope di gioco.
+     * @throws OggettoNonSelezionatoException Se il personaggio tenta la consumazione di qualcosa che non possiede.
+     */
     public void usaConsumabile(String nomeOggetto, String nomeCampagna) throws OggettoNonSelezionatoException {
         if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
             throw new OggettoNonSelezionatoException("Seleziona una pozione da usare.");
@@ -616,9 +1021,9 @@ public class Controller {
         Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
 
         OggettoConsumabile target = null;
-        for (OggettoConsumabile c : pg.getInventarioConsumabili().keySet()) {
-            if (c.getNome().equalsIgnoreCase(nomeOggetto)) {
-                target = c;
+        for (OggettoConsumabile consumabile : pg.getInventarioConsumabili().keySet()) {
+            if (consumabile.getNome().equalsIgnoreCase(nomeOggetto)) {
+                target = consumabile;
                 break;
             }
         }
@@ -645,129 +1050,8 @@ public class Controller {
     }
 
     /**
-     * Gestisce la transazione di vendita di un oggetto al negozio.
-     *
-     * @param nomeOggetto  Il nome dell'oggetto da vendere.
-     * @param nomeCampagna Il nome della campagna attuale.
-     * @throws Exception Se il nome dell'oggetto è vuoto, non posseduto o attualmente equipaggiato.
-     */
-    public void vendiOggetto(String nomeOggetto, String nomeCampagna) throws Exception {
-        if (nomeOggetto == null || nomeOggetto.trim().isEmpty()) {
-            throw new Exception("Seleziona un oggetto da vendere.");
-        }
-
-        Giocatore giocatore = (Giocatore) utenteAttivo;
-        Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
-
-        OggettoConsumabile targetConsumabile = null;
-        OggettoEquipaggiabile targetEquipaggiabile = null;
-
-        for (OggettoConsumabile c : pg.getInventarioConsumabili().keySet()) {
-            if (c.getNome().equalsIgnoreCase(nomeOggetto)) {
-                targetConsumabile = c;
-                break;
-            }
-        }
-
-        if (targetConsumabile == null) {
-            for (OggettoEquipaggiabile e : pg.getInventarioEquipaggiabili().keySet()) {
-                if (e.getNome().equalsIgnoreCase(nomeOggetto)) {
-                    if (pg.getInventarioEquipaggiabili().get(e)) {
-                        throw new Exception("Non puoi vendere un oggetto attualmente equipaggiato!");
-                    }
-                    targetEquipaggiabile = e;
-                    break;
-                }
-            }
-        }
-
-        if (targetConsumabile == null && targetEquipaggiabile == null) {
-            throw new Exception("Non possiedi questo oggetto.");
-        }
-
-        Oggetto target = (targetConsumabile != null) ? targetConsumabile : targetEquipaggiabile;
-        int ricavo = target.getCosto() / 2;
-
-        inventarioDAO.vendiOggetto(pg.getId(), target.getId(), ricavo);
-        pg.setOro(pg.getOro() + ricavo);
-
-        if (targetConsumabile != null) {
-            pg.rimuoviConsumabile(targetConsumabile, 1);
-        } else {
-            pg.rimuoviEquipaggiabile(targetEquipaggiabile);
-        }
-    }
-
-    public void imparaAbilita(String nomeAbilita, String nomeCampagna) throws AbilitaNonSelezionataException, AbilitaGiaAppresaException, AbilitaNonSbloccabileException {
-        if (nomeAbilita == null || nomeAbilita.trim().isEmpty()) {
-            throw new AbilitaNonSelezionataException("Seleziona un'abilità valida dalla tabella.");
-        }
-
-        Giocatore giocatore = (Giocatore) utenteAttivo;
-        Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
-
-        Abilita target = null;
-        for (Abilita abilita : pg.getClasse().getAbilitaSbloccabili()) {
-            if (abilita.getNome().trim().equalsIgnoreCase(nomeAbilita.trim())) {
-                target = abilita;
-                break;
-            }
-        }
-
-        if (target == null) {
-            throw new AbilitaNonSbloccabileException("Questa abilità non è prevista per la tua classe.");
-        }
-
-        for (Abilita a : pg.getListaAbilita()) {
-            if (a.getNome().trim().equalsIgnoreCase(target.getNome().trim())) {
-                throw new AbilitaGiaAppresaException("Hai già appreso questa abilità in precedenza!");
-            }
-        }
-
-        try {
-            abilitaDao.imparaAbilita(pg.getId(), target.getNome());
-        } catch (RuntimeException e) {
-            if (e.getMessage().toLowerCase().contains("duplicato") || e.getMessage().toLowerCase().contains("esiste già")) {
-                throw new AbilitaGiaAppresaException("Hai già appreso questa abilità in precedenza!");
-            }
-            throw e;
-        }
-
-        pg.addAbilita(target);
-    }
-
-    public Personaggio cercaPersonaggio(int id, boolean isPg) throws Exception{
-        if(campagnaAttiva == null) throw new Exception("Errore critico: campagna relativa al personaggio non trovata!");
-        List<Personaggio> daCercare = (isPg)? campagnaAttiva.getListaPG() : campagnaAttiva.getListaPnG();
-        Personaggio trovato = null;
-        for(Personaggio pg : daCercare){
-            if(pg.getId() == id){
-                trovato = pg;
-                break;
-            }
-        }
-        if(trovato == null) throw new Exception("Impossibile trovare il personaggio selezionato");
-        return trovato;
-    }
-
-    public Utente cercaUtente(String username, String email, String password){
-        Utente utenteTrovato = null;
-        for(Utente utente : listaUtenti) {
-            if (Objects.equals(utente.getUsername(), username) &&
-                    Objects.equals(utente.getEmail(), email) &&
-                    Objects.equals(utente.getPassword(), password)) {
-                utenteTrovato = utente;
-            }
-        }
-        return utenteTrovato;
-    }
-
-    public Map<Campagna, Master> getListaCampagne() {
-        return Collections.unmodifiableMap(listaCampagne);
-    }
-
-    /**
      * Recupera il catalogo del negozio filtrato per la campagna attiva.
+     *
      * @return Una lista di Oggetti acquistabili in questa specifica campagna.
      */
     public List<Oggetto> getCatalogoNegozio() {
@@ -777,91 +1061,26 @@ public class Controller {
         return new ArrayList<>();
     }
 
-    public void leggiInventarioPersonaggio(Personaggio pg) {
-        if(pg == null) throw new RuntimeException("Impossibile trovare il personaggio selezionato - possibile corruzione dei dati");
-        pg.svuotaInventari();
-        Map<Oggetto, Integer> zainoPersonaggio = inventarioDAO.caricaInventarioPersonaggio(pg.getId());
 
-        for (Map.Entry<Oggetto, Integer> entry : zainoPersonaggio.entrySet()) {
-            Oggetto oggetto = entry.getKey();
-            int quantita = entry.getValue();
-
-            if (oggetto instanceof OggettoConsumabile) {
-                pg.addConsumabile((OggettoConsumabile) oggetto, quantita);
-            } else if (oggetto instanceof OggettoEquipaggiabile) {
-                pg.addEquipaggiabile((OggettoEquipaggiabile) oggetto);
-                pg.impostaStatoEquipaggiabile((OggettoEquipaggiabile) oggetto, oggetto.isEquipaggiato());
-            }
-        }
-
-        pg.ricalcolaStatisticheFinali();
-    }
-
-    public Campagna cercaCampagna(String nomeCampagna){
-        Campagna campagnaTrovata = null;
-        for(Campagna campagna : listaCampagne.keySet()){
-            if(nomeCampagna.equalsIgnoreCase(campagna.getNome())){
-                campagnaTrovata = campagna;
-                break;
-            }
-        }
-        return campagnaTrovata;
-    }
-
-    public Campagna cercaCampagnaPerId(int id){
-        Campagna campagnaTrovata = null;
-        for(Campagna campagna : listaCampagne.keySet()){
-            if(id == campagna.getId()){
-                campagnaTrovata = campagna;
-                break;
-            }
-        }
-        return campagnaTrovata;
-    }
-
-    public Campagna getCampagnaAttiva() {
-        return campagnaAttiva;
-    }
-
-    /**
-     * Recupera l'elenco delle Razze abilitate dal Master per una specifica campagna.
-     *
-     * @param campagna l'oggetto Campagna da cui recuperare le informazioni.
-     * @return La lista di Razze disponibili.
-     */
-    public List<Razza> getRazzePerCampagna(Campagna campagna) {
-        List<Razza> razzeDisponibili = new ArrayList<>();
-        if (campagna != null) {
-            campagnaDAO.leggiListaRazze(razzeDisponibili, campagna.getId());
-        }
-        return razzeDisponibili;
-    }
-
-    /**
-     * Recupera l'elenco delle Classi create dal Master per una specifica campagna.
-     *
-     * @param campagna l'oggetto Campagna da cui recuperare le informazioni.
-     * @return La lista di Classi disponibili.
-     */
-    public List<Classe> getClassiPerCampagna(Campagna campagna) {
-        List<Classe> classiDisponibili = new ArrayList<>();
-        if (campagna != null) {
-            campagnaDAO.leggiListaClassi(classiDisponibili, campagna.getId());
-        }
-        return classiDisponibili;
-    }
-
-    public boolean controllaPrivilegiMaster(Campagna campagna){
-        return utenteAttivo.equals((listaCampagne.get(campagna)));
-    }
-
-    public void leggiAbilitaPersonaggio(Personaggio pg) {
-        if(pg == null) throw new RuntimeException("Impossibile trovare il personaggio selezionato - possibile corruzione dei dati.");
-        abilitaDao.caricaAbilitaApprese(pg);
-    }
+    // =========================================================================================
+    //EDITOR MASTER — RAZZE, CLASSI, OGGETTI
+    // =========================================================================================
 
     /**
      * Crea una nuova Razza associata alla campagna attiva e la salva permanentemente nel database.
+     *
+     * @param nome Il nome stringa identificativo della razza.
+     * @param descrizione Descrizione estesa del lore della razza.
+     * @param mFor Modificatore base aggiunto al pool statico della Forza.
+     * @param mDes Modificatore base per la Destrezza.
+     * @param mCos Modificatore base per la Costituzione.
+     * @param mInt Modificatore base per l'Intelligenza.
+     * @param mFed Modificatore base applicabile per Fede.
+     * @param mCar Modificatore base per il Carisma.
+     * @param mForz Modificatore passivo bonus della Fortuna.
+     * @param mHp Bonus ai punti vitalità.
+     * @param mMana Bonus al pool del mana incantato.
+     * @throws Exception Generato se sfugge o fallisce la campagna per cui stiamo generando la referenza.
      */
     public void creaNuovaRazza(String nome, String descrizione, int mFor, int mDes, int mCos,
                                int mInt, int mFed, int mCar, int mForz, int mHp, int mMana) throws Exception {
@@ -876,6 +1095,32 @@ public class Controller {
     }
 
     /**
+     * Crea una nuova Classe archetipica, la salva in modo persistente nel database
+     * tramite il DAO dedicato e la aggiunge alla sessione della Campagna attiva.
+     *
+     * @param nome        Il nome identificativo della classe (es. "Guerriero").
+     * @param descrizione La lore o background narrativo della classe.
+     * @throws DatiMancantiException Se il nome della classe è nullo o vuoto,
+     *                               o se non vi è alcuna campagna attiva in sessione.
+     */
+    public void creaNuovaClasse(String nome, String descrizione) throws exception.DatiMancantiException {
+        if (campagnaAttiva == null) {
+            throw new exception.DatiMancantiException("Nessuna campagna attiva selezionata.");
+        }
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new exception.DatiMancantiException("Il nome della classe è obbligatorio.");
+        }
+
+        Classe nuovaClasse = new Classe(nome);
+        nuovaClasse.setDescrizione(descrizione);
+
+        int idGenerato = classeDao.salvaClasse(nuovaClasse, descrizione, campagnaAttiva.getId());
+
+        nuovaClasse.setId(idGenerato);
+        campagnaAttiva.getListaClassi().add(nuovaClasse);
+    }
+
+    /**
      * Crea un nuovo Oggetto Consumabile (es. Pozioni) e lo aggiunge al catalogo del negozio.
      *
      * @param nome    Il nome del consumabile.
@@ -883,7 +1128,6 @@ public class Controller {
      * @param ripHp   La quantità di Punti Vita ripristinati all'utilizzo.
      * @param ripMana La quantità di Punti Mana ripristinati all'utilizzo.
      * @throws DatiMancantiException Se il nome è vuoto o la campagna non è attiva.
-     * @throws RuntimeException      Se la transazione sul database fallisce.
      */
     public void creaNuovoConsumabile(String nome, int costo, int ripHp, int ripMana) throws exception.DatiMancantiException {
         if (campagnaAttiva == null) throw new exception.DatiMancantiException("Nessuna campagna attiva selezionata.");
@@ -913,14 +1157,13 @@ public class Controller {
      * @param hp     L'aumento dei Punti Vita massimi.
      * @param mana   L'aumento dei Punti Mana massimi.
      * @throws DatiMancantiException Se il nome è vuoto o la campagna non è attiva.
-     * @throws RuntimeException      Se la transazione sul database fallisce.
      */
     public void creaNuovoEquipaggiamento(String nome, int costo, int cos, int forz, int des,
                                          int intell, int fede, int car, int fort, int hp, int mana) throws exception.DatiMancantiException {
         if (campagnaAttiva == null) throw new exception.DatiMancantiException("Nessuna campagna attiva selezionata.");
         if (nome == null || nome.trim().isEmpty()) throw new exception.DatiMancantiException("Il nome dell'equipaggiamento è obbligatorio.");
 
-        model.Statistica requisitiMinimi = new model.Statistica(0,0,0,0,0,0,0,0,0);
+        model.Statistica requisitiMinimi = new model.Statistica(0, 0, 0, 0, 0, 0, 0, 0, 0);
         model.Statistica bonus = new model.Statistica(cos, forz, des, intell, fede, car, fort, hp, mana);
         OggettoEquipaggiabile equip = new OggettoEquipaggiabile(nome, costo, requisitiMinimi, bonus);
 
@@ -931,54 +1174,31 @@ public class Controller {
     }
 
     /**
-     * Crea una nuova Classe archetipica, la salva in modo persistente nel database
-     * tramite il DAO dedicato e la aggiunge alla sessione della Campagna attiva.
+     * Recupera l'elenco delle Razze abilitate dal Master per una specifica campagna.
      *
-     * @param nome        Il nome identificativo della classe (es. "Guerriero").
-     * @param descrizione La lore o background narrativo della classe.
-     * @throws DatiMancantiException Se il nome della classe è nullo o vuoto,
-     *                               o se non vi è alcuna campagna attiva in sessione.
-     * @throws RuntimeException      Se si verifica un errore durante la transazione SQL.
+     * @param campagna l'oggetto Campagna da cui recuperare le informazioni.
+     * @return La lista di Razze disponibili.
      */
-    public void creaNuovaClasse(String nome, String descrizione) throws exception.DatiMancantiException {
-        if (campagnaAttiva == null) {
-            throw new exception.DatiMancantiException("Nessuna campagna attiva selezionata.");
+    public List<Razza> getRazzePerCampagna(Campagna campagna) {
+        List<Razza> razzeDisponibili = new ArrayList<>();
+        if (campagna != null) {
+            campagnaDAO.leggiListaRazze(razzeDisponibili, campagna.getId());
         }
-        if (nome == null || nome.trim().isEmpty()) {
-            throw new exception.DatiMancantiException("Il nome della classe è obbligatorio.");
-        }
-
-        Classe nuovaClasse = new Classe(nome);
-        nuovaClasse.setDescrizione(descrizione);
-
-        int idGenerato = classeDao.salvaClasse(nuovaClasse, descrizione, campagnaAttiva.getId());
-
-        nuovaClasse.setId(idGenerato);
-        campagnaAttiva.getListaClassi().add(nuovaClasse);
+        return razzeDisponibili;
     }
 
-    public void rimuoviGiocatoreDaCampagna(int idGiocatore){
-        Giocatore daRimuovere = (Giocatore) cercaUtentePerId(idGiocatore);
-        if(daRimuovere == null) throw new GiocatoreNonTrovatoException("Giocatore non esistente.");
-        if(!campagnaAttiva.getPartecipanti().contains(daRimuovere)) throw new GiocatoreNonTrovatoException("Il giocatore selezionato non è iscritto a questa campagna.");
-        Personaggio pgDaRimuovere = daRimuovere.getPersonaggioInCampagna(campagnaAttiva);
-        try {
-            masterDAO.rimuoviGiocatore(idGiocatore, campagnaAttiva.getId());
-            daRimuovere.getListaPartecipazioni().remove(campagnaAttiva);
-            campagnaAttiva.getListaPG().remove(pgDaRimuovere);
-            campagnaAttiva.getPartecipanti().remove(daRimuovere);
-        } catch(RuntimeException ex){
-            if(ex.getMessage() == null|| ex.getMessage().trim().isEmpty()) throw new RuntimeException("Impossibile aggiornare i dati in memoria.");
-            throw new RuntimeException(ex.getMessage());
+    /**
+     * Recupera l'elenco delle Classi create dal Master per una specifica campagna.
+     *
+     * @param campagna l'oggetto Campagna da cui recuperare le informazioni.
+     * @return La lista di Classi disponibili.
+     */
+    public List<Classe> getClassiPerCampagna(Campagna campagna) {
+        List<Classe> classiDisponibili = new ArrayList<>();
+        if (campagna != null) {
+            campagnaDAO.leggiListaClassi(classiDisponibili, campagna.getId());
         }
-
-    }
-
-    private Utente cercaUtentePerId(int id){
-        for(Utente utente : listaUtenti){
-            if(utente.getId() == id) return utente;
-        }
-        return null;
+        return classiDisponibili;
     }
 
 }

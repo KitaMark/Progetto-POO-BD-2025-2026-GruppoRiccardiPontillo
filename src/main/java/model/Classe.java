@@ -25,10 +25,10 @@ public class Classe {
     }
 
     /**
-     *  Costruttore d'appoggio creato appositamente per il Dao
+     * Costruttore d'appoggio creato appositamente per il DAO.
      *
-     * @param id identificativo della classe di un pg nel database
-     * @param nome nome identificativo della classe
+     * @param id   identificativo della classe nel database.
+     * @param nome nome identificativo della classe.
      */
     public Classe(int id, String nome) {
         this.id = id;
@@ -37,12 +37,14 @@ public class Classe {
         this.equipaggiamentoIniziale = new ArrayList<>();
     }
 
-    /** @return l'id della classe. */
+    /** @return l'identificativo univoco della classe. */
     public int getId() { return id; }
-
 
     /** @return il nome della classe. */
     public String getNome() { return nome; }
+
+    /** @return la descrizione testuale e la lore della classe. */
+    public String getDescrizione() { return descrizione; }
 
     /** @return la lista delle abilità sbloccabili da questa classe. */
     public ArrayList<Abilita> getAbilitaSbloccabili() { return abilitaSbloccabili; }
@@ -50,26 +52,20 @@ public class Classe {
     /** @return la lista dell'equipaggiamento iniziale previsto. */
     public ArrayList<Oggetto> getEquipaggiamentoIniziale() { return equipaggiamentoIniziale; }
 
-    public String getDescrizione() {
-        return descrizione;
-    }
+    /** @param id il nuovo identificativo univoco da assegnare alla classe nel database. */
+    public void setId(int id) { this.id = id; }
 
     /** @param nome il nuovo nome da impostare per la classe. */
     public void setNome(String nome) { this.nome = nome; }
+
+    /** @param descrizione la nuova descrizione o lore da associare alla classe. */
+    public void setDescrizione(String descrizione) { this.descrizione = descrizione; }
 
     /** @param abilitaSbloccabili la nuova lista di abilità sbloccabili. */
     public void setAbilitaSbloccabili(ArrayList<Abilita> abilitaSbloccabili) { this.abilitaSbloccabili = abilitaSbloccabili; }
 
     /** @param equipaggiamentoIniziale il nuovo equipaggiamento iniziale da associare. */
     public void setEquipaggiamentoIniziale(ArrayList<Oggetto> equipaggiamentoIniziale) { this.equipaggiamentoIniziale = equipaggiamentoIniziale; }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setDescrizione(String descrizione) {
-        this.descrizione = descrizione;
-    }
 
     /** @param abilita l'abilità da aggiungere a quelle sbloccabili. */
     public void addAbilita(Abilita abilita) { abilitaSbloccabili.add(abilita); }
@@ -105,6 +101,11 @@ public class Classe {
         return false;
     }
 
+    /**
+     * Restituisce la rappresentazione testuale della classe.
+     *
+     * @return il nome della classe.
+     */
     @Override
     public String toString(){
         return nome;

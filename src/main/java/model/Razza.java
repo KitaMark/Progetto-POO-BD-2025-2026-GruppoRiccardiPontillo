@@ -9,6 +9,7 @@ public class Razza {
     private String nome;
     private Statistica modificatori;
     private String descrizione;
+
     /**
      * Crea una razza specificando singolarmente i valori numerici di ciascun modificatore di tratto.
      *
@@ -41,14 +42,23 @@ public class Razza {
         this.modificatori = new Statistica(statistica);
     }
 
-    /** * Costruttore di appoggio per il DAO.
+    /**
+     * Costruttore di appoggio per il DAO.
+     * Inizializza i modificatori a zero.
+     *
+     * @param nome il nome della razza.
      */
     public Razza(String nome) {
         this.nome = nome;
         this.modificatori = new Statistica(0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
-    /** * Costruttore di appoggio per il DAO.
+    /**
+     * Costruttore di appoggio per il DAO.
+     * Inizializza i modificatori a zero e definisce un ID.
+     *
+     * @param id   l'identificativo nel database.
+     * @param nome il nome della razza.
      */
     public Razza(int id, String nome) {
         this.id = id;
@@ -56,41 +66,35 @@ public class Razza {
         this.modificatori = new Statistica(0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
-    /** @return l'id della razza. */
+    /** @return l'identificativo univoco della razza. */
     public int getId() { return id; }
 
-    /** @return i modificatori statistici innati associati alla razza. */
-    public Statistica getModificatori(){
-        return modificatori;
-    }
-
     /** @return il nome della razza. */
-    public String getNome() {
-        return nome;
-    }
+    public String getNome() { return nome; }
 
-    public String getDescrizione() {
-        return descrizione;
-    }
+    /** @return la descrizione testuale e la lore della razza. */
+    public String getDescrizione() { return descrizione; }
+
+    /** @return i modificatori statistici innati associati alla razza. */
+    public Statistica getModificatori(){ return modificatori; }
+
+    /** @param id il nuovo identificativo univoco da assegnare alla razza nel database. */
+    public void setId(int id) { this.id = id; }
 
     /** @param nome il nuovo nome da impostare per la razza. */
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
+    public void setNome(String nome) { this.nome = nome; }
+
+    /** @param descrizione la nuova descrizione o lore da associare alla razza. */
+    public void setDescrizione(String descrizione) { this.descrizione = descrizione; }
 
     /** @param modificatori il nuovo oggetto Statistica da impostare come modificatore di razza. */
-    public void setModificatori(Statistica modificatori) {
-        this.modificatori = modificatori;
-    }
+    public void setModificatori(Statistica modificatori) { this.modificatori = modificatori; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setDescrizione(String descrizione) {
-        this.descrizione = descrizione;
-    }
-
+    /**
+     * Restituisce la rappresentazione testuale della razza.
+     *
+     * @return il nome della razza.
+     */
     @Override
     public String toString(){
         return nome;

@@ -22,7 +22,8 @@ import java.util.HashMap;
  * di un utente con ruolo Giocatore. Gestisce l'iscrizione alle campagne, la creazione e il salvataggio
  * dei personaggi, l'aggiornamento in tempo reale delle risorse (punti vita, mana ed oro).
  * </p>
- * * @author Riccardi Carmine
+ *
+ * @author Riccardi Carmine
  * @author Pontillo Salvatore
  */
 public class ImplementazionePostgresGiocatore implements GiocatoreDao {
@@ -44,7 +45,7 @@ public class ImplementazionePostgresGiocatore implements GiocatoreDao {
 
         try {
             Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement stmt = conn.prepareStatement(query) ;
+            PreparedStatement stmt = conn.prepareStatement(query);
 
             stmt.setInt(1, codUtente);
             stmt.setInt(2, codCampagna);
@@ -60,7 +61,7 @@ public class ImplementazionePostgresGiocatore implements GiocatoreDao {
     /**
      * Esegue il salvataggio atomico di un personaggio e delle sue statistiche base associate.
      * <p>
-     * Sfrutta una query prima il record nella tabella {@code PERSONAGGIO}, recuperare l'ID autogenerato tramite
+     * Sfrutta una query per inserire prima il record nella tabella {@code PERSONAGGIO}, recuperare l'ID autogenerato tramite
      * {@code RETURNING CodPersonaggio} e inserire immediatamente dopo i valori iniziali
      * all'interno della tabella {@code STATISTICA}.
      * L'ID finale viene recuperato e assegnato direttamente all'oggetto in memoria.
@@ -89,9 +90,8 @@ public class ImplementazionePostgresGiocatore implements GiocatoreDao {
         RETURNING CodPersonaggio;
         """;
 
-        try(Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement stmt = conn.prepareStatement(query);) {
-
+        try (Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement stmt = conn.prepareStatement(query)) {
 
             // Parametri per la tabella PERSONAGGIO
             stmt.setString(1, pg.getNome());
@@ -151,10 +151,10 @@ public class ImplementazionePostgresGiocatore implements GiocatoreDao {
         String queryStat = "UPDATE STATISTICA SET HpAttuali = ?, ManaAttuali = ? WHERE CodPersonaggio = ?";
         String queryOro = "UPDATE PERSONAGGIO SET Oro = ? WHERE CodPersonaggio = ?";
 
-        try{
+        try {
             Connection conn = ConnessioneDatabase.getInstance().connection;
-             PreparedStatement stmtStat = conn.prepareStatement(queryStat);
-             PreparedStatement stmtOro = conn.prepareStatement(queryOro);
+            PreparedStatement stmtStat = conn.prepareStatement(queryStat);
+            PreparedStatement stmtOro = conn.prepareStatement(queryOro);
 
             // Update Statistiche
             stmtStat.setInt(1, pg.getHpCorrenti());
@@ -207,57 +207,57 @@ public class ImplementazionePostgresGiocatore implements GiocatoreDao {
                 "WHERE isc.CodUtente = ?";
 
 
-        try(Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement pstmt = conn.prepareStatement(query);) {
+        try (Connection conn = ConnessioneDatabase.getInstance().connection;
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setInt(1, codUtente);
 
             ResultSet rs = pstmt.executeQuery();
-                while (rs.next()) {
-                    // 1. Ricostruzione Campagna (sempre presente)
-                    int idCampagna = rs.getInt("id_campagna");
-                    String nomeCampagna = rs.getString("nome_campagna");
-                    int maxGiocatori = rs.getInt("max_g");
-                    String statoCampagnaStr = rs.getString("stato_campagna");
-                    boolean isIniziata = (statoCampagnaStr != null && statoCampagnaStr.equals("Iniziata"));
+            while (rs.next()) {
+                // 1. Ricostruzione Campagna (sempre presente)
+                int idCampagna = rs.getInt("id_campagna");
+                String nomeCampagna = rs.getString("nome_campagna");
+                int maxGiocatori = rs.getInt("max_g");
+                String statoCampagnaStr = rs.getString("stato_campagna");
+                boolean isIniziata = (statoCampagnaStr != null && statoCampagnaStr.equals("Iniziata"));
 
-                    Campagna campagna = new Campagna(idCampagna, nomeCampagna, maxGiocatori, isIniziata, null);
+                Campagna campagna = new Campagna(idCampagna, nomeCampagna, maxGiocatori, isIniziata, null);
 
-                    Personaggio personaggio = null;
+                Personaggio personaggio = null;
 
-                    // 2. Verifica esistenza Personaggio
-                    if (rs.getInt("id_pg") != 0) {
-                        Classe classe = new Classe(rs.getInt("id_classe"), rs.getString("nome_classe"));
-                        Razza razza = new Razza(rs.getInt("id_razza"), rs.getString("nome_razza"));
+                // 2. Verifica esistenza Personaggio
+                if (rs.getInt("id_pg") != 0) {
+                    Classe classe = new Classe(rs.getInt("id_classe"), rs.getString("nome_classe"));
+                    Razza razza = new Razza(rs.getInt("id_razza"), rs.getString("nome_razza"));
 
-                        Statistica statBase = new Statistica(
-                                rs.getInt("cost"),
-                                rs.getInt("forza"),
-                                rs.getInt("destrezza"),
-                                rs.getInt("intel"),
-                                rs.getInt("fede"),
-                                rs.getInt("carisma"),
-                                rs.getInt("fortuna"),
-                                rs.getInt("hp_max"),
-                                rs.getInt("mana_max")
-                        );
+                    Statistica statBase = new Statistica(
+                            rs.getInt("cost"),
+                            rs.getInt("forza"),
+                            rs.getInt("destrezza"),
+                            rs.getInt("intel"),
+                            rs.getInt("fede"),
+                            rs.getInt("carisma"),
+                            rs.getInt("fortuna"),
+                            rs.getInt("hp_max"),
+                            rs.getInt("mana_max")
+                    );
 
-                        personaggio = new Personaggio(
-                                rs.getInt("id_pg"),
-                                rs.getString("nome_pg"),
-                                classe,
-                                razza,
-                                statBase,
-                                rs.getInt("hp_att"),
-                                rs.getInt("mana_att"),
-                                rs.getInt("oro"),
-                                rs.getInt("punti"),
-                                rs.getBoolean("is_pg")
-                        );
-                    }
-
-                    mappaPartecipazioni.put(campagna, personaggio);
+                    personaggio = new Personaggio(
+                            rs.getInt("id_pg"),
+                            rs.getString("nome_pg"),
+                            classe,
+                            razza,
+                            statBase,
+                            rs.getInt("hp_att"),
+                            rs.getInt("mana_att"),
+                            rs.getInt("oro"),
+                            rs.getInt("punti"),
+                            rs.getBoolean("is_pg")
+                    );
                 }
+
+                mappaPartecipazioni.put(campagna, personaggio);
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -266,6 +266,4 @@ public class ImplementazionePostgresGiocatore implements GiocatoreDao {
 
         return mappaPartecipazioni;
     }
-
-
 }

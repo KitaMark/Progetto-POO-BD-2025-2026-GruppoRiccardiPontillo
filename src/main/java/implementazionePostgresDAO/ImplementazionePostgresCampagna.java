@@ -29,6 +29,9 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
      * Recupera tutte le campagne presenti nel database e popola la mappa fornita in input all'avvio.
+     *
+     * @param listaCampagne La mappa (generalmente vuota all'avvio) da popolare con le campagne lette e i rispettivi Master.
+     * @throws RuntimeException se si verifica un errore durante l'esecuzione della query.
      */
     @Override
     public void leggiCampagne(HashMap<Campagna, Master> listaCampagne) {
@@ -71,6 +74,11 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
      * Inserisce una nuova campagna di gioco all'interno del database generata dal Master.
+     *
+     * @param campagna l'oggetto Campagna da persistere nel database.
+     * @return L'identificativo univoco (ID) assegnato alla campagna autogenerato dal DB.
+     * @throws NomeCampagnaInUsoException se si tenta di inserire un nome campagna già registrato.
+     * @throws RuntimeException se un qualsiasi altro errore SQL blocca l'inserimento.
      */
     @Override
     public int creaCampagna(Campagna campagna) throws NomeCampagnaInUsoException {
@@ -105,7 +113,11 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
     }
 
     /**
-     * Rimuove definitivamente una campagna dal database partendo dal suo nome univoco.
+     * Rimuove definitivamente una campagna dal database partendo dal suo ID univoco in RAM.
+     *
+     * @param campagnaTarget L'oggetto campagna da eliminare dal database.
+     * @throws DatiMancantiException se la campagna risulta assente e la cancellazione non coinvolge righe.
+     * @throws RuntimeException se un problema SQL impedisce l'eliminazione.
      */
     @Override
     public void eliminaCampagna(Campagna campagnaTarget) throws DatiMancantiException {
@@ -130,6 +142,11 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
      * Carica i personaggi appartenenti a una specifica campagna filtrandoli per tipologia (PG o PnG).
+     *
+     * @param listaPersonaggi la lista in RAM in cui inserire i personaggi letti.
+     * @param isPg            il flag booleano per definire se cercare Personaggi Giocanti (true) o Non Giocanti (false).
+     * @param nomeCampagna    il nome identificativo della campagna.
+     * @throws DatiMancantiException se occorre un errore durante l'esecuzione della query.
      */
     @Override
     public void leggiListaPersonaggi(List<Personaggio> listaPersonaggi, boolean isPg, String nomeCampagna) throws DatiMancantiException {
@@ -196,6 +213,10 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
      * Carica i giocatori che partecipano a una campagna specifica per la dashboard del Master.
+     *
+     * @param partecipanti La lista dove verranno salvati i giocatori estratti dal database.
+     * @param nomeCampagna Il nome della campagna di riferimento per effettuare il filtraggio.
+     * @throws DatiMancantiException se accade un errore in query o desincronizzazione dati.
      */
     @Override
     public void leggiGiocatori(List<Giocatore> partecipanti, String nomeCampagna) throws DatiMancantiException {
@@ -244,6 +265,9 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
      * Carica il catalogo degli oggetti disponibili per una specifica campagna.
+     *
+     * @param idCampagna l'identificativo numerico della campagna di appartenenza.
+     * @return una lista contenente tutti gli oggetti di pertinenza.
      */
     @Override
     public List<Oggetto> caricaCatalogoNegozio(int idCampagna) {
@@ -291,6 +315,9 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
      * Recupera l'elenco delle Razze abilitate per una specifica campagna.
+     *
+     * @param lista la lista di destinazione per gli oggetti in RAM.
+     * @param idCampagna l'identificativo della campagna associata.
      */
     @Override
     public void leggiListaRazze(List<Razza> lista, int idCampagna) {
@@ -332,6 +359,9 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
 
     /**
      * Recupera l'elenco delle Classi previste in una specifica campagna.
+     *
+     * @param lista la lista di destinazione in cui allocare in RAM le classi ritrovate.
+     * @param idCampagna l'identificativo della campagna di cui importare il database.
      */
     @Override
     public void leggiListaClassi(List<Classe> lista, int idCampagna) {
@@ -362,6 +392,12 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
         }
     }
 
+    /**
+     * Aggiorna lo stato logico della campagna su DB ("In Corso" oppure "Non Iniziata").
+     *
+     * @param id l'identificativo della campagna da modificare.
+     * @param stato un booleano (true=In Corso, false=Non Iniziata) da tradurre in stringa nel DB.
+     */
     @Override
     public void cambiaStato(int id, boolean stato) {
         String query = "UPDATE CAMPAGNA SET Stato = ? WHERE CodCampagna = ?";
@@ -380,6 +416,12 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
         }
     }
 
+    /**
+     * Esegue un conteggio dinamico lato database di quanti giocatori partecipano a una data campagna.
+     *
+     * @param codCampagna il codice della campagna da interrogare.
+     * @return il numero intero corrispondente alle righe presenti nella tabella ponte ISCRIZIONE.
+     */
     @Override
     public int contaPartecipanti(int codCampagna) {
         String query = "SELECT COUNT(*) FROM ISCRIZIONE WHERE CodCampagna = ?";

@@ -25,7 +25,6 @@ import model.Classe;
  */
 public class ImplementazionePostgresAbilita implements AbilitaDao {
 
-
     /**
      * Registra nel database l'apprendimento di una nuova abilità da parte di un personaggio.
      * <p>
@@ -47,7 +46,7 @@ public class ImplementazionePostgresAbilita implements AbilitaDao {
             PreparedStatement stmt = conn.prepareStatement(query);
 
             stmt.setInt(1, codPersonaggio);
-           stmt.setString(2, nomeAbilita);
+            stmt.setString(2, nomeAbilita);
 
             stmt.executeUpdate();
 
@@ -109,7 +108,7 @@ public class ImplementazionePostgresAbilita implements AbilitaDao {
                 "WHERE pa.CodPersonaggio = ?";
 
         try (Connection conn = ConnessioneDatabase.getInstance().connection;
-              PreparedStatement stmt = conn.prepareStatement(query);){
+             PreparedStatement stmt = conn.prepareStatement(query);){
             stmt.setInt(1, pg.getId());
             ResultSet rs = stmt.executeQuery();
 

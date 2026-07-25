@@ -73,7 +73,7 @@ public class ImplementazionePostgresOggetto implements OggettoDao {
      * Salva un nuovo oggetto di tipo Equipaggiabile nel database.
      *
      * @param equip L'oggetto contenente i bonus statistici.
-     * @param idCampagna      L'ID della campagna di riferimento.
+     * @param idCampagna L'ID della campagna di riferimento.
      * @return L'ID univoco autogenerato per l'oggetto creato.
      */
     @Override

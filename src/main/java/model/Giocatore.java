@@ -1,7 +1,6 @@
 package model;
 
 import java.util.HashMap;
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -24,10 +23,10 @@ public class Giocatore extends Utente {
     }
 
     /**
-     * costruttore d'appoggio creato appositamente per il Dao
+     * Costruttore d'appoggio creato appositamente per il DAO.
      *
-     * @param id  identificativo della classe di un pg nel database
-     * @param email l'indirizzo email dell'account.
+     * @param id       identificativo dell'utente nel database.
+     * @param email    l'indirizzo email dell'account.
      * @param username lo username univoco dell'utente.
      * @param password la password di accesso.
      */
@@ -36,8 +35,7 @@ public class Giocatore extends Utente {
         this.listaPartecipazioni = new HashMap<>();
     }
 
-
-    /** @return una vista  modificabile della mappa delle campagne a cui partecipa con i relativi personaggi. */
+    /** @return una vista modificabile della mappa delle campagne a cui partecipa con i relativi personaggi. */
     public Map<Campagna, Personaggio> getListaPartecipazioni() {
         return listaPartecipazioni;
     }
@@ -45,7 +43,7 @@ public class Giocatore extends Utente {
     /**
      * Associa al giocatore l'elenco completo delle sue partecipazioni alle campagne.
      * <p>
-     *  Questo metodo viene richiamato dal Controller.subito dopo la fase di Login. Permette di trasferire i dati del giocatore
+     * Questo metodo viene richiamato dal Controller subito dopo la fase di Login. Permette di trasferire i dati del giocatore
      * (quali campagne sta giocando e con quali personaggi) recuperati dal Database tramite il DAO
      * direttamente all'interno dell'oggetto in memoria, rendendoli immediatamente
      * disponibili per le tabelle della Dashboard.
@@ -59,8 +57,9 @@ public class Giocatore extends Utente {
 
     /**
      * Recupera il personaggio associato a una specifica campagna.
+     *
      * @param campagna la campagna in cui cercare.
-     * @return Il Personaggio associato, oppure null se non trovato.
+     * @return Il Personaggio associato, oppure {@code null} se non trovato.
      */
     public Personaggio getPersonaggioInCampagna(Campagna campagna) {
         return listaPartecipazioni.get(campagna);
@@ -68,6 +67,9 @@ public class Giocatore extends Utente {
 
     /**
      * Metodo di utilità per il DAO per associare una campagna e il relativo personaggio.
+     *
+     * @param campagna    la campagna a cui il giocatore partecipa.
+     * @param personaggio il personaggio associato alla campagna.
      */
     public void addPartecipazioneDati(Campagna campagna, Personaggio personaggio) {
         if (this.listaPartecipazioni == null) {

@@ -9,8 +9,25 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Implementazione PostgreSQL dell'interfaccia {@link RazzaDao}.
+ * <p>
+ * Serve ad approvvigionare l'ecosistema con nuove razze editate per conto del master,
+ * registrandone l'apporto valoriale ai parametri fisici per un intero set di personaggi futuri.
+ * </p>
+ */
 public class ImplementazionePostgresRazza implements RazzaDao {
 
+    /**
+     * Esporta un'istanza compilata in RAM di una Razza e tutti i suoi correlati
+     * modificatori in riga SQL sul Database associandovi la campagna madre.
+     *
+     * @param razza       l'istanza base della Razza.
+     * @param descrizione stringa esplicativa o narrativa del ceppo in oggetto.
+     * @param idCampagna  codice che assicura che il dato venga importato e visibile unicamente per tale istanza.
+     * @return id intero che contrassegna definitivamente in PK la razza immessa.
+     * @throws Exception qualora insorgessero fallimenti legati all'instaurazione o stesura sul database.
+     */
     @Override
     public int salvaRazza(Razza razza, String descrizione, int idCampagna) throws Exception {
         String query = "INSERT INTO RAZZA " +

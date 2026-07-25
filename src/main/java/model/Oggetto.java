@@ -1,5 +1,7 @@
 package model;
 
+import java.util.Objects;
+
 /**
  * Classe astratta base per la rappresentazione di un oggetto di gioco.
  * Definisce i parametri strutturali comuni quali il costo monetario e il nome.
@@ -10,6 +12,7 @@ public abstract class Oggetto {
     private int costo;
     private String tipo; // 'Equipaggiamento' o 'Consumabile'
     private boolean equipaggiato;
+
     /**
      * Costruttore per l'inizializzazione delle proprietà comuni dell'oggetto.
      *
@@ -21,9 +24,8 @@ public abstract class Oggetto {
         this.nome = nome;
     }
 
-
     /**
-     * Costruttore d'appoggio per l'oggetto creato per il database
+     * Costruttore d'appoggio per l'oggetto creato per il database.
      *
      * @param id    l'identificativo univoco dell'oggetto nel database.
      * @param nome  il nome dell'oggetto.
@@ -38,74 +40,44 @@ public abstract class Oggetto {
         this.equipaggiato = false;
     }
 
+    /** @return l'ID dell'oggetto generato dal database. */
+    public int getId() { return id; }
+
+    /** @return il nome dell'oggetto. */
+    public String getNome() { return nome; }
 
     /** @return il costo in oro dell'oggetto. */
     public int getCosto() { return costo; }
 
-    /** @return il nome dell'oggetto. */
-    public String getNome() {
-        return nome;
-    }
+    /** @return una stringa che rappresenta il tipo (es. "Equipaggiamento" o "Consumabile").*/
+    public String getTipo() { return tipo; }
 
-    /** @return l'ID dell'oggetto generato dal database. */
-    public int getId() {
-        return id;
-    }
-
+    /** @return {@code true} se l'oggetto è equipaggiato, {@code false} se si trova solo nell'inventario. */
+    public boolean isEquipaggiato() { return equipaggiato; }
 
     /**
      * Imposta l'identificativo univoco dell'oggetto.
      *
      * @param id il nuovo ID da assegnare all'oggetto.
      */
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    /** @return una stringa che rappresenta il tipo (es. "Equipaggiamento" o "Consumabile").*/
-    public String getTipo() {
-        return tipo;
-    }
-
+    public void setId(int id) { this.id = id; }
 
     /**
      * Imposta la tipologia dell'oggetto.
      *
      * @param tipo la stringa che definisce il tipo dell'oggetto.
      */
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
-
-    /** @return {@code true} se l'oggetto è equipaggiato, {@code false} se si trova solo nell'inventario. */
-    public boolean isEquipaggiato() {
-        return equipaggiato;
-    }
-
+    public void setTipo(String tipo) { this.tipo = tipo; }
 
     /**
      * Imposta lo stato di equipaggiamento dell'oggetto.
      *
      * @param equipaggiato {@code true} per equipaggiare l'oggetto, {@code false} per riporlo.
      */
-    public void setEquipaggiato(boolean equipaggiato) {
-        this.equipaggiato = equipaggiato;
-    }
+    public void setEquipaggiato(boolean equipaggiato) { this.equipaggiato = equipaggiato; }
 
     /**
-     * Restituisce la rappresentazione in formato stringa delle proprietà dell'oggetto.
-     *
-     * @return stringa formattata contenente nome e costo.
-     */
-    @Override
-    public String toString() {
-        return String.format("Nome: %s%n Costo: %d%n", nome, costo);
-    }
-
-
-
-    /**
-     * Confronta questo oggetto con un altro per stabilirne l'uguaglianza-.
+     * Confronta questo oggetto con un altro per stabilirne l'uguaglianza.
      * <p>
      * Due istanze di {@link Oggetto} sono considerate identiche se condividono lo stesso
      * identificativo univoco (ID) proveniente dal database, indipendentemente dall'istanza in memoria.
@@ -116,16 +88,9 @@ public abstract class Oggetto {
      */
     @Override
     public boolean equals(Object o) {
-        // Se è esattamente lo stesso oggetto in memoria, è uguale
         if (this == o) return true;
-
-        // Se l'altro oggetto è nullo o di una classe diversa, non è uguale
         if (o == null || getClass() != o.getClass()) return false;
-
-        //cast a Oggetto
         Oggetto oggetto = (Oggetto) o;
-
-        // Due oggetti sono la stessa cosa se hanno lo stesso Identificativo (id)
         return this.id == oggetto.id;
     }
 
@@ -140,7 +105,16 @@ public abstract class Oggetto {
      */
     @Override
     public int hashCode() {
-        // Genera un codice univoco basato sull'ID dell'oggetto
-        return java.util.Objects.hash(id);
+        return Objects.hash(id);
+    }
+
+    /**
+     * Restituisce la rappresentazione in formato stringa delle proprietà dell'oggetto.
+     *
+     * @return stringa formattata contenente nome e costo.
+     */
+    @Override
+    public String toString() {
+        return String.format("Nome: %s%n Costo: %d%n", nome, costo);
     }
 }

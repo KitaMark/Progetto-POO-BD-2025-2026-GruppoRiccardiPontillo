@@ -90,7 +90,6 @@ public class ImplementazionePostgresUtente implements UtenteDAO {
             while (rs.next()) {
                 int idDb = rs.getInt("codutente");
                 String usernameDb = rs.getString("username");
-                // DEBUG: Stampa cosa legge dal DB
                 System.out.println("DEBUG DAO: Ho letto dal DB ID=" + idDb + " per utente=" + usernameDb);
 
                 String emailDb = rs.getString("email");

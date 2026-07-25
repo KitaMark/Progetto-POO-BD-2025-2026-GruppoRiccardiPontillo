@@ -1,8 +1,6 @@
 package model;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -44,14 +42,14 @@ public class Campagna {
     }
 
     /**
-     * Crea una nuova campagna di gioco in stato non iniziata.
+     * Crea una nuova campagna di gioco in stato non iniziata (costruttore per il DAO).
      *
-     * @param id l'identificativo univoco della campagna nel db
+     * @param id           l'identificativo univoco della campagna nel db.
      * @param nome         il nome della campagna.
      * @param maxGiocatori il numero massimo di giocatori ammessi.
+     * @param isIniziata   lo stato di avanzamento della campagna.
      * @param master       il Master che gestisce la campagna.
      */
-
     public Campagna(int id, String nome, int maxGiocatori, boolean isIniziata, Master master) {
         this.id = id;
         this.nome = nome;
@@ -90,17 +88,17 @@ public class Campagna {
     /** @return la lista dei personaggi non giocanti (PnG) inseriti. */
     public ArrayList<Personaggio> getListaPnG() { return listaPnG; }
 
-    public ArrayList<Oggetto> getCatalogoOggetti() {
-        return catalogoOggetti;
-    }
+    /** @return la lista degli oggetti acquistabili nel negozio della campagna. */
+    public ArrayList<Oggetto> getCatalogoOggetti() { return catalogoOggetti; }
 
-    public ArrayList<Razza> getListaRazze() {
-        return listaRazze;
-    }
+    /** @return la lista delle razze disponibili per la creazione dei personaggi in questa campagna. */
+    public ArrayList<Razza> getListaRazze() { return listaRazze; }
 
-    public ArrayList<Classe> getListaClassi() {
-        return listaClassi;
-    }
+    /** @return la lista delle classi giocabili disponibili in questa campagna. */
+    public ArrayList<Classe> getListaClassi() { return listaClassi; }
+
+    /** @param id il nuovo identificativo univoco da assegnare alla campagna nel database. */
+    public void setId(int id) { this.id = id; }
 
     /** @param nome il nuovo nome da assegnare alla campagna. */
     public void setNome(String nome) { this.nome = nome; }
@@ -120,10 +118,13 @@ public class Campagna {
     /** @param listaPnG la nuova lista di personaggi non giocanti. */
     public void setListaPnG(ArrayList<Personaggio> listaPnG) { this.listaPnG = listaPnG; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
+    /**
+     * Confronta questa campagna con un altro oggetto per stabilirne l'uguaglianza.
+     * L'uguaglianza è basata sull'ID (se presente) o sul nome case-insensitive.
+     *
+     * @param o L'oggetto da confrontare.
+     * @return {@code true} se le campagne sono considerate identiche, {@code false} altrimenti.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -140,10 +141,13 @@ public class Campagna {
         return false;
     }
 
+    /**
+     * Genera un codice hash per la campagna basato sul nome o sull'ID.
+     *
+     * @return il codice hash generato.
+     */
     @Override
     public int hashCode() {
-        // Usare il nome in minuscolo garantisce la coerenza dell'hash
-        // sia prima che dopo l'assegnazione dell'ID dal DB
         return this.nome != null ? this.nome.trim().toLowerCase().hashCode() : Objects.hash(id);
     }
 }

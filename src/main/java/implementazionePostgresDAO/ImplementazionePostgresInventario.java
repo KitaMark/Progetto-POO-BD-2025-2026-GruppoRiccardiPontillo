@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * Implementazione specifica per PostgreSQL dell'interfaccia {@link InventarioDao}.
  * <p>
- * Questa classe gestisce la persistenza, il recupero e le transazioni  legate agli oggetti di gioco.
+ * Questa classe gestisce la persistenza, il recupero e le transazioni legate agli oggetti di gioco.
  * Coordina l'interazione tra le tabelle {@code OGGETTO}, {@code INVENTARIO} e {@code PERSONAGGIO}.
  * </p>
  *
@@ -25,6 +25,17 @@ import java.util.Map;
  */
 public class ImplementazionePostgresInventario implements InventarioDao {
 
+    /**
+     * Ricostruisce lo zaino in memoria di un giocatore interrogando il database.
+     * <p>
+     * Effettua una join multipla per instradare a RAM tutte le differenziazioni
+     * (consumabile, equipaggiabile) relative agli oggetti presenti nella tabella ponte.
+     * </p>
+     *
+     * @param idPersonaggio l'identificativo del proprietario dello zaino.
+     * @return Una mappa strutturata che usa come chiavi gli {@link Oggetto} polimorfici e come valore la rispettiva quantità.
+     * @throws RuntimeException se insorgono errori di rete col DB in fase di lettura.
+     */
     @Override
     public Map<Oggetto, Integer> caricaInventarioPersonaggio(int idPersonaggio) {
         Map<Oggetto, Integer> inv = new HashMap<>();

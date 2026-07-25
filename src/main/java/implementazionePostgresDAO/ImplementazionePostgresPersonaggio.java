@@ -10,7 +10,21 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Implementazione PostgreSQL dell'interfaccia {@link PersonaggioDAO}.
+ * <p>
+ * Consente aggiornamenti mirati sul singolo personaggio come modifiche di statistiche base e
+ * supporta letture specializzate.
+ * </p>
+ */
 public class ImplementazionePostgresPersonaggio implements PersonaggioDAO {
+
+    /**
+     * Sovrascrive permanentemente la striscia statistica completa di uno specifico personaggio nel DB.
+     *
+     * @param idPersonaggio il codice del personaggio alterato da applicare alla clausola where.
+     * @param modifiche     l'oggetto statistica recante i nuovi valori ricalcolati in base ai punti.
+     */
     public void aggiornaStatistichePersonaggio(int idPersonaggio, Statistica modifiche) {
         String query = """
     UPDATE statistica
@@ -56,6 +70,13 @@ public class ImplementazionePostgresPersonaggio implements PersonaggioDAO {
         }
     }
 
+    /**
+     * Interroga la base di dati e ottiene una scansione preliminare del file di inventario
+     * a uso debuggistico e di fetch generico.
+     *
+     * @param idPersonaggio l'id del personaggio dal quale fetchare la join tra le tabelle di riferimento.
+     * @param personaggio   l'oggetto istanziato che recepirà gli ingressi parsati dal reader sql.
+     */
     public void leggiInventarioPersonaggio(int idPersonaggio, Personaggio personaggio){
         String query = """
                 SELECT o.*
@@ -67,9 +88,9 @@ public class ImplementazionePostgresPersonaggio implements PersonaggioDAO {
             PreparedStatement stmt = conn.prepareStatement(query);){
             stmt.setInt(1, idPersonaggio);
             try(ResultSet rs = stmt.executeQuery()){
-               while(rs.next()){
-                   //TODO
-               }
+                while(rs.next()){
+                    //TODO
+                }
             } catch(SQLException ex){
                 ex.printStackTrace();
                 System.err.println("DEBUG: Errore durante la lettura dell'inventario.");
@@ -78,6 +99,5 @@ public class ImplementazionePostgresPersonaggio implements PersonaggioDAO {
             ex.printStackTrace();
             System.err.println("DEBUG: Errore connessione a db per lettura inventario.");
         }
-
     }
 }
