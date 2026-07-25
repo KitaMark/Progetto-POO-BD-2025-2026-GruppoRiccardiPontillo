@@ -320,18 +320,16 @@ public class Controller {
         System.out.println("Apertura finestra di modifica statistiche per: " + nomePersonaggio);
     }
 
-    public void assegnaPuntiStatistica(String nomePersonaggio, String nomeProprietario, int quantitaPunti) throws PersonaggioNonTrovatoException, RuntimeException {
+    public void assegnaPuntiStatistica(int idPersonaggio, boolean isPg, int quantitaPunti) throws PersonaggioNonTrovatoException, RuntimeException {
         if(quantitaPunti < 0) throw new RuntimeException("Non è possibile assegnare valori negativi.");
-        Personaggio personaggio = cercaPg(nomePersonaggio, nomeProprietario);
-        personaggio.addPuntiStatistica(quantitaPunti);
-        masterDAO.assegnaPuntiStatistica(personaggio, quantitaPunti);
-    }
-
-    public void creaPnG(String nomePnG, String razza) throws NomeMancantePngException {
-        if (nomePnG == null || nomePnG.trim().isEmpty()) {
-            throw new NomeMancantePngException("Il nome del PnG non può essere vuoto.");
+        try {
+            Personaggio personaggio = cercaPersonaggio(idPersonaggio, isPg);
+            personaggio.addPuntiStatistica(quantitaPunti);
+            masterDAO.assegnaPuntiStatistica(personaggio.getId(), quantitaPunti);
+            personaggio.ricalcolaStatisticheFinali();
+        } catch(Exception ex){
+            throw new RuntimeException(ex.getMessage());
         }
-        System.out.println("Nuovo PnG creato: " + nomePnG + " (Simulazione)");
     }
 
     /**
@@ -958,4 +956,29 @@ public class Controller {
         nuovaClasse.setId(idGenerato);
         campagnaAttiva.getListaClassi().add(nuovaClasse);
     }
+
+    public void rimuoviGiocatoreDaCampagna(int idGiocatore){
+        Giocatore daRimuovere = (Giocatore) cercaUtentePerId(idGiocatore);
+        if(daRimuovere == null) throw new GiocatoreNonTrovatoException("Giocatore non esistente.");
+        if(!campagnaAttiva.getPartecipanti().contains(daRimuovere)) throw new GiocatoreNonTrovatoException("Il giocatore selezionato non è iscritto a questa campagna.");
+        Personaggio pgDaRimuovere = daRimuovere.getPersonaggioInCampagna(campagnaAttiva);
+        try {
+            masterDAO.rimuoviGiocatore(idGiocatore, campagnaAttiva.getId());
+            daRimuovere.getListaPartecipazioni().remove(campagnaAttiva);
+            campagnaAttiva.getListaPG().remove(pgDaRimuovere);
+            campagnaAttiva.getPartecipanti().remove(daRimuovere);
+        } catch(RuntimeException ex){
+            if(ex.getMessage() == null|| ex.getMessage().trim().isEmpty()) throw new RuntimeException("Impossibile aggiornare i dati in memoria.");
+            throw new RuntimeException(ex.getMessage());
+        }
+
+    }
+
+    private Utente cercaUtentePerId(int id){
+        for(Utente utente : listaUtenti){
+            if(utente.getId() == id) return utente;
+        }
+        return null;
+    }
+
 }

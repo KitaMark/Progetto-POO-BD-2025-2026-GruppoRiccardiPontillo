@@ -37,9 +37,9 @@ public class Giocatore extends Utente {
     }
 
 
-    /** @return una vista non modificabile della mappa delle campagne a cui partecipa con i relativi personaggi. */
+    /** @return una vista  modificabile della mappa delle campagne a cui partecipa con i relativi personaggi. */
     public Map<Campagna, Personaggio> getListaPartecipazioni() {
-        return Collections.unmodifiableMap(listaPartecipazioni);
+        return listaPartecipazioni;
     }
 
     /**

@@ -207,9 +207,9 @@ public class ImplementazionePostgresGiocatore implements GiocatoreDao {
                 "WHERE isc.CodUtente = ?";
 
 
-        try {
-            Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement pstmt = conn.prepareStatement(query);
+        try(Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement pstmt = conn.prepareStatement(query);) {
+
             pstmt.setInt(1, codUtente);
 
             ResultSet rs = pstmt.executeQuery();

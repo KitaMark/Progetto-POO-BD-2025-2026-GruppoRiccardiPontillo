@@ -201,7 +201,7 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
     public void leggiGiocatori(List<Giocatore> partecipanti, String nomeCampagna) throws DatiMancantiException {
         partecipanti.clear();
 
-        String query = "SELECT u.CodUtente, u.Username, u.Email, u.Password, p.CodPersonaggio " +
+        String query = "SELECT u.CodUtente, u.Username, u.Email, u.Password, p.CodPersonaggio, c.CodCampagna " +
                 "FROM UTENTE u " +
                 "JOIN ISCRIZIONE i ON u.CodUtente = i.CodUtente " +
                 "JOIN CAMPAGNA c ON i.CodCampagna = c.CodCampagna " +
@@ -221,13 +221,14 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                         String email = rs.getString("Email");
                         String password = rs.getString("Password");
                         int idPersonaggio = rs.getInt("CodPersonaggio");
+                        int idCampagna = rs.getInt("CodCampagna");
 
                         Giocatore giocatore = new Giocatore(email, username, password);
                         giocatore.setId(idGiocatore);
 
                         if (idPersonaggio != 0) {
                             Personaggio pgFittizio = new Personaggio(idPersonaggio, null, null, null, null, 0, 0, 0, 0, true);
-                            Campagna campagnaFittizia = new Campagna(nomeCampagna, 0, null);
+                            Campagna campagnaFittizia = new Campagna(idCampagna, nomeCampagna, 0, false, null);
                             giocatore.addPartecipazioneDati(campagnaFittizia, pgFittizio);
                         }
 

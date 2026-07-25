@@ -3,6 +3,7 @@ package model;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * Rappresenta una campagna di gioco.
@@ -123,58 +124,26 @@ public class Campagna {
         this.id = id;
     }
 
-    /**
-     * Confronta questa campagna con un altro oggetto per stabilire se sono logicamente uguali.
-     * <p>
-     * Sovrascrivendo questo metodo, diciamo che due istanze diverse di
-     * {@link Campagna} devono essere considerate "la stessa campagna" se hanno lo stesso {@code nome},
-     * ignorando eventuali differenze tra lettere maiuscole e minuscole.
-     * </p>
-     *
-     * @param o L'oggetto da confrontare con questa campagna.
-     * @return {@code true} se l'oggetto passato è una Campagna con lo stesso nome, altrimenti {@code false}.
-     */
     @Override
     public boolean equals(Object o) {
-        //Se è esattamente lo stesso oggetto in memoria, sono sicuramente uguali
-        if (this == o) {
-            return true;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-        //Se l'oggetto passato è nullo o appartiene a una classe diversa, non sono uguali
-        if (o == null || this.getClass() != o.getClass()) {
-            return false;
-        }
-
-        //Cast a Campagna
         Campagna campagna = (Campagna) o;
 
-        //Confronto vero e proprio del nome
-        if (this.nome != null) {
-            // Se il nome non è nullo, confrontiamo ignorando il maiuscolo/minuscolo
-            return this.nome.equalsIgnoreCase(campagna.nome);
-        } else {
-            // Se il nostro nome è nullo, sono uguali solo se anche l'altro nome è nullo
-            return campagna.nome == null;
+        if (this.id > 0 && campagna.id > 0) {
+            return this.id == campagna.id;
         }
+        if (this.nome != null && campagna.nome != null) {
+            return this.nome.trim().equalsIgnoreCase(campagna.nome.trim());
+        }
+        return false;
     }
 
-    /**
-     * Genera un codice numerico (hash) che identifica in modo univoco questa campagna in base al suo nome.
-     * <p>
-     *  Strutture dati come le {@code HashMap} usate nel Controller per memorizzare la lista delle campagne
-     *  usano questo numero per smistare e ritrovare velocemente gli oggetti. Se due campagne sono "uguali" secondo l'equals,
-     * devono per forza restituire lo stesso numero qui.
-     * </p>
-     *
-     * @return Il codice hash calcolato in base al nome (convertito in minuscolo per coerenza con l'equals).
-     */
     @Override
     public int hashCode() {
-        if (this.nome != null) {
-            return this.nome.toLowerCase().hashCode();
-        } else {
-            return 0;
-        }
+        // Usare il nome in minuscolo garantisce la coerenza dell'hash
+        // sia prima che dopo l'assegnazione dell'ID dal DB
+        return this.nome != null ? this.nome.trim().toLowerCase().hashCode() : Objects.hash(id);
     }
 }

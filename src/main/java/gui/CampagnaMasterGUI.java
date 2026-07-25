@@ -11,6 +11,7 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
 
 /**
  * Rappresenta il pannello di controllo dedicato al Master
@@ -107,6 +108,27 @@ public class CampagnaMasterGUI {
             }
         });
 
+        rimuoviPartecipantiButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int riga = partecipantiTable.getSelectedRow();
+                if(riga == -1){
+                    JOptionPane.showMessageDialog(frame, "Errore", "Seleziona un Giocatore da rimuovere.", JOptionPane.ERROR_MESSAGE);
+                }
+                String nomeGiocatore = (String)partecipantiTable.getValueAt(riga, 0);
+                int idGiocatore = (int)partecipantiTable.getModel().getValueAt(riga, 2);
+
+                try{
+                    controller.rimuoviGiocatoreDaCampagna(idGiocatore);
+                    JOptionPane.showMessageDialog(frame,  "Il giocatore "+nomeGiocatore+" è stato rimosso con successo!");
+                    inizializzaTabellaPG();
+                    inizializzaTabellaPartecipanti();
+                } catch(Exception ex){
+                    JOptionPane.showMessageDialog(frame, "Errore", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
         rimuoviPgButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -158,13 +180,13 @@ public class CampagnaMasterGUI {
                     return;
                 }
                 String nomePg = pgTable.getValueAt(riga, 0).toString();
-                String nomeProprietario = pgTable.getValueAt(riga, 1).toString();
+                int idPg = (int)pgTable.getModel().getValueAt(riga, 4);
                 String input = JOptionPane.showInputDialog(frame, "Quanti punti vuoi assegnare a " + nomePg + "?");
 
                 if (input != null && !input.trim().isEmpty()) {
                     try {
                         int punti = Integer.parseInt(input);
-                        controller.assegnaPuntiStatistica(nomePg, nomeProprietario, punti);
+                        controller.assegnaPuntiStatistica(idPg, true, punti);
                         JOptionPane.showMessageDialog(frame, "Punti assegnati con successo!");
                     } catch (NumberFormatException ex) {
                         JOptionPane.showMessageDialog(frame, "Inserisci un numero valido.", "Errore", JOptionPane.ERROR_MESSAGE);

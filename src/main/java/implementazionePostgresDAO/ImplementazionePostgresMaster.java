@@ -37,7 +37,7 @@ public class ImplementazionePostgresMaster implements MasterDAO {
     }
 
     @Override
-    public void assegnaPuntiStatistica(Personaggio personaggio, int quantitaPunti) {
+    public void assegnaPuntiStatistica(int idPersonaggio, int quantitaPunti) {
         String query = "UPDATE STATISTICA SET PuntiSpendere = PuntiSpendere + ? WHERE CodPersonaggio = ?";
 
         try(Connection conn = ConnessioneDatabase.getInstance().connection;
@@ -45,7 +45,7 @@ public class ImplementazionePostgresMaster implements MasterDAO {
 
 
             stmt.setInt(1, quantitaPunti);
-            stmt.setInt(2, personaggio.getId());
+            stmt.setInt(2, idPersonaggio);
             stmt.executeUpdate();
 
         } catch (SQLException e) {
@@ -111,17 +111,22 @@ public class ImplementazionePostgresMaster implements MasterDAO {
 
     @Override
     public void rimuoviGiocatore(int idGiocatore, int idCampagna) {
-        String query = "DELETE FROM PERSONAGGIO WHERE CodUtente = ? AND CodCampagna = ?"+
-        "DELETE FROM ISCRIZIONE WHERE CodUtente = ? AND CodCampagna = ?";
+        String deletePersonaggioQuery = "DELETE FROM PERSONAGGIO WHERE CodUtente = ? AND CodCampagna = ?";
+        String deleteIscrizioneQuery = "DELETE FROM ISCRIZIONE WHERE CodUtente = ? AND CodCampagna = ?";
 
-        try(Connection conn = ConnessioneDatabase.getInstance().connection;
-            PreparedStatement stmt = conn.prepareStatement(query)){
-            stmt.setInt(1, idGiocatore);
-            stmt.setInt(2, idCampagna);
-
-            stmt.setInt(3, idGiocatore);
-            stmt.setInt(4, idCampagna);
-            stmt.executeUpdate();
+        try(Connection conn = ConnessioneDatabase.getInstance().connection){
+            // Elimina dalla tabella dei personaggi
+            try (PreparedStatement stmtPersonaggio = conn.prepareStatement(deletePersonaggioQuery)) {
+                stmtPersonaggio.setInt(1, idGiocatore);
+                stmtPersonaggio.setInt(2, idCampagna);
+                stmtPersonaggio.executeUpdate();
+            }
+            //elimina l'iscrizione
+            try (PreparedStatement stmtIscrizione = conn.prepareStatement(deleteIscrizioneQuery)) {
+                stmtIscrizione.setInt(1, idGiocatore);
+                stmtIscrizione.setInt(2, idCampagna);
+                stmtIscrizione.executeUpdate();
+            }
         } catch (SQLException ex){
             ex.printStackTrace();
             System.err.println(ex.getMessage());
