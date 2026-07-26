@@ -14,5 +14,6 @@ public interface InventarioDao {
     void vendiOggetto(int codPersonaggio, int codOggetto, int ricavoOggetto);
     void impostaEquipaggiamento(int codPersonaggio, int codOggetto, boolean equipaggiato);
     void consumaOggetto(int codPersonaggio, int codOggetto);
+    void rimuoviOggetto(int codPersonaggio, int codOggetto);
 
 }

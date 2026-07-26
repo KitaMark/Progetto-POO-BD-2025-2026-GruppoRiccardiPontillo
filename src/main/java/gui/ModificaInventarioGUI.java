@@ -79,6 +79,51 @@ public class ModificaInventarioGUI extends JDialog {
         rimuoviButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                int tabSelezionata = tabbedPane.getSelectedIndex();
+                int riga = -1;
+                int idOggetto = -1;
+                String nomeOggetto = "";
+
+                if (tabSelezionata == 0) { // Consumabili
+                    riga = inventarioConsumabiliTable.getSelectedRow();
+                    if (riga != -1) {
+                        idOggetto = (int) inventarioConsumabiliTable.getModel().getValueAt(riga, 2);
+                        nomeOggetto = (String) inventarioConsumabiliTable.getModel().getValueAt(riga, 0);
+                    }
+                } else if (tabSelezionata == 1) { // Equipaggiabili
+                    riga = inventarioEquipaggiabiliTable.getSelectedRow();
+                    if (riga != -1) {
+                        idOggetto = (int) inventarioEquipaggiabiliTable.getModel().getValueAt(riga, 1);
+                        nomeOggetto = (String) inventarioEquipaggiabiliTable.getModel().getValueAt(riga, 0);
+                    }
+                }
+
+                if (riga == -1) {
+                    JOptionPane.showMessageDialog(ModificaInventarioGUI.this, "Seleziona un oggetto da rimuovere.", "Nessuna selezione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                int conferma = JOptionPane.showConfirmDialog(ModificaInventarioGUI.this,
+                        "Sei sicuro di voler rimuovere '" + nomeOggetto + "' dall'inventario?", "Conferma rimozione",
+                        JOptionPane.YES_NO_OPTION);
+
+                if (conferma == JOptionPane.YES_OPTION) {
+                    try {
+                        controller.rimuoviOggettoDaInventario(pg, idOggetto);
+                        JOptionPane.showMessageDialog(ModificaInventarioGUI.this, "'" + nomeOggetto + "' rimosso con successo!", "Rimozione completata", JOptionPane.INFORMATION_MESSAGE);
+                        inizializzaTabellaConsumabili();
+                        inizializzaTabellaEquipaggiabili();
+                    } catch (RuntimeException ex) {
+                        JOptionPane.showMessageDialog(ModificaInventarioGUI.this, "Errore durante la rimozione: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
+
+        aggiungiButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
             }
         });
     }

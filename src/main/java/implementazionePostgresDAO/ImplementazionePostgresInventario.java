@@ -33,7 +33,7 @@ public class ImplementazionePostgresInventario implements InventarioDao {
      * </p>
      *
      * @param idPersonaggio l'identificativo del proprietario dello zaino.
-     * @return Una mappa strutturata che usa come chiavi gli {@link Oggetto} polimorfici e come valore la rispettiva quantità.
+     * @return Una mappa strutturata che usa come chiavi gli {@oggettoconsumabile} polimorfici e come valore la rispettiva quantità.
      * @throws RuntimeException se insorgono errori di rete col DB in fase di lettura.
      */
     @Override
@@ -311,6 +311,84 @@ public class ImplementazionePostgresInventario implements InventarioDao {
 
         } catch (SQLException e) {
             throw new RuntimeException("Errore consumo: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Rimuove un oggetto dall'inventario di un personaggio.
+     * <p>
+     * Se l'oggetto è un consumabile con quantità maggiore di 1, decrementa la quantità.
+     * Altrimenti, rimuove completamente l'oggetto dall'inventario.
+     * Se l'oggetto è equipaggiato, lo disequipaggia prima di rimuoverlo.
+     * </p>
+     *
+     * @param pId l'identificativo del personaggio.
+     * @param oId l'identificativo dell'oggetto da rimuovere.
+     * @throws RuntimeException se si verifica un errore durante l'operazione.
+     */
+    @Override
+    public void rimuoviOggetto(int pId, int oId) {
+        String queryCheck = "SELECT quantita, equipaggiato, o.Tipo FROM INVENTARIO i JOIN OGGETTO o ON i.CodOggetto = o.CodOggetto WHERE codpersonaggio = ? AND i.codoggetto = ?";
+        String queryUpdateInv = "UPDATE INVENTARIO SET quantita = quantita - 1 WHERE codpersonaggio = ? AND codoggetto = ?";
+        String queryDelete = "DELETE FROM INVENTARIO WHERE codpersonaggio = ? AND codoggetto = ?";
+        String queryUnequip = "UPDATE INVENTARIO SET equipaggiato = FALSE WHERE codpersonaggio = ? AND codoggetto = ?";
+
+
+        Connection conn = null;
+        try {
+            conn = ConnessioneDatabase.getInstance().connection;
+            conn.setAutoCommit(false);
+
+            int quantita = 0;
+            boolean equipaggiato = false;
+            String tipoOggetto = null;
+
+            try (PreparedStatement stmtCheck = conn.prepareStatement(queryCheck)) {
+                stmtCheck.setInt(1, pId);
+                stmtCheck.setInt(2, oId);
+                ResultSet rs = stmtCheck.executeQuery();
+                if (rs.next()) {
+                    quantita = rs.getInt("quantita");
+                    equipaggiato = rs.getBoolean("equipaggiato");
+                    tipoOggetto = rs.getString("Tipo");
+                } else {
+                    throw new SQLException("Oggetto non presente nell'inventario.");
+                }
+            }
+
+            if (equipaggiato) {
+                try (PreparedStatement stmtUnequip = conn.prepareStatement(queryUnequip)) {
+                    stmtUnequip.setInt(1, pId);
+                    stmtUnequip.setInt(2, oId);
+                    stmtUnequip.executeUpdate();
+                }
+            }
+
+            if ("Consumabile".equalsIgnoreCase(tipoOggetto) && quantita > 1) {
+                try (PreparedStatement stmtUp = conn.prepareStatement(queryUpdateInv)) {
+                    stmtUp.setInt(1, pId);
+                    stmtUp.setInt(2, oId);
+                    stmtUp.executeUpdate();
+                }
+            } else {
+                try (PreparedStatement stmtDel = conn.prepareStatement(queryDelete)) {
+                    stmtDel.setInt(1, pId);
+                    stmtDel.setInt(2, oId);
+                    stmtDel.executeUpdate();
+                }
+            }
+
+            conn.commit();
+
+        } catch (SQLException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ignored) {}
+            }
+            throw new RuntimeException("Rimozione oggetto fallita: " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); } catch (SQLException ignored) {}
+            }
         }
     }
 }

@@ -1149,6 +1149,24 @@ public class Controller {
     }
 
     /**
+     * Rimuove un oggetto dall'inventario di un personaggio.
+     * Questa operazione aggiorna sia il database che lo stato in memoria del personaggio.
+     *
+     * @param pg Il personaggio dal cui inventario rimuovere l'oggetto.
+     * @param idOggetto L'ID dell'oggetto da rimuovere.
+     * @throws RuntimeException Se si verifica un errore durante la rimozione dell'oggetto.
+     */
+    public void rimuoviOggettoDaInventario(Personaggio pg, int idOggetto) {
+        try {
+            inventarioDAO.rimuoviOggetto(pg.getId(), idOggetto);
+            // Dopo la rimozione dal DB, riallinea l'inventario in memoria
+            leggiInventarioPersonaggio(pg);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Errore durante la rimozione dell'oggetto dall'inventario: " + e.getMessage());
+        }
+    }
+
+    /**
      * Recupera il catalogo del negozio filtrato per la campagna attiva.
      *
      * @return Una lista di Oggetti acquistabili in questa specifica campagna.
