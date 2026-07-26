@@ -1,11 +1,6 @@
 package gui;
 
 import controller.Controller;
-import exception.AbilitaGiaAppresaException;
-import exception.AbilitaNonSbloccabileException;
-import exception.AbilitaNonSelezionataException;
-import exception.PersonaggioNonTrovatoException;
-import model.Abilita;
 import model.Giocatore;
 import model.Master;
 import model.Personaggio;
@@ -70,6 +65,8 @@ public class CampagnaMasterGUI {
     // I due nuovi bottoni aggiunti nel pannello a griglia
     private JButton abilitaButton;
     private JButton oroButton;
+    private JButton assegnaAbilitaPngButton;
+    private JButton modificaInventarioButton;
 
     /**
      * Il Controller di riferimento per orchestrare tutte le logiche di modifica e gestione della campagna.
@@ -292,8 +289,8 @@ public class CampagnaMasterGUI {
                     );
 
                     if (scelta != null) {
-                        controller.assegnaAbilitaMaster(idPg, scelta);
-                        JOptionPane.showMessageDialog(frameChiamante, "Abilità appresa con successo!");
+                        controller.assegnaAbilitaMaster(idPg, scelta, true);
+                        JOptionPane.showMessageDialog(frameChiamante, "Abilità assegnata con successo!");
                     }
 
                 } catch (Exception ex) {
@@ -329,6 +326,53 @@ public class CampagnaMasterGUI {
             }
         });
 
+        assegnaAbilitaPngButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int riga = pngTable.getSelectedRow();
+                if (riga == -1) {
+                    JOptionPane.showMessageDialog(frameChiamante, "Seleziona un personaggio.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                int idPng = (int) pngTable.getModel().getValueAt(riga, 3);
+
+                try {
+                    Personaggio png = controller.cercaPersonaggio(idPng, false);
+
+                    controller.caricaAbilitaSbloccabiliPerClasse(png.getClasse());
+
+                    Object[] opzioniAbilita = new Object[png.getClasse().getAbilitaSbloccabili().size()];
+                    for (int i = 0; i < png.getClasse().getAbilitaSbloccabili().size(); i++) {
+                        opzioniAbilita[i] = png.getClasse().getAbilitaSbloccabili().get(i).getNome();
+                    }
+
+                    if (opzioniAbilita.length == 0) {
+                        JOptionPane.showMessageDialog(frameChiamante, "Nessuna abilità trovata per questa classe.", "Avviso", JOptionPane.INFORMATION_MESSAGE);
+                        return;
+                    }
+
+                    String scelta = (String) JOptionPane.showInputDialog(
+                            frameChiamante,
+                            "Seleziona un'abilità:",
+                            "Assegna Abilità",
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            opzioniAbilita,
+                            opzioniAbilita[0]
+                    );
+
+                    if (scelta != null) {
+                        controller.assegnaAbilitaMaster(idPng, scelta, false);
+                        JOptionPane.showMessageDialog(frameChiamante, "Abilità assegnata con successo!");
+                    }
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frameChiamante, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
         visualizzaDettagliPngButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -343,6 +387,27 @@ public class CampagnaMasterGUI {
                     controller.leggiInventarioPersonaggio(daVisualizzare);
                     controller.leggiAbilitaPersonaggio(daVisualizzare);
                     SchedaPersonaggioGUI schedapg = new SchedaPersonaggioGUI(frame, controller, false, daVisualizzare);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        modificaInventarioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int riga = pngTable.getSelectedRow();
+                if (riga == -1) {
+                    JOptionPane.showMessageDialog(frameChiamante, "Seleziona un personaggio.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                int idPng = (int) pngTable.getModel().getValueAt(riga, 3);
+                try{
+                    Personaggio daModificare = controller.cercaPersonaggio(idPng, false);
+                    controller.leggiInventarioPersonaggio(daModificare);
+                    ModificaInventarioGUI modificaInventarioGUI= new ModificaInventarioGUI(frame, controller, daModificare);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);

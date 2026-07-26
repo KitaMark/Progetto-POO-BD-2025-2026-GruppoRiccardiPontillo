@@ -54,6 +54,8 @@ public class SchedaPersonaggioGUI extends JDialog {
     private JPanel slotConsumabiliPane;
     private JScrollPane consumabiliPane;
     private JTable consumabiliTable;
+    private JLabel oroLabel;
+    private JLabel oroTesto;
 
     private Controller controller;
     private Personaggio pgAttivo;
@@ -130,6 +132,7 @@ public class SchedaPersonaggioGUI extends JDialog {
         fedeTesto.setText(String.valueOf(pgAttivo.getStatisticheFinali().getFede()));
         fortunaTesto.setText(String.valueOf(pgAttivo.getStatisticheFinali().getFortuna()));
         puntiTesto.setText(String.valueOf(pgAttivo.getPuntiStatistica()));
+        oroTesto.setText(String.valueOf(pgAttivo.getOro()));
     }
 
     private void inizializzaInventarioEquipaggiabili(){

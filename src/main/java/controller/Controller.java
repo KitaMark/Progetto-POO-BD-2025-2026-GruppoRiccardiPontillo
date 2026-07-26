@@ -790,19 +790,19 @@ public class Controller {
     }
 
     /**
-     * Permette al Master di forzare l'apprendimento di un'abilità per un Personaggio Giocante,
+     * Permette al Master di forzare l'apprendimento di un'abilità per un Personaggio,
      * bypassando i controlli del giocatore.
      *
      * @param idPersonaggio l'identificativo del PG.
      * @param nomeAbilita il nome dell'abilità da assegnare.
      * @throws Exception Se ci sono problemi nel reperire il PG o nel salvataggio.
      */
-    public void assegnaAbilitaMaster(int idPersonaggio, String nomeAbilita) throws Exception {
+    public void assegnaAbilitaMaster(int idPersonaggio, String nomeAbilita, boolean isPg) throws Exception {
         if (nomeAbilita == null || nomeAbilita.trim().isEmpty()) {
             throw new AbilitaNonSelezionataException("Nessuna abilità specificata.");
         }
 
-        Personaggio pg = cercaPersonaggio(idPersonaggio, true);
+        Personaggio pg = cercaPersonaggio(idPersonaggio, isPg);
 
         Abilita target = null;
         for (Abilita abilita : pg.getClasse().getAbilitaSbloccabili()) {

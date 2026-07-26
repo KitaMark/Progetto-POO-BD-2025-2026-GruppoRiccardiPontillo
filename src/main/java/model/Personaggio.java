@@ -377,11 +377,11 @@ public class Personaggio {
     /** @return una vista non modificabile della lista delle abilità apprese. */
     public List<Abilita> getListaAbilita() { return Collections.unmodifiableList(listaAbilita); }
 
-    /** @return una vista non modificabile dell'inventario dei consumabili. */
-    public Map<OggettoConsumabile, Integer> getInventarioConsumabili() { return Collections.unmodifiableMap(inventarioConsumabili); }
+    /** @return una vista dell'inventario dei consumabili. */
+    public Map<OggettoConsumabile, Integer> getInventarioConsumabili() { return inventarioConsumabili; }
 
-    /** @return una vista non modificabile dell'inventario degli oggetti equipaggiabili. */
-    public Map<OggettoEquipaggiabile, Boolean> getInventarioEquipaggiabili() { return Collections.unmodifiableMap(inventarioEquipaggiabili); }
+    /** @return una vista  dell'inventario degli oggetti equipaggiabili. */
+    public Map<OggettoEquipaggiabile, Boolean> getInventarioEquipaggiabili() { return (inventarioEquipaggiabili); }
 
     /** @param id il nuovo identificativo univoco da assegnare al personaggio nel database. */
     public void setId(int id) { this.id = id; }
