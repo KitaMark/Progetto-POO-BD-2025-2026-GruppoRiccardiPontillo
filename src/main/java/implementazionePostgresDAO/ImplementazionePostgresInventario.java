@@ -391,4 +391,69 @@ public class ImplementazionePostgresInventario implements InventarioDao {
             }
         }
     }
+
+    /**
+     * Assegna un oggetto all'inventario di un personaggio, senza costi.
+     * Se l'oggetto è già presente e consumabile, ne incrementa la quantità.
+     * Se è equipaggiabile e già presente, lancia un'eccezione.
+     *
+     * @param pId l'identificativo del personaggio a cui assegnare l'oggetto.
+     * @param oId l'identificativo dell'oggetto da assegnare.
+     * @throws RuntimeException se si verifica un errore durante l'operazione o se si tenta di assegnare un equipaggiabile già posseduto.
+     */
+    @Override
+    public void assegnaOggettoAInventario(int pId, int oId) {
+        String queryCheck = "SELECT i.quantita, o.Tipo FROM INVENTARIO i JOIN OGGETTO o ON i.CodOggetto = o.CodOggetto WHERE i.codpersonaggio = ? AND i.codoggetto = ?";
+        String queryUpdateInv = "UPDATE INVENTARIO SET quantita = quantita + 1 WHERE codpersonaggio = ? AND codoggetto = ?";
+        String queryInsert = "INSERT INTO INVENTARIO (codpersonaggio, codoggetto, quantita, equipaggiato) VALUES (?, ?, 1, FALSE)";
+
+        Connection conn = null;
+        try {
+            conn = ConnessioneDatabase.getInstance().connection;
+            conn.setAutoCommit(false);
+
+            int quantita = 0;
+            String tipoOggetto = null;
+
+            try (PreparedStatement stmtCheck = conn.prepareStatement(queryCheck)) {
+                stmtCheck.setInt(1, pId);
+                stmtCheck.setInt(2, oId);
+                ResultSet rs = stmtCheck.executeQuery();
+                if (rs.next()) {
+                    quantita = rs.getInt("quantita");
+                    tipoOggetto = rs.getString("Tipo");
+                }
+            }
+
+            if (quantita > 0) {
+                if ("Consumabile".equalsIgnoreCase(tipoOggetto)) {
+                    try (PreparedStatement stmtUp = conn.prepareStatement(queryUpdateInv)) {
+                        stmtUp.setInt(1, pId);
+                        stmtUp.setInt(2, oId);
+                        stmtUp.executeUpdate();
+                    }
+                } else { // Equipaggiabile
+                    throw new RuntimeException("Il personaggio possiede già questo oggetto equipaggiabile.");
+                }
+            } else {
+                try (PreparedStatement stmtIns = conn.prepareStatement(queryInsert)) {
+                    stmtIns.setInt(1, pId);
+                    stmtIns.setInt(2, oId);
+                    stmtIns.executeUpdate();
+                }
+            }
+
+            conn.commit();
+
+        } catch (SQLException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ignored) {}
+            }
+            throw new RuntimeException("Assegnazione oggetto fallita: " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); } catch (SQLException ignored) {}
+            }
+        }
+    }
 }

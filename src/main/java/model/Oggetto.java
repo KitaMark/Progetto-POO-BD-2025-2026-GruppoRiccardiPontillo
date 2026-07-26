@@ -108,13 +108,9 @@ public abstract class Oggetto {
         return Objects.hash(id);
     }
 
-    /**
-     * Restituisce la rappresentazione in formato stringa delle proprietà dell'oggetto.
-     *
-     * @return stringa formattata contenente nome e costo.
-     */
+
     @Override
     public String toString() {
-        return String.format("Nome: %s%n Costo: %d%n", nome, costo);
+        return nome; //per gestione in modificaInventario.
     }
 }

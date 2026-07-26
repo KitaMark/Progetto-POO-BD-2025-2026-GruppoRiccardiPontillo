@@ -831,6 +831,24 @@ public class Controller {
     }
 
     /**
+     * Permette al Master di assegnare un oggetto all'inventario di un personaggio.
+     *
+     * @param idPersonaggio L'ID del personaggio a cui assegnare l'oggetto.
+     * @param idOggetto L'ID dell'oggetto da assegnare.
+     * @throws RuntimeException Se si verifica un errore durante l'assegnazione dell'oggetto.
+     */
+    public void assegnaOggettoMaster(int idPersonaggio, int idOggetto, boolean isPg) {
+        try {
+            inventarioDAO.assegnaOggettoAInventario(idPersonaggio, idOggetto);
+            // Dopo l'assegnazione, riallinea l'inventario in memoria
+            Personaggio pg = cercaPersonaggio(idPersonaggio, isPg);
+            leggiInventarioPersonaggio(pg);
+        } catch (Exception e) {
+            throw new RuntimeException("Errore durante l'assegnazione dell'oggetto: " + e.getMessage());
+        }
+    }
+
+    /**
      * Aggiorna e salva le nuove statistiche di un PG o PnG nel database.
      * @param nomePersonaggio Il nome stringa del personaggio.
      * @param idPersonaggio   L'identificativo univoco del personaggio.

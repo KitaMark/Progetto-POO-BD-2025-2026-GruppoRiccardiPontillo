@@ -45,14 +45,5 @@ public class OggettoConsumabile extends Oggetto {
     /** @return la quantità di punti mana ripristinati dall'oggetto. */
     public int getRipristinoMana() { return ripristinoMana; }
 
-    /**
-     * Restituisce la rappresentazione testuale completa dell'oggetto consumabile e dei suoi effetti.
-     *
-     * @return stringa formattata con i dettagli dell'oggetto e i valori di ripristino.
-     */
-    @Override
-    public String toString() {
-        return "Consumabile: " + "\n" + super.toString() +
-                String.format("Ripristino hp: %d%n Ripristino mana: %d%n", ripristinoHP, ripristinoMana);
-    }
+    //rimosso toString per sfruttare quello della classe padre
 }

@@ -1,6 +1,7 @@
 package gui;
 
 import controller.Controller;
+import model.Oggetto;
 import model.OggettoConsumabile;
 import model.OggettoEquipaggiabile;
 import model.Personaggio;
@@ -11,6 +12,7 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class ModificaInventarioGUI extends JDialog {
     private JPanel mainPanel;
@@ -123,7 +125,30 @@ public class ModificaInventarioGUI extends JDialog {
         aggiungiButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                Object[] catalogo =  controller.getCampagnaAttiva().getCatalogoOggetti().toArray();
+                if(catalogo.length == 0){
+                    JOptionPane.showMessageDialog(ModificaInventarioGUI.this, "Nessun oggetto trovato per questa campagna.", "Errore", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                Oggetto scelta = (Oggetto) JOptionPane.showInputDialog(ModificaInventarioGUI.this,
+                        "Seleziona un oggetto:",
+                        "Assegna oggetto",
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        catalogo,
+                        catalogo[0]);
+                
+                if(scelta != null){
+                    try {
+                        controller.assegnaOggettoMaster(pg.getId(), scelta.getId(), pg.isPg());
+                        JOptionPane.showMessageDialog(ModificaInventarioGUI.this, "'" + scelta.getNome() + "' aggiunto con successo all'inventario!", "Assegnazione completata", JOptionPane.INFORMATION_MESSAGE);
+                        inizializzaTabellaConsumabili();
+                        inizializzaTabellaEquipaggiabili();
+                    } catch (RuntimeException ex) {
+                        JOptionPane.showMessageDialog(ModificaInventarioGUI.this, "Errore durante l'assegnazione: " + ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
             }
         });
     }

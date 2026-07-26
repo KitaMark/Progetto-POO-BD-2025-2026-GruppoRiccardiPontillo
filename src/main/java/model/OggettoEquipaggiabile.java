@@ -45,14 +45,5 @@ public class OggettoEquipaggiabile extends Oggetto {
     /** @return l'oggetto Statistica contenente i bonus applicati. */
     public Statistica getBonus() { return bonus; }
 
-    /**
-     * Restituisce la descrizione testuale dettagliata dell'oggetto, inclusi requisiti e modificatori associati.
-     *
-     * @return stringa strutturata dell'equipaggiabile in formato multilinea.
-     */
-    @Override
-    public String toString() {
-        return "Equipaggiabile: " + "\n" + super.toString() +
-                String.format("Requisiti:%n") + requisiti.toString() + ("Bonus:%n") + bonus.toString();
-    }
+    //rimosso toString per usare quello di Oggetto
 }
