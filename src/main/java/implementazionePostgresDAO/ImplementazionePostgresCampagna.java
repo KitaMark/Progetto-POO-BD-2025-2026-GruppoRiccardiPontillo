@@ -153,8 +153,8 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
         listaPersonaggi.clear();
 
         String query = "SELECT p.CodPersonaggio, p.Nome, p.Oro, p.IsPG, " +
-                "c.Nome AS nome_classe, " +
-                "r.Nome AS nome_razza, " +
+                "c.CodClasse AS id_classe, c.Nome AS nome_classe, " +
+                "r.CodRazza AS id_razza, r.Nome AS nome_razza, " +
                 "sp.HpAttuali, sp.ManaAttuali, sp.PuntiSpendere, " +
                 "sp.HpMax, sp.ManaMax, " +
                 "sp.Forza AS forza_base, sp.Destrezza AS destrezza_base, sp.Costituzione AS costituzione_base, " +
@@ -197,8 +197,9 @@ public class ImplementazionePostgresCampagna implements CampagnaDAO {
                                 rs.getInt("ModFortuna"), 0, 0
                         );
 
-                        Razza razza = new Razza(rs.getString("nome_razza"), modRazza);
-                        Classe classe = new Classe(rs.getString("nome_classe"));
+                        Razza razza = new Razza(rs.getInt("id_razza"), rs.getString("nome_razza"));
+                        razza.setModificatori(modRazza);
+                        Classe classe = new Classe(rs.getInt("id_classe"), rs.getString("nome_classe"));
 
                         Personaggio pg = new Personaggio(id, nome, classe, razza, statBase, hpCorrenti, manaCorrente, oro, puntiStatistica, isPg);
                         listaPersonaggi.add(pg);

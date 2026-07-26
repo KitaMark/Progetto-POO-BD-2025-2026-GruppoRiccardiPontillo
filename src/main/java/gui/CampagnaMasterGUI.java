@@ -1,6 +1,11 @@
 package gui;
 
 import controller.Controller;
+import exception.AbilitaGiaAppresaException;
+import exception.AbilitaNonSbloccabileException;
+import exception.AbilitaNonSelezionataException;
+import exception.PersonaggioNonTrovatoException;
+import model.Abilita;
 import model.Giocatore;
 import model.Master;
 import model.Personaggio;
@@ -11,7 +16,6 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 
 /**
  * Rappresenta il pannello di controllo dedicato al Master
@@ -63,6 +67,10 @@ public class CampagnaMasterGUI {
     private JButton visualizzaDettagliPngButton;
     private JButton modificaButton;
 
+    // I due nuovi bottoni aggiunti nel pannello a griglia
+    private JButton abilitaButton;
+    private JButton oroButton;
+
     /**
      * Il Controller di riferimento per orchestrare tutte le logiche di modifica e gestione della campagna.
      */
@@ -113,18 +121,18 @@ public class CampagnaMasterGUI {
             public void actionPerformed(ActionEvent e) {
                 int riga = partecipantiTable.getSelectedRow();
                 if(riga == -1){
-                    JOptionPane.showMessageDialog(frame, "Errore", "Seleziona un Giocatore da rimuovere.", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Seleziona un Giocatore da rimuovere.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                 }
                 String nomeGiocatore = (String)partecipantiTable.getValueAt(riga, 0);
                 int idGiocatore = (int)partecipantiTable.getModel().getValueAt(riga, 2);
 
                 try{
                     controller.rimuoviGiocatoreDaCampagna(idGiocatore);
-                    JOptionPane.showMessageDialog(frame,  "Il giocatore "+nomeGiocatore+" è stato rimosso con successo!");
+                    JOptionPane.showMessageDialog(frame,  "Il giocatore " + nomeGiocatore + " è stato rimosso.");
                     inizializzaTabellaPG();
                     inizializzaTabellaPartecipanti();
                 } catch(Exception ex){
-                    JOptionPane.showMessageDialog(frame, "Errore", ex.getMessage(), JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -141,12 +149,12 @@ public class CampagnaMasterGUI {
                 String nomePg = pgTable.getValueAt(riga, 0).toString();
                 String proprietarioPg = pgTable.getValueAt(riga, 1).toString();
 
-                int conferma = JOptionPane.showConfirmDialog(frame, "Rimuovere definitivamente " + nomePg + "?", "Conferma", JOptionPane.YES_NO_OPTION);
+                int conferma = JOptionPane.showConfirmDialog(frame, "Vuoi davvero rimuovere " + nomePg + "?", "Conferma", JOptionPane.YES_NO_OPTION);
                 if (conferma == JOptionPane.YES_OPTION) {
                     try {
                         controller.rimuoviPGdaCampagna(nomePg, proprietarioPg);
                         inizializzaTabellaPG();
-                        JOptionPane.showMessageDialog(frame, "Hai rimosso " + nomePg + ".");
+                        JOptionPane.showMessageDialog(frame, "Personaggio rimosso con successo.");
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                     }
@@ -193,6 +201,103 @@ public class CampagnaMasterGUI {
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                     }
+                }
+            }
+        });
+
+        oroButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int riga = pgTable.getSelectedRow();
+                if (riga == -1) {
+                    JOptionPane.showMessageDialog(frameChiamante, "Seleziona un personaggio dalla tabella.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                String nomePg = pgTable.getValueAt(riga, 0).toString();
+                int idPg = (int) pgTable.getModel().getValueAt(riga, 4);
+
+                Object[] opzioni = {"Assegna Oro", "Sottrai Oro"};
+                int scelta = JOptionPane.showOptionDialog(frameChiamante,
+                        "Cosa vuoi fare con i fondi di " + nomePg + "?",
+                        "Gestione Oro",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        opzioni,
+                        opzioni[0]);
+
+                if (scelta == JOptionPane.CLOSED_OPTION) return;
+
+                boolean isAssegna = (scelta == JOptionPane.YES_OPTION);
+                String azioneText = isAssegna ? "aggiungere" : "sottrarre";
+
+                String input = JOptionPane.showInputDialog(frameChiamante, "Quanto oro vuoi " + azioneText + "?\n(Inserisci un valore numerico)");
+
+                if (input != null && !input.trim().isEmpty()) {
+                    try {
+                        int quantitaOro = Integer.parseInt(input);
+
+                        if (isAssegna) {
+                            controller.assegnaOroMaster(idPg, quantitaOro);
+                            JOptionPane.showMessageDialog(frameChiamante, "Hai assegnato " + quantitaOro + " monete d'oro a " + nomePg + ".", "Borsa aggiornata", JOptionPane.INFORMATION_MESSAGE);
+                        } else {
+                            controller.sottraiOroMaster(idPg, quantitaOro);
+                            JOptionPane.showMessageDialog(frameChiamante, "Hai sottratto " + quantitaOro + " monete d'oro a " + nomePg + ".", "Borsa aggiornata", JOptionPane.INFORMATION_MESSAGE);
+                        }
+
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(frameChiamante, "Inserisci un numero valido.", "Errore", JOptionPane.ERROR_MESSAGE);
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(frameChiamante, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
+
+        abilitaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int riga = pgTable.getSelectedRow();
+                if (riga == -1) {
+                    JOptionPane.showMessageDialog(frameChiamante, "Seleziona un personaggio.", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                int idPg = (int) pgTable.getModel().getValueAt(riga, 4);
+
+                try {
+                    Personaggio pg = controller.cercaPersonaggio(idPg, true);
+
+                    controller.caricaAbilitaSbloccabiliPerClasse(pg.getClasse());
+
+                    Object[] opzioniAbilita = new Object[pg.getClasse().getAbilitaSbloccabili().size()];
+                    for (int i = 0; i < pg.getClasse().getAbilitaSbloccabili().size(); i++) {
+                        opzioniAbilita[i] = pg.getClasse().getAbilitaSbloccabili().get(i).getNome();
+                    }
+
+                    if (opzioniAbilita.length == 0) {
+                        JOptionPane.showMessageDialog(frameChiamante, "Nessuna abilità trovata per questa classe.", "Avviso", JOptionPane.INFORMATION_MESSAGE);
+                        return;
+                    }
+
+                    String scelta = (String) JOptionPane.showInputDialog(
+                            frameChiamante,
+                            "Seleziona un'abilità:",
+                            "Assegna Abilità",
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            opzioniAbilita,
+                            opzioniAbilita[0]
+                    );
+
+                    if (scelta != null) {
+                        controller.assegnaAbilitaMaster(idPg, scelta);
+                        JOptionPane.showMessageDialog(frameChiamante, "Abilità appresa con successo!");
+                    }
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frameChiamante, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -254,7 +359,7 @@ public class CampagnaMasterGUI {
                     statoCampagna.setText("Stato: " + nuovoStato);
                     String testoStato = controller.getCampagnaAttiva().isIniziata() ? "Concludi" : "Inizia campagna";
                     statoCampagnaButton.setText(testoStato);
-                    JOptionPane.showMessageDialog(frame, "Stato aggiornato a: " + nuovoStato);
+                    JOptionPane.showMessageDialog(frame, "Stato aggiornato: " + nuovoStato);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frame, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
                 }

@@ -732,6 +732,105 @@ public class Controller {
     }
 
     /**
+     * Permette al Master di assegnare oro a un Personaggio Giocante.
+     *
+     * @param idPersonaggio l'identificativo del PG.
+     * @param quantitaOro la quantità di oro da aggiungere (deve essere maggiore di zero).
+     * @throws PersonaggioNonTrovatoException Se la ricerca del PG fallisce.
+     * @throws RuntimeException Se si verifica un errore durante il salvataggio.
+     */
+    public void assegnaOroMaster(int idPersonaggio, int quantitaOro) throws PersonaggioNonTrovatoException {
+        if (quantitaOro <= 0) throw new RuntimeException("La quantità da assegnare deve essere maggiore di zero.");
+
+        try {
+            Personaggio pg = cercaPersonaggio(idPersonaggio, true);
+            pg.setOro(pg.getOro() + quantitaOro);
+            giocatoreDAO.aggiornaRisorse(pg);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
+    }
+
+    /**
+     * Permette al Master di sottrarre oro a un Personaggio Giocante (es. multe o sanzioni narrative).
+     *
+     * @param idPersonaggio l'identificativo del PG.
+     * @param quantitaOro la quantità di oro da sottrarre (deve essere maggiore di zero).
+     * @throws PersonaggioNonTrovatoException Se la ricerca del PG fallisce.
+     * @throws RuntimeException Se l'oro finale andrebbe sotto lo zero.
+     */
+    public void sottraiOroMaster(int idPersonaggio, int quantitaOro) throws PersonaggioNonTrovatoException {
+        if (quantitaOro <= 0) throw new RuntimeException("La quantità da sottrarre deve essere maggiore di zero.");
+
+        try {
+            Personaggio pg = cercaPersonaggio(idPersonaggio, true);
+            int nuovoOro = pg.getOro() - quantitaOro;
+
+            if (nuovoOro < 0) {
+                throw new RuntimeException("L'oro del personaggio non può scendere sotto lo zero.");
+            }
+
+            pg.setOro(nuovoOro);
+            giocatoreDAO.aggiornaRisorse(pg);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
+    }
+
+    /**
+     * Carica dal database tutte le abilità sbloccabili previste per la classe specificata.
+     * Necessario per popolare i menu a tendina dell'assegnazione abilità.
+     *
+     * @param classe La classe di cui caricare le abilità.
+     */
+    public void caricaAbilitaSbloccabiliPerClasse(Classe classe) {
+        if (classe != null) {
+            abilitaDao.caricaAbilitaSbloccabili(classe);
+        }
+    }
+
+    /**
+     * Permette al Master di forzare l'apprendimento di un'abilità per un Personaggio Giocante,
+     * bypassando i controlli del giocatore.
+     *
+     * @param idPersonaggio l'identificativo del PG.
+     * @param nomeAbilita il nome dell'abilità da assegnare.
+     * @throws Exception Se ci sono problemi nel reperire il PG o nel salvataggio.
+     */
+    public void assegnaAbilitaMaster(int idPersonaggio, String nomeAbilita) throws Exception {
+        if (nomeAbilita == null || nomeAbilita.trim().isEmpty()) {
+            throw new AbilitaNonSelezionataException("Nessuna abilità specificata.");
+        }
+
+        Personaggio pg = cercaPersonaggio(idPersonaggio, true);
+
+        Abilita target = null;
+        for (Abilita abilita : pg.getClasse().getAbilitaSbloccabili()) {
+            if (abilita.getNome().trim().equalsIgnoreCase(nomeAbilita.trim())) {
+                target = abilita;
+                break;
+            }
+        }
+
+        if (target == null) throw new AbilitaNonSbloccabileException("L'abilità non fa parte della classe del personaggio.");
+
+        leggiAbilitaPersonaggio(pg); // Sincronizza prima le abilità già apprese dal DB
+
+        for (Abilita a : pg.getListaAbilita()) {
+            if (a.getNome().trim().equalsIgnoreCase(target.getNome().trim())) {
+                throw new AbilitaGiaAppresaException("Il personaggio conosce già questa abilità.");
+            }
+        }
+
+        try {
+            abilitaDao.imparaAbilita(pg.getId(), target.getNome());
+            pg.addAbilita(target);
+        } catch (RuntimeException e) {
+            throw new Exception("Errore durante il salvataggio dell'abilità nel Database.");
+        }
+    }
+
+    /**
      * Aggiorna e salva le nuove statistiche di un PG o PnG nel database.
      * @param nomePersonaggio Il nome stringa del personaggio.
      * @param idPersonaggio   L'identificativo univoco del personaggio.

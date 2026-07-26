@@ -1,5 +1,7 @@
 package model;
 
+import java.util.Objects;
+
 /**
  * Rappresenta un'abilità, incantesimo o potere speciale sbloccabile nel sistema di gioco.
  * Ha una funzione puramente descrittiva e il suo esito narrativo è gestito dal Master.
@@ -53,6 +55,43 @@ public class Abilita {
     }
 
     /**
+     * Confronta questa abilità con un altro oggetto per stabilirne l'uguaglianza.
+     * <p>
+     * Due abilità sono considerate identiche se possiedono lo stesso nome,
+     * ignorando le differenze tra maiuscole/minuscole e gli spazi vuoti iniziali/finali.
+     * Questo permette il corretto funzionamento dei metodi delle API Collection
+     * (come {@code contains()} e {@code remove()}).
+     * </p>
+     *
+     * @param o L'oggetto da confrontare.
+     * @return {@code true} se gli oggetti rappresentano la stessa abilità logica, {@code false} altrimenti.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Abilita abilita = (Abilita) o;
+
+        if (this.nome == null || abilita.nome == null) return false;
+        return this.nome.trim().equalsIgnoreCase(abilita.nome.trim());
+    }
+
+    /**
+     * Genera un codice hash univoco per l'abilità basato sul suo nome formattato.
+     * <p>
+     * L'hash viene calcolato sulla stringa in minuscolo e senza spazi per mantenere
+     * il contratto con il metodo {@code equals()}.
+     * </p>
+     *
+     * @return il codice hash calcolato.
+     */
+    @Override
+    public int hashCode() {
+        return this.nome != null ? this.nome.trim().toLowerCase().hashCode() : 0;
+    }
+
+    /**
      * Restituisce la rappresentazione testuale dell'abilità.
      *
      * @return stringa formattata con i dettagli dell'oggetto.
@@ -61,5 +100,4 @@ public class Abilita {
     public String toString() {
         return String.format("Abilità: %s%n Effetto: %s%n Classe: %s%n", nome, descrizione, classe);
     }
-
 }
