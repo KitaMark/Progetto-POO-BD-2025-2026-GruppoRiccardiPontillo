@@ -11,7 +11,6 @@ public class Classe {
     private String nome;
     private String descrizione;
     private ArrayList<Abilita> abilitaSbloccabili;
-    private ArrayList<Oggetto> equipaggiamentoIniziale;
 
     /**
      * Crea una nuova classe di gioco.
@@ -21,7 +20,6 @@ public class Classe {
     public Classe(String nome) {
         this.nome = nome;
         this.abilitaSbloccabili = new ArrayList<>();
-        this.equipaggiamentoIniziale = new ArrayList<>();
     }
 
     /**
@@ -34,7 +32,6 @@ public class Classe {
         this.id = id;
         this.nome = nome;
         this.abilitaSbloccabili = new ArrayList<>();
-        this.equipaggiamentoIniziale = new ArrayList<>();
     }
 
     /** @return l'identificativo univoco della classe. */
@@ -49,9 +46,6 @@ public class Classe {
     /** @return la lista delle abilità sbloccabili da questa classe. */
     public ArrayList<Abilita> getAbilitaSbloccabili() { return abilitaSbloccabili; }
 
-    /** @return la lista dell'equipaggiamento iniziale previsto. */
-    public ArrayList<Oggetto> getEquipaggiamentoIniziale() { return equipaggiamentoIniziale; }
-
     /** @param id il nuovo identificativo univoco da assegnare alla classe nel database. */
     public void setId(int id) { this.id = id; }
 
@@ -64,14 +58,9 @@ public class Classe {
     /** @param abilitaSbloccabili la nuova lista di abilità sbloccabili. */
     public void setAbilitaSbloccabili(ArrayList<Abilita> abilitaSbloccabili) { this.abilitaSbloccabili = abilitaSbloccabili; }
 
-    /** @param equipaggiamentoIniziale il nuovo equipaggiamento iniziale da associare. */
-    public void setEquipaggiamentoIniziale(ArrayList<Oggetto> equipaggiamentoIniziale) { this.equipaggiamentoIniziale = equipaggiamentoIniziale; }
-
     /** @param abilita l'abilità da aggiungere a quelle sbloccabili. */
     public void addAbilita(Abilita abilita) { abilitaSbloccabili.add(abilita); }
 
-    /** @param oggetto l'oggetto da inserire nell'equipaggiamento iniziale. */
-    public void addOggetto(Oggetto oggetto) { equipaggiamentoIniziale.add(oggetto); }
 
     /**
      * Rimuove un'abilità dall'elenco di quelle sbloccabili.
@@ -87,19 +76,6 @@ public class Classe {
         return false;
     }
 
-    /**
-     * Rimuove un oggetto dall'equipaggiamento iniziale.
-     *
-     * @param oggetto l'oggetto da rimuovere.
-     * @return {@code true} se rimosso con successo, {@code false} se non presente.
-     */
-    public boolean removeOggetto(Oggetto oggetto){
-        if(equipaggiamentoIniziale.contains(oggetto)){
-            equipaggiamentoIniziale.remove(oggetto);
-            return true;
-        }
-        return false;
-    }
 
     /**
      * Restituisce la rappresentazione testuale della classe.
