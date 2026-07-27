@@ -96,6 +96,12 @@
         <properties/>
         <border type="none"/>
         <children>
+          <component id="35d9" class="javax.swing.JButton" binding="abilitaButton">
+            <constraints/>
+            <properties>
+              <text value="Gestisci Abilità della Classe"/>
+            </properties>
+          </component>
           <component id="2e0a2" class="javax.swing.JButton" binding="aggiungiButton">
             <constraints/>
             <properties>

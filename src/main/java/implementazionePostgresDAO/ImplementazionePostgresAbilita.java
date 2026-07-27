@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.sql.Statement;
 
 import model.Abilita;
 import model.Personaggio;
@@ -82,13 +83,14 @@ public class ImplementazionePostgresAbilita implements AbilitaDao {
                 String descrizione = rs.getString("Descrizione");
 
                 Abilita abilita = new Abilita(nome, descrizione, classe);
+                abilita.setId(rs.getInt("CodAbilita"));
+
                 classe.getAbilitaSbloccabili().add(abilita);
             }
         } catch (SQLException e) {
             System.err.println("Errore caricamento abilità della classe: " + e.getMessage());
         }
     }
-
 
     /**
      * Recupera dal database le abilità che un determinato personaggio ha già appreso.
@@ -117,10 +119,79 @@ public class ImplementazionePostgresAbilita implements AbilitaDao {
                 String descrizione = rs.getString("Descrizione");
 
                 Abilita abilitaAppresa = new Abilita(nome, descrizione, pg.getClasse());
-                pg.addAbilitaCaricata(abilitaAppresa); // Utilizza il nuovo metodo
+                pg.addAbilitaCaricata(abilitaAppresa);
             }
         } catch (SQLException e) {
             System.err.println("Errore caricamento abilità apprese: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Salva in modo persistente una nuova abilità sbloccabile, associandola a una specifica classe.
+     * <p>
+     * Esegue l'inserimento e cattura l'ID autogenerato da PostgreSQL per poterlo assegnare
+     * direttamente all'oggetto transiente gestito dal sistema, mantenendo la sincronia con il DB.
+     * </p>
+     *
+     * @param abilita L'oggetto {@link Abilita} contenente i dati inseriti dal Master (nome e descrizione).
+     * @param codClasse L'identificativo univoco della classe a cui l'abilità appartiene.
+     * @return L'identificativo numerico (ID) autogenerato dal database per la nuova abilità.
+     * @throws RuntimeException se si verifica un errore durante l'inserimento.
+     */
+    @Override
+    public int salvaAbilitaSbloccabile(Abilita abilita, int codClasse) {
+        String query = "INSERT INTO ABILITA (Nome, Descrizione, CodClasse) VALUES (?, ?, ?)";
+
+        try {
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+            // Statement.RETURN_GENERATED_KEYS permette di catturare l'ID appena generato
+            PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+
+            stmt.setString(1, abilita.getNome());
+            stmt.setString(2, abilita.getDescrizione());
+            stmt.setInt(3, codClasse);
+
+            stmt.executeUpdate();
+
+            // Estrazione dell'ID generato
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
+            } else {
+                throw new SQLException("Creazione abilità fallita, nessun ID autogenerato ottenuto.");
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Errore durante il salvataggio della nuova abilità: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Rimuove definitivamente un'abilità sbloccabile dal database.
+     * <p>
+     * Se sulla tabella sono configurati correttamente i vincoli {@code ON DELETE CASCADE}, questa operazione
+     * eliminerà a cascata anche le eventuali associazioni nella tabella ponte {@code PERSONAGGIO_ABILITA}.
+     * </p>
+     *
+     * @param codAbilita L'identificativo univoco dell'abilità da eliminare.
+     * @param codClasse L'identificativo della classe (utilizzato per doppia validazione della query).
+     * @throws RuntimeException se si verifica un errore SQL durante l'eliminazione.
+     */
+    @Override
+    public void rimuoviAbilitaSbloccabile(int codAbilita, int codClasse) {
+        String query = "DELETE FROM ABILITA WHERE CodAbilita = ? AND CodClasse = ?";
+
+        try {
+            Connection conn = ConnessioneDatabase.getInstance().connection;
+            PreparedStatement stmt = conn.prepareStatement(query);
+
+            stmt.setInt(1, codAbilita);
+            stmt.setInt(2, codClasse);
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Errore durante la rimozione dell'abilità dal database: " + e.getMessage());
         }
     }
 }

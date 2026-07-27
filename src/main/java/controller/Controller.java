@@ -1198,7 +1198,7 @@ public class Controller {
 
 
     // =========================================================================================
-    //EDITOR MASTER — RAZZE, CLASSI, OGGETTI
+    //EDITOR MASTER — RAZZE, CLASSI, OGGETTI, ABILITA'
     // =========================================================================================
 
     /**
@@ -1238,7 +1238,7 @@ public class Controller {
      * @throws DatiMancantiException Se il nome della classe è nullo o vuoto,
      *                               o se non vi è alcuna campagna attiva in sessione.
      */
-    public void creaNuovaClasse(String nome, String descrizione) throws exception.DatiMancantiException {
+    public void creaNuovaClasse(String nome, String descrizione) throws DatiMancantiException {
         if (campagnaAttiva == null) {
             throw new exception.DatiMancantiException("Nessuna campagna attiva selezionata.");
         }
@@ -1256,6 +1256,82 @@ public class Controller {
     }
 
     /**
+     * Crea una nuova Abilità, la associa a una specifica Classe e la salva in modo persistente.
+     * Include un controllo preventivo per evitare l'inserimento di abilità duplicate.
+     *
+     * @param classe La classe di gioco (es. Mago) a cui associare l'abilità.
+     * @param nome Il nome identificativo dell'abilità.
+     * @param descrizione La descrizione del suo funzionamento nel gioco.
+     * @throws exception.DatiMancantiException Se il nome o la descrizione sono vuoti.
+     * @throws IllegalArgumentException Se l'abilità esiste già o se si verifica un errore sul database.
+     */
+    public void creaNuovaAbilita(Classe classe, String nome, String descrizione) throws DatiMancantiException {
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new exception.DatiMancantiException("Il nome dell'abilità è obbligatorio.");
+        }
+        if (descrizione == null || descrizione.trim().isEmpty()) {
+            throw new exception.DatiMancantiException("La descrizione dell'abilità è obbligatoria.");
+        }
+
+        if (classe.getAbilitaSbloccabili() != null) {
+            for (Abilita a : classe.getAbilitaSbloccabili()) {
+                if (a.getNome().trim().equalsIgnoreCase(nome.trim())) {
+                    throw new IllegalArgumentException("Questa Classe possiede già un'abilità chiamata '" + nome + "'.");
+                }
+            }
+        }
+
+        Abilita nuovaAbilita = new Abilita(nome, descrizione);
+
+        try {
+            int idGenerato = abilitaDao.salvaAbilitaSbloccabile(nuovaAbilita, classe.getId());
+            nuovaAbilita.setId(idGenerato);
+
+            if (classe.getAbilitaSbloccabili() == null) {
+                classe.setAbilitaSbloccabili(new ArrayList<>());
+            }
+
+            classe.getAbilitaSbloccabili().add(nuovaAbilita);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Errore durante il salvataggio sul DB: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Rimuove un'abilità dall'elenco di quelle sbloccabili per una specifica Classe.
+     * Sincronizza l'eliminazione sia sul Database che nella memoria del programma.
+     *
+     * @param classe La classe di appartenenza.
+     * @param nomeAbilita Il nome dell'abilità da rimuovere.
+     * @throws RuntimeException Se l'abilità non viene trovata o se il database fallisce.
+     */
+    public void rimuoviAbilitaDaClasse(Classe classe, String nomeAbilita) {
+        if (nomeAbilita == null || nomeAbilita.trim().isEmpty()) {
+            throw new RuntimeException("Seleziona un'abilità da rimuovere.");
+        }
+
+        Abilita daRimuovere = null;
+        for (Abilita abilita : classe.getAbilitaSbloccabili()) {
+            if (abilita.getNome().equalsIgnoreCase(nomeAbilita)) {
+                daRimuovere = abilita;
+                break;
+            }
+        }
+
+        if (daRimuovere == null) {
+            throw new RuntimeException("Abilità non trovata nella classe specificata.");
+        }
+
+        try {
+            abilitaDao.rimuoviAbilitaSbloccabile(daRimuovere.getId(), classe.getId());
+            classe.getAbilitaSbloccabili().remove(daRimuovere);
+        } catch (Exception e) {
+            throw new RuntimeException("Errore durante la rimozione dell'abilità dal DB: " + e.getMessage());
+        }
+    }
+
+    /**
      * Crea un nuovo Oggetto Consumabile (es. Pozioni) e lo aggiunge al catalogo del negozio.
      *
      * @param nome    Il nome del consumabile.
@@ -1264,7 +1340,7 @@ public class Controller {
      * @param ripMana La quantità di Punti Mana ripristinati all'utilizzo.
      * @throws DatiMancantiException Se il nome è vuoto o la campagna non è attiva.
      */
-    public void creaNuovoConsumabile(String nome, int costo, int ripHp, int ripMana) throws exception.DatiMancantiException {
+    public void creaNuovoConsumabile(String nome, int costo, int ripHp, int ripMana) throws DatiMancantiException {
         if (campagnaAttiva == null) throw new exception.DatiMancantiException("Nessuna campagna attiva selezionata.");
         if (nome == null || nome.trim().isEmpty()) throw new exception.DatiMancantiException("Il nome del consumabile è obbligatorio.");
 
@@ -1294,7 +1370,7 @@ public class Controller {
      * @throws DatiMancantiException Se il nome è vuoto o la campagna non è attiva.
      */
     public void creaNuovoEquipaggiamento(String nome, int costo, int cos, int forz, int des,
-                                         int intell, int fede, int car, int fort, int hp, int mana) throws exception.DatiMancantiException {
+                                         int intell, int fede, int car, int fort, int hp, int mana) throws DatiMancantiException {
         if (campagnaAttiva == null) throw new exception.DatiMancantiException("Nessuna campagna attiva selezionata.");
         if (nome == null || nome.trim().isEmpty()) throw new exception.DatiMancantiException("Il nome dell'equipaggiamento è obbligatorio.");
 
