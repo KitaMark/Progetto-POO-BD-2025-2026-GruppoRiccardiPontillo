@@ -14,6 +14,19 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Rappresenta l'interfaccia grafica di popup dedicata al Master per la modifica
+ * diretta e arbitraria dell'inventario di un Personaggio (sia esso PG o PnG).
+ * <p>
+ * Tramite questa schermata, il Master può aggiungere nuovi oggetti estraendoli
+ * dal catalogo della campagna attiva oppure rimuovere oggetti attualmente
+ * in possesso del personaggio, scavalcando i normali controlli di compravendita
+ * gestiti nel negozio.
+ * </p>
+ *
+ * @author Riccardi Carmine
+ * @author Pontillo Salvatore
+ */
 public class ModificaInventarioGUI extends JDialog {
     private JPanel mainPanel;
     private JTable inventarioConsumabiliTable;
@@ -28,9 +41,21 @@ public class ModificaInventarioGUI extends JDialog {
     private JPanel equipaggiabiliPane;
     private JTable inventarioEquipaggiabiliTable;
 
+    /** Il Controller di riferimento per l'orchestrazione delle operazioni di business. */
     private Controller controller;
+
+    /** L'istanza del personaggio di cui si sta ispezionando e modificando lo zaino. */
     private Personaggio pg;
 
+    /**
+     * Costruisce l'interfaccia di modifica dell'inventario.
+     * Inizializza le tabelle dei consumabili e degli equipaggiabili, imposta i dati visivi
+     * del personaggio e configura i listener per l'aggiunta e la rimozione degli oggetti.
+     *
+     * @param frameChiamante Il frame genitore (Regia del Master) da cui viene aperta la finestra di dialogo.
+     * @param controller     Il {@link Controller} di sistema per delegare le operazioni di update.
+     * @param personaggio    Il {@link Personaggio} di cui si sta alterando l'inventario.
+     */
     public ModificaInventarioGUI(JFrame frameChiamante, Controller controller, Personaggio personaggio){
         super(frameChiamante, "Modifica Zaino", true);
         this.controller = controller;
@@ -51,6 +76,10 @@ public class ModificaInventarioGUI extends JDialog {
         super.setVisible(true);
     }
 
+    /**
+     * Inizializza l'intestazione e il modello dati della tabella dedicata ai Consumabili.
+     * Nasconde programmaticamente la colonna ID e dimensiona le colonne per una lettura ottimale.
+     */
     private void inizializzaTabellaConsumabili(){
         String[] colonne = {"Nome", "Quantità", "ID"};
         DefaultTableModel model = new DefaultTableModel(null, colonne) {
@@ -72,6 +101,10 @@ public class ModificaInventarioGUI extends JDialog {
         configuraTabella(inventarioConsumabiliTable, new int[]{250, 100});
     }
 
+    /**
+     * Inizializza l'intestazione e il modello dati della tabella dedicata agli Equipaggiamenti.
+     * Nasconde la colonna ID per pulizia visiva e dimensiona correttamente le righe.
+     */
     private void inizializzaTabellaEquipaggiabili(){
         String[] colonne = {"Nome", "ID"};
         DefaultTableModel model = new DefaultTableModel(null, colonne) {
@@ -94,7 +127,12 @@ public class ModificaInventarioGUI extends JDialog {
     }
 
     /**
-     * Configura la tabella impostando un layout pulito e l'altezza automatica.
+     * Configura la tabella impostando un layout pulito, bloccando il ridimensionamento
+     * manuale e calcolando l'altezza automatica dello JScrollPane per non mostrare
+     * spazi vuoti o scroll verticali superflui.
+     *
+     * @param tabella La JTable da configurare.
+     * @param larghezzePreferite Array contenente le larghezze in pixel desiderate per le colonne visibili.
      */
     private void configuraTabella(JTable tabella, int[] larghezzePreferite) {
         tabella.getTableHeader().setReorderingAllowed(false);
@@ -117,7 +155,11 @@ public class ModificaInventarioGUI extends JDialog {
     }
 
     /**
-     * Pulisce una stringa di errore concatenata, estraendo solo il messaggio utile finale.
+     * Pulisce una stringa di errore concatenata scaturita dai trigger del database,
+     * estraendo solo il messaggio utile e comprensibile per l'utente finale.
+     *
+     * @param errore La stringa di eccezione completa originata dal backend.
+     * @return La stringa formattata e depurata.
      */
     private String pulisciMessaggioErrore(String errore) {
         if (errore == null) return "Errore sconosciuto.";
@@ -128,6 +170,11 @@ public class ModificaInventarioGUI extends JDialog {
         return errore;
     }
 
+    /**
+     * Associa i listener ai pulsanti dell'interfaccia, gestendo la logica
+     * di rimozione di un oggetto o l'apertura di un JOptionPane per aggiungerne
+     * uno estrapolato dal catalogo della campagna.
+     */
     private void aggiungiListeners(){
 
         rimuoviButton.addActionListener(new ActionListener() {

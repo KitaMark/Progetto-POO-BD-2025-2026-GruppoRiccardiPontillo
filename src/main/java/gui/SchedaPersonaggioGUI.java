@@ -14,6 +14,19 @@ import javax.swing.table.TableColumn;
 import java.util.Map;
 import java.awt.*;
 
+/**
+ * Rappresenta l'interfaccia grafica (di sola lettura) dedicata all'ispezione
+ * completa dei dettagli di un Personaggio (sia esso PG o PnG).
+ * <p>
+ * Questa finestra organizza i dati in sezioni tramite un'interfaccia a schede,
+ * mostrando i valori anagrafici, le statistiche finali (aggiornate in tempo reale
+ * con i bonus dell'equipaggiamento), il riepilogo dell'inventario e le abilità apprese.
+ * Viene utilizzata principalmente dal Master per la consultazione rapida dello stato del party.
+ * </p>
+ *
+ * @author Riccardi Carmine
+ * @author Pontillo Salvatore
+ */
 public class SchedaPersonaggioGUI extends JDialog {
     private JPanel contentPane;
     private JLabel forzaLabel;
@@ -57,9 +70,22 @@ public class SchedaPersonaggioGUI extends JDialog {
     private JLabel oroLabel;
     private JLabel oroTesto;
 
+    /** Il Controller di sistema per delegare il fetching dei dati dal modello. */
     private Controller controller;
+
+    /** Il Personaggio di cui si stanno ispezionando i dettagli. */
     private Personaggio pgAttivo;
 
+    /**
+     * Costruisce l'interfaccia di visualizzazione della Scheda Personaggio.
+     * Configura le progress bar per le risorse vitali (HP e Mana) e popola le
+     * etichette con i valori statici e dinamici del profilo.
+     *
+     * @param frameChiamante Il frame genitore da cui viene aperta la finestra (comportamento modale).
+     * @param controller     Il {@link Controller} di sistema.
+     * @param isPg           Flag booleano che indica se l'entità ispezionata è un PG (true) o PnG (false).
+     * @param pg             L'oggetto {@link Personaggio} caricato in memoria da esaminare.
+     */
     public SchedaPersonaggioGUI(JFrame frameChiamante, Controller controller, boolean isPg, Personaggio pg) {
         super(frameChiamante, "Scheda "+pg.getNome()+ ((isPg)? "" : " - [PnG]"), true);
         this.controller = controller;
@@ -77,6 +103,11 @@ public class SchedaPersonaggioGUI extends JDialog {
         super.setVisible(true);
     }
 
+    /**
+     * Aggiunge un ChangeListener al JTabbedPane principale, garantendo che
+     * le tabelle (inventario e abilità) vengano caricate e aggiornate dinamicamente
+     * solo quando l'utente naviga nella rispettiva scheda, ottimizzando le risorse.
+     */
     private void aggiungiListenerTabs() {
         mainTab.addChangeListener(new ChangeListener() {
             @Override
@@ -94,6 +125,11 @@ public class SchedaPersonaggioGUI extends JDialog {
         });
     }
 
+    /**
+     * Popola le etichette testuali (JLabel) e le barre di caricamento (JProgressBar)
+     * della prima scheda interrogando le statistiche finali del personaggio,
+     * includendo i modificatori derivati dalla razza e dagli oggetti attualmente equipaggiati.
+     */
     private void inizializzaDatiPrincipali(){
         nomeTesto.setText(pgAttivo.getNome());
         razzaTesto.setText(pgAttivo.getRazza().toString());
@@ -135,6 +171,11 @@ public class SchedaPersonaggioGUI extends JDialog {
         oroTesto.setText(String.valueOf(pgAttivo.getOro()));
     }
 
+    /**
+     * Costruisce il modello dati per la tabella che riassume gli Equipaggiabili.
+     * Le celle sono rese "Read-Only". Mostra il nome dell'oggetto e lo stato
+     * di equipaggiamento (indossato o nello zaino).
+     */
     private void inizializzaInventarioEquipaggiabili(){
         String[] colonne = {"Nome", "Stato", "ID"};
         DefaultTableModel model = new DefaultTableModel(null, colonne) {
@@ -154,6 +195,10 @@ public class SchedaPersonaggioGUI extends JDialog {
         }
     }
 
+    /**
+     * Costruisce il modello dati per la tabella che riassume i Consumabili.
+     * La tabella mostra il nome dell'oggetto (es. Pozione) e la sua quantità nello zaino.
+     */
     private void inizializzaInventarioConsumabili(){
         String[] colonne = {"Nome", "Quantità", "ID"};
         DefaultTableModel model = new DefaultTableModel(null, colonne) {
@@ -172,6 +217,10 @@ public class SchedaPersonaggioGUI extends JDialog {
         }
     }
 
+    /**
+     * Popola la tabella della terza scheda con la lista dei talenti e incantesimi
+     * appresi dal personaggio, corredandoli di descrizione in linea.
+     */
     private void inizializzaListaAbilita(){
         String[] colonne = {"Nome", "Descrizione"};
         DefaultTableModel model = new DefaultTableModel(null, colonne) {

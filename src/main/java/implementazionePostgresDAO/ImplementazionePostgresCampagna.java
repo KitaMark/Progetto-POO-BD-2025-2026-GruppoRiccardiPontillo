@@ -18,7 +18,7 @@ import java.util.List;
  * Implementazione concreta dell'interfaccia {@link CampagnaDAO} per il database PostgreSQL.
  * <p>
  * Gestisce la persistenza, il recupero massivo e l'eliminazione delle campagne di gioco.
- * Si occupa di ricostruire in RAM le complesse relazioni tra le entità (Campagna, Master, Giocatori e Personaggi)
+ * Si occupa di ricostruire  le complesse relazioni tra le entità (Campagna, Master, Giocatori e Personaggi)
  * garantendo la corretta mappatura delle chiavi primarie per mantenere l'identità degli oggetti.
  * </p>
  *
