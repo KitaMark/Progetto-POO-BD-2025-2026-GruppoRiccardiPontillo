@@ -50,7 +50,6 @@ public class Personaggio {
         this.inventarioEquipaggiabili = new HashMap<>();
         this.listaAbilita = new ArrayList<>();
 
-        inizializzaEquipaggiamentoIniziale(classe);
         statisticaBase.aggiungiBonus(razza.getModificatori());
 
         this.hpCorrenti = statisticaBase.getHpMax();
@@ -82,7 +81,6 @@ public class Personaggio {
         this.inventarioConsumabili = new HashMap<>();
         this.listaAbilita = new ArrayList<>();
 
-        inizializzaEquipaggiamentoIniziale(classe);
         statisticaBase.aggiungiBonus(razza.getModificatori());
 
         this.hpCorrenti = statisticaBase.getHpMax();
@@ -298,21 +296,7 @@ public class Personaggio {
     public void ricalcolaStatisticheFinali() {
         calcolaStatisticheFinali();
     }
-
-    /**
-     * Inserisce in inventario gli oggetti previsti come equipaggiamento iniziale dalla classe.
-     *
-     * @param classe la classe da cui derivare l'equipaggiamento iniziale.
-     */
-    private void inizializzaEquipaggiamentoIniziale(Classe classe) {
-        for (Oggetto o : classe.getEquipaggiamentoIniziale()) {
-            if (o instanceof OggettoConsumabile) {
-                inventarioConsumabili.put((OggettoConsumabile) o, 1);
-            } else if (o instanceof OggettoEquipaggiabile) {
-                inventarioEquipaggiabili.put((OggettoEquipaggiabile) o, false);
-            }
-        }
-    }
+    
 
     /**
      * Svuota completamente l'inventario.
