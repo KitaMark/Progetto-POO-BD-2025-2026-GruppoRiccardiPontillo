@@ -56,6 +56,12 @@
                 <properties/>
                 <border type="none"/>
                 <children>
+                  <component id="6e84f" class="javax.swing.JLabel" binding="puntiLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="Punti da Spendere:"/>
+                    </properties>
+                  </component>
                   <component id="6fb58" class="javax.swing.JButton" binding="aumentaStatButton">
                     <constraints/>
                     <properties>

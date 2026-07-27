@@ -29,6 +29,7 @@ public class CampagnaGiocatoreGUI {
     private JTable statisticheTable;
     private JPanel buttonPanel;
     private JButton aumentaStatButton;
+    private JLabel puntiLabel; // Aggiunta la nuova etichetta per i punti
 
     private JTable equipaggiamentoTable;
     private JButton rimuoviButton;
@@ -38,7 +39,6 @@ public class CampagnaGiocatoreGUI {
     private JButton usaButton;
 
     private JTable abilitaTable;
-    private JButton imparaButton;
     private JLabel CampagnanomeJlabel;
 
     private JButton negozioButton;
@@ -195,8 +195,6 @@ public class CampagnaGiocatoreGUI {
                 }
             }
         });
-
-
     }
 
     /**
@@ -208,6 +206,9 @@ public class CampagnaGiocatoreGUI {
         Personaggio pg = giocatoreLoggato.getPersonaggioInCampagna(controller.getCampagnaAttiva());
         if (pg == null) return;
 
+        // Aggiorna il testo dell'etichetta con i punti da spendere
+        puntiLabel.setText("Punti da Spendere: " + pg.getPuntiStatistica());
+
         popolaTabellaStatistiche(pg);
         popolaTabellaEquipaggiamento(pg);
         popolaTabellaConsumabili(pg);
@@ -218,7 +219,7 @@ public class CampagnaGiocatoreGUI {
         String[] colonne = {"Statistica", "Valore Attuale"};
         DefaultTableModel model = creaModelloNonModificabile(colonne);
 
-        model.addRow(new Object[]{"Punti da spendere", pg.getPuntiStatistica()});
+        // Rimossa la riga "Punti da spendere" dalla tabella
         model.addRow(new Object[]{"HP Correnti", pg.getHpCorrenti() + " / " + pg.getStatisticheFinali().getHpMax()});
         model.addRow(new Object[]{"Mana Corrente", pg.getManaCorrente() + " / " + pg.getStatisticheFinali().getManaMax()});
         model.addRow(new Object[]{"Costituzione", pg.getStatisticheFinali().getCostituzione()});
@@ -249,7 +250,8 @@ public class CampagnaGiocatoreGUI {
         }
 
         equipaggiamentoTable.setModel(model);
-        configuraTabella(equipaggiamentoTable, new int[]{220, 420, 100});
+        // Stringe la tabella equipaggiamento
+        configuraTabella(equipaggiamentoTable, new int[]{200, 260, 90});
     }
 
     private void popolaTabellaConsumabili(Personaggio pg) {
@@ -277,7 +279,8 @@ public class CampagnaGiocatoreGUI {
         }
 
         consumabiliTable.setModel(model);
-        configuraTabella(consumabiliTable, new int[]{280, 150, 150, 100});
+        // Stringe la tabella consumabili
+        configuraTabella(consumabiliTable, new int[]{220, 110, 110, 80});
     }
 
     private void popolaTabellaAbilita(Personaggio pg) {
@@ -335,23 +338,26 @@ public class CampagnaGiocatoreGUI {
         }
 
         int altezzaHeader = tabella.getTableHeader().getPreferredSize().height;
-        int altezzaRighe = tabella.getRowCount() * tabella.getRowHeight();
-        int altezzaTotale = altezzaHeader + altezzaRighe + 6;
+        int righeDaMostrare = Math.max(2, tabella.getRowCount());
+        int altezzaRighe = righeDaMostrare * tabella.getRowHeight();
 
-        tabella.setPreferredScrollableViewportSize(new java.awt.Dimension(larghezzaTotale, altezzaTotale));
+        int altezzaTotale = altezzaHeader + altezzaRighe + 20;
+
+        java.awt.Dimension dimensioneEsatta = new java.awt.Dimension(larghezzaTotale, altezzaTotale);
+        tabella.setPreferredScrollableViewportSize(dimensioneEsatta);
 
         java.awt.Container viewport = tabella.getParent();
         if (viewport instanceof JViewport) {
             java.awt.Container scrollPaneContainer = viewport.getParent();
             if (scrollPaneContainer instanceof JScrollPane) {
                 JScrollPane scrollPane = (JScrollPane) scrollPaneContainer;
+
+                // Disabilita lo scroll per evitare la comparsa delle scrollbar
                 scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
                 scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-                java.awt.Dimension dimensioneEsatta = new java.awt.Dimension(larghezzaTotale + 4, altezzaTotale + 4);
                 scrollPane.setPreferredSize(dimensioneEsatta);
                 scrollPane.setMinimumSize(dimensioneEsatta);
-                scrollPane.setMaximumSize(dimensioneEsatta);
             }
         }
     }
