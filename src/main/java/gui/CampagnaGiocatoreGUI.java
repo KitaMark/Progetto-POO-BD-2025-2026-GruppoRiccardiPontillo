@@ -196,25 +196,7 @@ public class CampagnaGiocatoreGUI {
             }
         });
 
-        imparaButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int riga = abilitaTable.getSelectedRow();
-                if (riga == -1) {
-                    JOptionPane.showMessageDialog(frameAttuale, "Seleziona un'abilità da imparare.", "Attenzione", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-                String nomeAbilita = abilitaTable.getValueAt(riga, 0).toString();
-                try {
-                    controller.imparaAbilita(nomeAbilita,nomeCampagnaAttuale);
-                    JOptionPane.showMessageDialog(frameAttuale, "Hai imparato: " + nomeAbilita);
-                    inizializzaTabelle();
-                    frameAttuale.pack();
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frameAttuale, ex.getMessage(), "Errore Apprendimento", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
+
     }
 
     /**
