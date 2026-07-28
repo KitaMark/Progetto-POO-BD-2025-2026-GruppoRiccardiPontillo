@@ -392,7 +392,7 @@ public class Controller {
             throw new NomePgNonValidoException("Nome non valido.");
         }
 
-        Personaggio nuovoPg = new Personaggio(classe, razza, nome);
+        Personaggio nuovoPg = new Personaggio(classe, razza, nome, true);
 
         try {
             int idGenerato = giocatoreDAO.salvaPersonaggio(nuovoPg, utenteAttivo.getId(), campagna.getId());
@@ -584,7 +584,7 @@ public class Controller {
             throw new NomeMancantePngException("Il nome del PnG non può essere vuoto.");
         }
         if (razza == null || classe == null) throw new DatiMancantiException("Devi selezionare razza e classe prima di procedere.");
-        Personaggio png = new Personaggio(classe, razza, nome);
+        Personaggio png = new Personaggio(classe, razza, nome, false);
 
         masterDAO.creaPnG(png, campagnaAttiva.getId());
         campagnaAttiva.getListaPnG().add(png);
