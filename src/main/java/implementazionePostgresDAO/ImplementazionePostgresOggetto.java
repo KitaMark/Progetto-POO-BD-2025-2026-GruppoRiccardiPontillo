@@ -70,19 +70,22 @@ public class ImplementazionePostgresOggetto implements OggettoDao {
     }
 
     /**
-     * Salva un nuovo oggetto di tipo Equipaggiabile nel database.
+     * Salva un nuovo oggetto di tipo Equipaggiabile nel database, includendo sia i bonus che i requisiti minimi.
      *
-     * @param equip L'oggetto contenente i bonus statistici.
+     * @param equip L'oggetto contenente i bonus statistici e i requisiti.
      * @param idCampagna L'ID della campagna di riferimento.
      * @return L'ID univoco autogenerato per l'oggetto creato.
      */
     @Override
     public int salvaEquipaggiamento(OggettoEquipaggiabile equip, int idCampagna) {
         String insertOggetto = "INSERT INTO OGGETTO (Nome, Costo, Tipo, CodCampagna) VALUES (?, ?, 'Equipaggiamento', ?) RETURNING CodOggetto";
+
         String insertEquip = "INSERT INTO OGGETTO_EQUIPAGGIABILE " +
                 "(CodOggetto, Bonus_Forza, Bonus_Destrezza, Bonus_Costituzione, Bonus_Intelligenza, " +
-                "Bonus_Fede, Bonus_Carisma, Bonus_Fortuna, Bonus_HpMax, Bonus_ManaMax) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "Bonus_Fede, Bonus_Carisma, Bonus_Fortuna, Bonus_HpMax, Bonus_ManaMax, " +
+                "Req_Forza, Req_Destrezza, Req_Costituzione, Req_Intelligenza, " +
+                "Req_Fede, Req_Carisma, Req_Fortuna, Req_HpMax, Req_ManaMax) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         Connection conn = null;
         try {
@@ -103,6 +106,8 @@ public class ImplementazionePostgresOggetto implements OggettoDao {
 
             try (PreparedStatement stmtFiglio = conn.prepareStatement(insertEquip)) {
                 stmtFiglio.setInt(1, idGenerato);
+
+                // Set dei Bonus
                 stmtFiglio.setInt(2, equip.getBonus().getForza());
                 stmtFiglio.setInt(3, equip.getBonus().getDestrezza());
                 stmtFiglio.setInt(4, equip.getBonus().getCostituzione());
@@ -112,6 +117,18 @@ public class ImplementazionePostgresOggetto implements OggettoDao {
                 stmtFiglio.setInt(8, equip.getBonus().getFortuna());
                 stmtFiglio.setInt(9, equip.getBonus().getHpMax());
                 stmtFiglio.setInt(10, equip.getBonus().getManaMax());
+
+                // Set dei Requisiti
+                stmtFiglio.setInt(11, equip.getRequisiti().getForza());
+                stmtFiglio.setInt(12, equip.getRequisiti().getDestrezza());
+                stmtFiglio.setInt(13, equip.getRequisiti().getCostituzione());
+                stmtFiglio.setInt(14, equip.getRequisiti().getIntelligenza());
+                stmtFiglio.setInt(15, equip.getRequisiti().getFede());
+                stmtFiglio.setInt(16, equip.getRequisiti().getCarisma());
+                stmtFiglio.setInt(17, equip.getRequisiti().getFortuna());
+                stmtFiglio.setInt(18, equip.getRequisiti().getHpMax());
+                stmtFiglio.setInt(19, equip.getRequisiti().getManaMax());
+
                 stmtFiglio.executeUpdate();
             }
 

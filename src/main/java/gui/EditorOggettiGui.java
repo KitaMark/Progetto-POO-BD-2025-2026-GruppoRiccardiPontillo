@@ -38,19 +38,32 @@ public class EditorOggettiGui {
     private JTextField txtRipristinoMana;
     private JButton aggiungiConsumabileButton;
 
-    // Componenti per Oggetto Equipaggiabile
+    // Componenti per Oggetto Equipaggiabile: Variabili Base
     private JTextField txtNomeEquipaggiamento;
     private JTextField txtCostoEquipaggiamento;
-    private JTextField txtForza;
-    private JTextField txtDestrezza;
-    private JTextField txtCostituzione;
-    private JTextField txtIntelligenza;
-    private JTextField txtFede;
-    private JTextField txtCarisma;
-    private JTextField txtFortuna;
-    private JTextField txtHpMax;
-    private JTextField txtManaMax;
     private JButton aggiungiEquipaggiamentoButton;
+
+    // Componenti per Oggetto Equipaggiabile: BONUS
+    private JTextField txtBonusForza;
+    private JTextField txtBonusDestrezza;
+    private JTextField txtBonusCostituzione;
+    private JTextField txtBonusIntelligenza;
+    private JTextField txtBonusFede;
+    private JTextField txtBonusCarisma;
+    private JTextField txtBonusFortuna;
+    private JTextField txtBonusHpMax;
+    private JTextField txtBonusManaMax;
+
+    // Componenti per Oggetto Equipaggiabile: REQUISITI MINIMI
+    private JTextField txtReqForza;
+    private JTextField txtReqDestrezza;
+    private JTextField txtReqCostituzione;
+    private JTextField txtReqIntelligenza;
+    private JTextField txtReqFede;
+    private JTextField txtReqCarisma;
+    private JTextField txtReqFortuna;
+    private JTextField txtReqHpMax;
+    private JTextField txtReqManaMax;
 
     /** Il Controller di riferimento per la logica applicativa. */
     private Controller controller;
@@ -81,7 +94,7 @@ public class EditorOggettiGui {
         impostaZeriConsumabile();
         impostaZeriEquip();
 
-
+        // Ritorna alla Regia
         indietroButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -90,7 +103,7 @@ public class EditorOggettiGui {
             }
         });
 
-
+        // Salvataggio Consumabile
         aggiungiConsumabileButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -118,24 +131,40 @@ public class EditorOggettiGui {
             }
         });
 
-
+        // Salvataggio Equipaggiamento (Bonus + Requisiti)
         aggiungiEquipaggiamentoButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
                     String nome = txtNomeEquipaggiamento.getText();
                     int costo = parseIntSicuro(txtCostoEquipaggiamento.getText(), "Costo");
-                    int forz = parseIntSicuro(txtForza.getText(), "Forza");
-                    int des = parseIntSicuro(txtDestrezza.getText(), "Destrezza");
-                    int cos = parseIntSicuro(txtCostituzione.getText(), "Costituzione");
-                    int intell = parseIntSicuro(txtIntelligenza.getText(), "Intelligenza");
-                    int fede = parseIntSicuro(txtFede.getText(), "Fede");
-                    int car = parseIntSicuro(txtCarisma.getText(), "Carisma");
-                    int fort = parseIntSicuro(txtFortuna.getText(), "Fortuna");
-                    int hpMax = parseIntSicuro(txtHpMax.getText(), "HpMax");
-                    int manaMax = parseIntSicuro(txtManaMax.getText(), "ManaMax");
 
-                    controller.creaNuovoEquipaggiamento(nome, costo, cos, forz, des, intell, fede, car, fort, hpMax, manaMax);
+                    // Estrazione dei Bonus
+                    int bForz = parseIntSicuro(txtBonusForza.getText(), "Bonus Forza");
+                    int bDes = parseIntSicuro(txtBonusDestrezza.getText(), "Bonus Destrezza");
+                    int bCos = parseIntSicuro(txtBonusCostituzione.getText(), "Bonus Costituzione");
+                    int bIntell = parseIntSicuro(txtBonusIntelligenza.getText(), "Bonus Intelligenza");
+                    int bFede = parseIntSicuro(txtBonusFede.getText(), "Bonus Fede");
+                    int bCar = parseIntSicuro(txtBonusCarisma.getText(), "Bonus Carisma");
+                    int bFort = parseIntSicuro(txtBonusFortuna.getText(), "Bonus Fortuna");
+                    int bHpMax = parseIntSicuro(txtBonusHpMax.getText(), "Bonus HpMax");
+                    int bManaMax = parseIntSicuro(txtBonusManaMax.getText(), "Bonus ManaMax");
+
+                    // Estrazione dei Requisiti Minimi
+                    int rForz = parseIntSicuro(txtReqForza.getText(), "Requisito Forza");
+                    int rDes = parseIntSicuro(txtReqDestrezza.getText(), "Requisito Destrezza");
+                    int rCos = parseIntSicuro(txtReqCostituzione.getText(), "Requisito Costituzione");
+                    int rIntell = parseIntSicuro(txtReqIntelligenza.getText(), "Requisito Intelligenza");
+                    int rFede = parseIntSicuro(txtReqFede.getText(), "Requisito Fede");
+                    int rCar = parseIntSicuro(txtReqCarisma.getText(), "Requisito Carisma");
+                    int rFort = parseIntSicuro(txtReqFortuna.getText(), "Requisito Fortuna");
+                    int rHpMax = parseIntSicuro(txtReqHpMax.getText(), "Requisito HpMax");
+                    int rManaMax = parseIntSicuro(txtReqManaMax.getText(), "Requisito ManaMax");
+
+                    // Chiamata al Controller espanso
+                    controller.creaNuovoEquipaggiamento(nome, costo,
+                            bCos, bForz, bDes, bIntell, bFede, bCar, bFort, bHpMax, bManaMax,
+                            rCos, rForz, rDes, rIntell, rFede, rCar, rFort, rHpMax, rManaMax);
 
                     JOptionPane.showMessageDialog(frameAttuale, "Equipaggiamento aggiunto al catalogo!", "Successo", JOptionPane.INFORMATION_MESSAGE);
 
@@ -187,19 +216,30 @@ public class EditorOggettiGui {
     }
 
     /**
-     * Azzera i campi testuali numerici della scheda "Nuovo Equipaggiamento".
+     * Azzera i campi testuali numerici (sia Bonus che Requisiti) della scheda "Nuovo Equipaggiamento".
      */
     private void impostaZeriEquip() {
         txtCostoEquipaggiamento.setText("0");
-        txtForza.setText("0");
-        txtDestrezza.setText("0");
-        txtCostituzione.setText("0");
-        txtIntelligenza.setText("0");
-        txtFede.setText("0");
-        txtCarisma.setText("0");
-        txtFortuna.setText("0");
-        txtHpMax.setText("0");
-        txtManaMax.setText("0");
+
+        txtBonusForza.setText("0");
+        txtBonusDestrezza.setText("0");
+        txtBonusCostituzione.setText("0");
+        txtBonusIntelligenza.setText("0");
+        txtBonusFede.setText("0");
+        txtBonusCarisma.setText("0");
+        txtBonusFortuna.setText("0");
+        txtBonusHpMax.setText("0");
+        txtBonusManaMax.setText("0");
+
+        txtReqForza.setText("0");
+        txtReqDestrezza.setText("0");
+        txtReqCostituzione.setText("0");
+        txtReqIntelligenza.setText("0");
+        txtReqFede.setText("0");
+        txtReqCarisma.setText("0");
+        txtReqFortuna.setText("0");
+        txtReqHpMax.setText("0");
+        txtReqManaMax.setText("0");
     }
 
     /**

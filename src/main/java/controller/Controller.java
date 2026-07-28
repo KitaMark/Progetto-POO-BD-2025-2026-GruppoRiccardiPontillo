@@ -392,7 +392,7 @@ public class Controller {
             throw new NomePgNonValidoException("Nome non valido.");
         }
 
-        Personaggio nuovoPg = new Personaggio(classe, razza, nome);
+        Personaggio nuovoPg = new Personaggio(classe, razza, nome, true);
 
         try {
             int idGenerato = giocatoreDAO.salvaPersonaggio(nuovoPg, utenteAttivo.getId(), campagna.getId());
@@ -584,7 +584,7 @@ public class Controller {
             throw new NomeMancantePngException("Il nome del PnG non può essere vuoto.");
         }
         if (razza == null || classe == null) throw new DatiMancantiException("Devi selezionare razza e classe prima di procedere.");
-        Personaggio png = new Personaggio(classe, razza, nome);
+        Personaggio png = new Personaggio(classe, razza, nome, false);
 
         masterDAO.creaPnG(png, campagnaAttiva.getId());
         campagnaAttiva.getListaPnG().add(png);
@@ -601,12 +601,25 @@ public class Controller {
      * @param statBase     La struttura iniziale delle statistiche base per il personaggio.
      * @throws NomeMancantePngException Se il nome del PnG non viene inserito.
      * @throws DatiMancantiException Se mancano razza o classe.
+     * @throws IllegalArgumentException Se vengono inseriti valori statistici non validi (es. HpMax a 0).
      */
-    public void creaPnG(String nome, Razza razza, Classe classe, int oro, int punti, Statistica statBase) throws NomeMancantePngException, DatiMancantiException {
+    public void creaPnG(String nome, Razza razza, Classe classe, int oro, int punti, Statistica statBase) throws NomeMancantePngException, DatiMancantiException, IllegalArgumentException {
         if (nome == null || nome.trim().isEmpty()) {
             throw new NomeMancantePngException("Il nome del PnG non può essere vuoto.");
         }
         if (razza == null || classe == null) throw new DatiMancantiException("Devi selezionare razza e classe prima di procedere.");
+
+        // Controlli preventivi per evitare i crash SQL di violazione vincoli (Constraints)
+        if (statBase.getHpMax() <= 0) {
+            throw new IllegalArgumentException("Un personaggio deve avere almeno 1 HP massimo per poter essere creato!");
+        }
+        if (oro < 0) {
+            throw new IllegalArgumentException("La quantità di oro iniziale non può essere negativa.");
+        }
+        if (punti < 0) {
+            throw new IllegalArgumentException("I punti statistica non possono essere negativi.");
+        }
+
         Personaggio png = new Personaggio(classe, razza, statBase, nome, oro, punti);
 
         masterDAO.creaPnG(png, campagnaAttiva.getId());
@@ -1312,23 +1325,34 @@ public class Controller {
 
     /**
      * Crea un nuovo Oggetto Equipaggiabile (es. Armi, Armature) e lo aggiunge al catalogo.
-     * I requisiti minimi vengono attualmente impostati a 0 per default.
+     * Permette di definire sia i bonus statistici forniti, sia i requisiti minimi per indossarlo.
      *
      * @param nome   Il nome dell'equipaggiamento.
      * @param costo  Il valore in oro.
-     * @param cos    Il bonus (o malus) conferito alla Costituzione.
-     * @param forz   Il bonus (o malus) conferito alla Forza.
-     * @param des    Il bonus (o malus) conferito alla Destrezza.
-     * @param intell Il bonus (o malus) conferito all'Intelligenza.
-     * @param fede   Il bonus (o malus) conferito alla Fede.
-     * @param car    Il bonus (o malus) conferito al Carisma.
-     * @param fort   Il bonus (o malus) conferito alla Fortuna.
-     * @param hp     L'aumento dei Punti Vita massimi.
-     * @param mana   L'aumento dei Punti Mana massimi.
+     * @param bCos   Il bonus conferito alla Costituzione.
+     * @param bForz  Il bonus conferito alla Forza.
+     * @param bDes   Il bonus conferito alla Destrezza.
+     * @param bInt   Il bonus conferito all'Intelligenza.
+     * @param bFed   Il bonus conferito alla Fede.
+     * @param bCar   Il bonus conferito al Carisma.
+     * @param bFort  Il bonus conferito alla Fortuna.
+     * @param bHp    L'aumento dei Punti Vita massimi.
+     * @param bMana  L'aumento dei Punti Mana massimi.
+     * @param rCos   Requisito minimo di Costituzione.
+     * @param rForz  Requisito minimo di Forza.
+     * @param rDes   Requisito minimo di Destrezza.
+     * @param rInt   Requisito minimo di Intelligenza.
+     * @param rFed   Requisito minimo di Fede.
+     * @param rCar   Requisito minimo di Carisma.
+     * @param rFort  Requisito minimo di Fortuna.
+     * @param rHp    Requisito minimo di Punti Vita.
+     * @param rMana  Requisito minimo di Punti Mana.
      * @throws DatiMancantiException Se il nome è vuoto o la campagna non è attiva.
      */
-    public void creaNuovoEquipaggiamento(String nome, int costo, int cos, int forz, int des,
-                                         int intell, int fede, int car, int fort, int hp, int mana) throws DatiMancantiException {
+    public void creaNuovoEquipaggiamento(String nome, int costo,
+                                         int bCos, int bForz, int bDes, int bInt, int bFed, int bCar, int bFort, int bHp, int bMana,
+                                         int rCos, int rForz, int rDes, int rInt, int rFed, int rCar, int rFort, int rHp, int rMana) throws DatiMancantiException {
+
         if (campagnaAttiva == null) throw new exception.DatiMancantiException("Nessuna campagna attiva selezionata.");
         if (nome == null || nome.trim().isEmpty()) throw new exception.DatiMancantiException("Il nome dell'equipaggiamento è obbligatorio.");
 
@@ -1338,8 +1362,9 @@ public class Controller {
             }
         }
 
-        model.Statistica requisitiMinimi = new model.Statistica(0, 0, 0, 0, 0, 0, 0, 0, 0);
-        model.Statistica bonus = new model.Statistica(cos, forz, des, intell, fede, car, fort, hp, mana);
+        model.Statistica requisitiMinimi = new model.Statistica(rCos, rForz, rDes, rInt, rFed, rCar, rFort, rHp, rMana);
+        model.Statistica bonus = new model.Statistica(bCos, bForz, bDes, bInt, bFed, bCar, bFort, bHp, bMana);
+
         OggettoEquipaggiabile equip = new OggettoEquipaggiabile(nome, costo, requisitiMinimi, bonus);
 
         int idGenerato = oggettoDao.salvaEquipaggiamento(equip, campagnaAttiva.getId());
