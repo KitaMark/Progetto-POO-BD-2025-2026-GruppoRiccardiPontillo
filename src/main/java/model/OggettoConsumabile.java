@@ -45,5 +45,4 @@ public class OggettoConsumabile extends Oggetto {
     /** @return la quantità di punti mana ripristinati dall'oggetto. */
     public int getRipristinoMana() { return ripristinoMana; }
 
-    //rimosso toString per sfruttare quello della classe padre
 }

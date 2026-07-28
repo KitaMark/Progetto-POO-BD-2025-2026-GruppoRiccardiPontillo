@@ -45,5 +45,4 @@ public class OggettoEquipaggiabile extends Oggetto {
     /** @return l'oggetto Statistica contenente i bonus applicati. */
     public Statistica getBonus() { return bonus; }
 
-    //rimosso toString per usare quello di Oggetto
 }

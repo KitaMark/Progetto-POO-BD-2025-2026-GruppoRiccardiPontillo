@@ -324,22 +324,7 @@ public class Controller {
         return campagnaTrovata;
     }
 
-    /**
-     * Cerca una specifica campagna in memoria tramite il suo identificativo numerico univoco (ID).
-     *
-     * @param id L'identificativo della campagna assegnato dal database.
-     * @return L'istanza di {@link Campagna} trovata, o {@code null} altrimenti.
-     */
-    public Campagna cercaCampagnaPerId(int id) {
-        Campagna campagnaTrovata = null;
-        for (Campagna campagna : listaCampagne.keySet()) {
-            if (id == campagna.getId()) {
-                campagnaTrovata = campagna;
-                break;
-            }
-        }
-        return campagnaTrovata;
-    }
+
 
     /**
      * Verifica se l'utente attualmente connesso è il creatore e il Master della campagna selezionata.
@@ -516,53 +501,7 @@ public class Controller {
         abilitaDao.caricaAbilitaApprese(pg);
     }
 
-    /**
-     * Associa al personaggio una nuova abilità compatibile con la sua classe, garantendo che non l'abbia
-     * già appresa in precedenza, e sincronizza tale assegnazione anche sulla rispettiva tabella relazionale nel database.
-     *
-     * @param nomeAbilita Il nome esatto dell'abilità che si intende imparare.
-     * @param nomeCampagna Il nome della campagna attuale nel cui contesto l'abilità viene appresa.
-     * @throws AbilitaNonSelezionataException Se non viene specificata un'abilità testuale valida.
-     * @throws AbilitaGiaAppresaException Se il personaggio possiede già l'abilità.
-     * @throws AbilitaNonSbloccabileException Se l'abilità ricercata non fa parte dei talenti previsti dalla classe.
-     */
-    public void imparaAbilita(String nomeAbilita, String nomeCampagna) throws AbilitaNonSelezionataException, AbilitaGiaAppresaException, AbilitaNonSbloccabileException {
-        if (nomeAbilita == null || nomeAbilita.trim().isEmpty()) {
-            throw new AbilitaNonSelezionataException("Seleziona un'abilità valida dalla tabella.");
-        }
 
-        Giocatore giocatore = (Giocatore) utenteAttivo;
-        Personaggio pg = giocatore.getPersonaggioInCampagna(campagnaAttiva);
-
-        Abilita target = null;
-        for (Abilita abilita : pg.getClasse().getAbilitaSbloccabili()) {
-            if (abilita.getNome().trim().equalsIgnoreCase(nomeAbilita.trim())) {
-                target = abilita;
-                break;
-            }
-        }
-
-        if (target == null) {
-            throw new AbilitaNonSbloccabileException("Questa abilità non è prevista per la tua classe.");
-        }
-
-        for (Abilita a : pg.getListaAbilita()) {
-            if (a.getNome().trim().equalsIgnoreCase(target.getNome().trim())) {
-                throw new AbilitaGiaAppresaException("Hai già appreso questa abilità in precedenza!");
-            }
-        }
-
-        try {
-            abilitaDao.imparaAbilita(pg.getId(), target.getNome());
-        } catch (RuntimeException e) {
-            if (e.getMessage().toLowerCase().contains("duplicato") || e.getMessage().toLowerCase().contains("esiste già")) {
-                throw new AbilitaGiaAppresaException("Hai già appreso questa abilità in precedenza!");
-            }
-            throw e;
-        }
-
-        pg.addAbilita(target);
-    }
 
 
     // =========================================================================================
@@ -1215,12 +1154,19 @@ public class Controller {
      * @param mForz Modificatore passivo bonus della Fortuna.
      * @param mHp Bonus ai punti vitalità.
      * @param mMana Bonus al pool del mana incantato.
-     * @throws Exception Generato se sfugge o fallisce la campagna per cui stiamo generando la referenza.
+     * @throws Exception Generato se sfugge o fallisce la campagna per cui stiamo generating la referenza.
      */
     public void creaNuovaRazza(String nome, String descrizione, int mFor, int mDes, int mCos,
                                int mInt, int mFed, int mCar, int mForz, int mHp, int mMana) throws Exception {
 
         if (campagnaAttiva == null) throw new Exception("Nessuna campagna attiva selezionata.");
+        if (nome == null || nome.trim().isEmpty()) throw new exception.DatiMancantiException("Il nome della razza è obbligatorio.");
+
+        for (Razza razza : campagnaAttiva.getListaRazze()) {
+            if (razza.getNome().trim().equalsIgnoreCase(nome.trim())) {
+                throw new RuntimeException("Una razza chiamata '" + nome + "' esiste già in questa campagna.");
+            }
+        }
 
         Razza nuovaRazza = new Razza(mCos, mFor, mDes, mInt, mFed, mCar, mForz, mHp, mMana, nome);
 
@@ -1244,6 +1190,12 @@ public class Controller {
         }
         if (nome == null || nome.trim().isEmpty()) {
             throw new exception.DatiMancantiException("Il nome della classe è obbligatorio.");
+        }
+
+        for (Classe classe : campagnaAttiva.getListaClassi()) {
+            if (classe.getNome().trim().equalsIgnoreCase(nome.trim())) {
+                throw new RuntimeException("Una classe chiamata '" + nome + "' esiste già in questa campagna.");
+            }
         }
 
         Classe nuovaClasse = new Classe(nome);
@@ -1344,6 +1296,12 @@ public class Controller {
         if (campagnaAttiva == null) throw new exception.DatiMancantiException("Nessuna campagna attiva selezionata.");
         if (nome == null || nome.trim().isEmpty()) throw new exception.DatiMancantiException("Il nome del consumabile è obbligatorio.");
 
+        for (Oggetto oggetto : campagnaAttiva.getCatalogoOggetti()) {
+            if (oggetto.getNome().trim().equalsIgnoreCase(nome.trim())) {
+                throw new RuntimeException("Un oggetto chiamato '" + nome + "' esiste già nel catalogo della campagna.");
+            }
+        }
+
         OggettoConsumabile consumabile = new OggettoConsumabile(nome, costo, ripHp, ripMana);
 
         int idGenerato = oggettoDao.salvaConsumabile(consumabile, campagnaAttiva.getId());
@@ -1373,6 +1331,12 @@ public class Controller {
                                          int intell, int fede, int car, int fort, int hp, int mana) throws DatiMancantiException {
         if (campagnaAttiva == null) throw new exception.DatiMancantiException("Nessuna campagna attiva selezionata.");
         if (nome == null || nome.trim().isEmpty()) throw new exception.DatiMancantiException("Il nome dell'equipaggiamento è obbligatorio.");
+
+        for (Oggetto oggetto : campagnaAttiva.getCatalogoOggetti()) {
+            if (oggetto.getNome().trim().equalsIgnoreCase(nome.trim())) {
+                throw new RuntimeException("Un oggetto chiamato '" + nome + "' esiste già nel catalogo della campagna.");
+            }
+        }
 
         model.Statistica requisitiMinimi = new model.Statistica(0, 0, 0, 0, 0, 0, 0, 0, 0);
         model.Statistica bonus = new model.Statistica(cos, forz, des, intell, fede, car, fort, hp, mana);

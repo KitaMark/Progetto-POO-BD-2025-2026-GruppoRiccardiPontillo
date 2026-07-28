@@ -25,32 +25,32 @@ import java.awt.event.ActionListener;
  */
 public class EditorOggettiGui {
 
-    private JPanel panel1;
-    private JTable table1;
+    private JPanel mainPanel;
+    private JTable tabellaOggetti;
     private JButton indietroButton;
     private JLabel lblTitolo;
-    private JTabbedPane tabbedPane1;
+    private JTabbedPane schedeTabbedPane;
 
-    private JTextField textField1; // Nome
-    private JTextField textField2; // Costo
-    private JTextField textField3; // Ripristino Hp
-    private JTextField textField4; // Ripristino Mana
+    // Componenti per Oggetto Consumabile
+    private JTextField txtNomeConsumabile;
+    private JTextField txtCostoConsumabile;
+    private JTextField txtRipristinoHp;
+    private JTextField txtRipristinoMana;
     private JButton aggiungiConsumabileButton;
 
-    private JTextField textField5;  // Nome
-    private JTextField textField6;  // Costo
-    private JTextField textField7;  // Forza
-    private JTextField textField8;  // Destrezza
-    private JTextField textField9;  // Costituzione
-    private JTextField textField10; // Intelligenza
-    private JTextField textField11; // Fede
-    private JTextField textField12; // Carisma
-    private JTextField textField13; // Fortuna
-    private JTextField textField14; // HpMax
-    private JTextField textField15; // ManaMax
+    // Componenti per Oggetto Equipaggiabile
+    private JTextField txtNomeEquipaggiamento;
+    private JTextField txtCostoEquipaggiamento;
+    private JTextField txtForza;
+    private JTextField txtDestrezza;
+    private JTextField txtCostituzione;
+    private JTextField txtIntelligenza;
+    private JTextField txtFede;
+    private JTextField txtCarisma;
+    private JTextField txtFortuna;
+    private JTextField txtHpMax;
+    private JTextField txtManaMax;
     private JButton aggiungiEquipaggiamentoButton;
-
-
 
     /** Il Controller di riferimento per la logica applicativa. */
     private Controller controller;
@@ -72,7 +72,7 @@ public class EditorOggettiGui {
 
         // Configurazione della finestra
         frameAttuale = new JFrame("Catalogo Oggetti - " + controller.getCampagnaAttiva().getNome());
-        frameAttuale.setContentPane(panel1);
+        frameAttuale.setContentPane(mainPanel);
         frameAttuale.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frameAttuale.setSize(950, 700);
         frameAttuale.setLocationRelativeTo(null);
@@ -95,19 +95,17 @@ public class EditorOggettiGui {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String nome = textField1.getText();
-                    int costo = parseIntSicuro(textField2.getText(), "Costo");
-                    int hp = parseIntSicuro(textField3.getText(), "Ripristino Hp");
-                    int mana = parseIntSicuro(textField4.getText(), "Ripristino Mana");
+                    String nome = txtNomeConsumabile.getText();
+                    int costo = parseIntSicuro(txtCostoConsumabile.getText(), "Costo");
+                    int hp = parseIntSicuro(txtRipristinoHp.getText(), "Ripristino Hp");
+                    int mana = parseIntSicuro(txtRipristinoMana.getText(), "Ripristino Mana");
 
-                    // Delega al controller che lancerà eccezioni in caso di dati mancanti
                     controller.creaNuovoConsumabile(nome, costo, hp, mana);
 
                     JOptionPane.showMessageDialog(frameAttuale, "Consumabile aggiunto al catalogo!", "Successo", JOptionPane.INFORMATION_MESSAGE);
 
-                    // Sincronizzazione visiva post-salvataggio
                     inizializzaTabella();
-                    textField1.setText("");
+                    txtNomeConsumabile.setText("");
                     impostaZeriConsumabile();
 
                 } catch (exception.DatiMancantiException ex) {
@@ -125,26 +123,24 @@ public class EditorOggettiGui {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String nome = textField5.getText();
-                    int costo = parseIntSicuro(textField6.getText(), "Costo");
-                    int forz = parseIntSicuro(textField7.getText(), "Forza");
-                    int des = parseIntSicuro(textField8.getText(), "Destrezza");
-                    int cos = parseIntSicuro(textField9.getText(), "Costituzione");
-                    int intell = parseIntSicuro(textField10.getText(), "Intelligenza");
-                    int fede = parseIntSicuro(textField11.getText(), "Fede");
-                    int car = parseIntSicuro(textField12.getText(), "Carisma");
-                    int fort = parseIntSicuro(textField13.getText(), "Fortuna");
-                    int hpMax = parseIntSicuro(textField14.getText(), "HpMax");
-                    int manaMax = parseIntSicuro(textField15.getText(), "ManaMax");
+                    String nome = txtNomeEquipaggiamento.getText();
+                    int costo = parseIntSicuro(txtCostoEquipaggiamento.getText(), "Costo");
+                    int forz = parseIntSicuro(txtForza.getText(), "Forza");
+                    int des = parseIntSicuro(txtDestrezza.getText(), "Destrezza");
+                    int cos = parseIntSicuro(txtCostituzione.getText(), "Costituzione");
+                    int intell = parseIntSicuro(txtIntelligenza.getText(), "Intelligenza");
+                    int fede = parseIntSicuro(txtFede.getText(), "Fede");
+                    int car = parseIntSicuro(txtCarisma.getText(), "Carisma");
+                    int fort = parseIntSicuro(txtFortuna.getText(), "Fortuna");
+                    int hpMax = parseIntSicuro(txtHpMax.getText(), "HpMax");
+                    int manaMax = parseIntSicuro(txtManaMax.getText(), "ManaMax");
 
-                    // Delega al controller la creazione dell'oggetto complesso
                     controller.creaNuovoEquipaggiamento(nome, costo, cos, forz, des, intell, fede, car, fort, hpMax, manaMax);
 
                     JOptionPane.showMessageDialog(frameAttuale, "Equipaggiamento aggiunto al catalogo!", "Successo", JOptionPane.INFORMATION_MESSAGE);
 
-                    // Sincronizzazione visiva post-salvataggio
                     inizializzaTabella();
-                    textField5.setText("");
+                    txtNomeEquipaggiamento.setText("");
                     impostaZeriEquip();
 
                 } catch (exception.DatiMancantiException ex) {
@@ -185,25 +181,25 @@ public class EditorOggettiGui {
      * Azzera i campi testuali numerici della scheda "Nuovo Consumabile".
      */
     private void impostaZeriConsumabile() {
-        textField2.setText("0");
-        textField3.setText("0");
-        textField4.setText("0");
+        txtCostoConsumabile.setText("0");
+        txtRipristinoHp.setText("0");
+        txtRipristinoMana.setText("0");
     }
 
     /**
      * Azzera i campi testuali numerici della scheda "Nuovo Equipaggiamento".
      */
     private void impostaZeriEquip() {
-        textField6.setText("0");
-        textField7.setText("0");
-        textField8.setText("0");
-        textField9.setText("0");
-        textField10.setText("0");
-        textField11.setText("0");
-        textField12.setText("0");
-        textField13.setText("0");
-        textField14.setText("0");
-        textField15.setText("0");
+        txtCostoEquipaggiamento.setText("0");
+        txtForza.setText("0");
+        txtDestrezza.setText("0");
+        txtCostituzione.setText("0");
+        txtIntelligenza.setText("0");
+        txtFede.setText("0");
+        txtCarisma.setText("0");
+        txtFortuna.setText("0");
+        txtHpMax.setText("0");
+        txtManaMax.setText("0");
     }
 
     /**
@@ -225,8 +221,8 @@ public class EditorOggettiGui {
             }
         };
 
-        table1.setModel(model);
-        table1.getTableHeader().setReorderingAllowed(false);
+        tabellaOggetti.setModel(model);
+        tabellaOggetti.getTableHeader().setReorderingAllowed(false);
 
         for (Oggetto oggetto : controller.getCatalogoNegozio()) {
             String tipo;

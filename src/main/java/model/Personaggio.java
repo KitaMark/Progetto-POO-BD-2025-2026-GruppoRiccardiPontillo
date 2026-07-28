@@ -125,85 +125,7 @@ public class Personaggio {
         calcolaStatisticheFinali();
     }
 
-    /**
-     * Incrementa un attributo base spendendo i punti statistica disponibili.
-     *
-     * @param punti     il numero di punti da assegnare all'attributo.
-     * @param attributo il nome dell'attributo da incrementare.
-     * @throws IllegalArgumentException se i punti richiesti superano quelli disponibili o sono minori di 1.
-     */
-    public void spendipuntiStatistica(int punti, String attributo) {
-        if (punti > puntiStatistica || punti < 1) throw new IllegalArgumentException("Valore punti non valido.");
-        statisticaBase.incrementa(attributo, punti);
-        puntiStatistica -= punti;
-        aggiornaStatoPG();
-    }
 
-    /**
-     * Gestisce l'acquisto di un oggetto verificando la disponibilità di oro.
-     * Inserisce l'oggetto nella mappa corretta in base al tipo.
-     *
-     * @param oggetto l'oggetto da acquistare.
-     * @throws IllegalArgumentException se l'oggetto è nullo, l'oro è insufficiente o l'equipaggiabile è già posseduto.
-     */
-    public void compraOggetto(Oggetto oggetto) {
-        if (oggetto == null) throw new IllegalArgumentException("Seleziona un oggetto valido.");
-        if (oro < oggetto.getCosto()) throw new IllegalArgumentException("Oro insufficiente.");
-        if (oggetto instanceof OggettoEquipaggiabile) {
-            if (!(inventarioEquipaggiabili.containsKey((OggettoEquipaggiabile) oggetto))) {
-                inventarioEquipaggiabili.put((OggettoEquipaggiabile) oggetto, false);
-                this.oro -= oggetto.getCosto();
-            } else {
-                throw new IllegalArgumentException("Non puoi acquistare un equipaggiabile che già possiedi!");
-            }
-        } else if (oggetto instanceof OggettoConsumabile) {
-            addConsumabile((OggettoConsumabile) oggetto, 1);
-            this.oro -= oggetto.getCosto();
-        }
-    }
-
-    /**
-     * Vende un oggetto dall'inventario, aggiungendo all'oro la metà del suo costo di listino.
-     *
-     * @param oggetto l'oggetto da vendere.
-     * @throws IllegalArgumentException se l'oggetto è nullo o non è presente in inventario.
-     */
-    public void vendiOggetto(Oggetto oggetto) {
-        if (oggetto == null) throw new IllegalArgumentException("Seleziona un oggetto valido.");
-        if (oggetto instanceof OggettoEquipaggiabile) {
-            if (!(inventarioEquipaggiabili.containsKey((OggettoEquipaggiabile) oggetto))) {
-                throw new IllegalArgumentException("Non possiedi quest'oggetto!");
-            } else {
-                rimuoviEquipaggiabile((OggettoEquipaggiabile) oggetto);
-                oro += oggetto.getCosto() / 2;
-            }
-        } else if (oggetto instanceof OggettoConsumabile) {
-            if (inventarioConsumabili.containsKey((OggettoConsumabile) oggetto)) {
-                rimuoviConsumabile((OggettoConsumabile) oggetto, 1);
-                oro += oggetto.getCosto() / 2;
-            } else {
-                throw new IllegalArgumentException("Non possiedi quest'oggetto!");
-            }
-        }
-    }
-
-    /**
-     * Equipaggia un oggetto se presente in inventario e se sono soddisfatti i requisiti minimi basati sulle statistiche base.
-     *
-     * @param equipaggiabile l'oggetto da equipaggiare.
-     * @return {@code true} se l'oggetto viene equipaggiato, {@code false} se i requisiti non sono soddisfatti.
-     * @throws IllegalArgumentException se l'oggetto è nullo o non è posseduto.
-     */
-    public boolean equipaggia(OggettoEquipaggiabile equipaggiabile) {
-        if (equipaggiabile == null) throw new IllegalArgumentException("Oggetto non valido.");
-        if (inventarioEquipaggiabili.containsKey(equipaggiabile)) {
-            if (statisticaBase.soddisfa(equipaggiabile.getRequisiti())) {
-                inventarioEquipaggiabili.replace(equipaggiabile, true);
-                aggiornaStatoPG();
-                return true;
-            } else return false;
-        } else throw new IllegalArgumentException("Non possiedi quest'oggetto!");
-    }
 
     /**
      * Rimuove l'equipaggiamento di un oggetto, riportando il suo stato a non equipaggiato.
@@ -219,19 +141,6 @@ public class Personaggio {
         } else throw new IllegalArgumentException("Non possiedi quest'oggetto!");
     }
 
-    /**
-     * Utilizza un oggetto consumabile, applicando i suoi effetti di ripristino HP/Mana e riducendone la quantità.
-     *
-     * @param oggetto l'oggetto consumabile da usare.
-     * @throws IllegalArgumentException se l'oggetto non è presente in inventario.
-     */
-    public void usaConsumabile(OggettoConsumabile oggetto) {
-        if (inventarioConsumabili.containsKey(oggetto)) {
-            ripristinaHP(oggetto.getRipristinoHP());
-            ripristinaMana(oggetto.getRipristinoMana());
-            rimuoviConsumabile(oggetto, 1);
-        } else throw new IllegalArgumentException("Non possiedi quest'oggetto!");
-    }
 
     /**
      * Ripristina gli HP del personaggio senza superare il valore massimo delle statistiche finali.

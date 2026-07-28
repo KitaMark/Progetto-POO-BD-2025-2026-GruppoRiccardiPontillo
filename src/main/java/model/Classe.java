@@ -62,20 +62,6 @@ public class Classe {
     public void addAbilita(Abilita abilita) { abilitaSbloccabili.add(abilita); }
 
 
-    /**
-     * Rimuove un'abilità dall'elenco di quelle sbloccabili.
-     *
-     * @param abilita l'abilità da rimuovere.
-     * @return {@code true} se rimossa con successo, {@code false} se non presente.
-     */
-    public boolean removeAbilita(Abilita abilita){
-        if(abilitaSbloccabili.contains(abilita)){
-            abilitaSbloccabili.remove(abilita);
-            return true;
-        }
-        return false;
-    }
-
 
     /**
      * Restituisce la rappresentazione testuale della classe.

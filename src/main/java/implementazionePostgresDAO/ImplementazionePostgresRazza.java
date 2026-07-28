@@ -35,8 +35,7 @@ public class ImplementazionePostgresRazza implements RazzaDao {
                 "ModIntelligenza, ModFede, ModCarisma, ModFortuna, ModHpMax, ModManaMax) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING CodRazza";
 
-        // NB: la Connection è il singleton condiviso: NON va chiusa qui (niente try-with-resources su di essa),
-        // altrimenti si chiude per tutta l'applicazione.
+
         Connection connection = ConnessioneDatabase.getInstance().connection;
 
         try (PreparedStatement stmt = connection.prepareStatement(query)) {

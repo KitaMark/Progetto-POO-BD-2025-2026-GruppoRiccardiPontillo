@@ -2,7 +2,7 @@ package model;
 
 /**
  * Rappresenta un'abilità, incantesimo o potere speciale sbloccabile nel sistema di gioco.
- * Ha una funzione puramente descrittiva e il suo esito narrativo è gestito dal Master[cite: 2].
+ * Ha una funzione puramente descrittiva e il suo esito narrativo è gestito dal Master.
  */
 public class Abilita {
     private int id;
@@ -13,9 +13,9 @@ public class Abilita {
     /**
      * Crea una nuova abilità associandola a una specifica classe.
      *
-     * @param nome        il nome dell'abilità[cite: 2].
-     * @param descrizione la descrizione dell'effetto dell'abilità[cite: 2].
-     * @param classe      la classe a cui appartiene l'abilità[cite: 2].
+     * @param nome        il nome dell'abilità.
+     * @param descrizione la descrizione dell'effetto dell'abilità.
+     * @param classe      la classe a cui appartiene l'abilità.
      */
     public Abilita(String nome, String descrizione, Classe classe){
         this.nome = nome;
@@ -27,8 +27,8 @@ public class Abilita {
      * Crea una nuova abilità senza assegnarla immediatamente a una classe.
      * Utile per la creazione transiente da parte del Controller prima dell'inserimento nel database.
      *
-     * @param nome        il nome dell'abilità[cite: 2].
-     * @param descrizione la descrizione dell'effetto dell'abilità[cite: 2].
+     * @param nome        il nome dell'abilità.
+     * @param descrizione la descrizione dell'effetto dell'abilità.
      */
     public Abilita(String nome, String descrizione){
         this.nome = nome;
@@ -56,7 +56,7 @@ public class Abilita {
     /**
      * Restituisce il nome dell'abilità.
      *
-     * @return il nome dell'abilità[cite: 2].
+     * @return il nome dell'abilità.
      */
     public String getNome() {
         return nome;
@@ -74,7 +74,7 @@ public class Abilita {
     /**
      * Restituisce la classe associata all'abilità.
      *
-     * @return l'oggetto {@link Classe} di riferimento[cite: 2].
+     * @return l'oggetto {@link Classe} di riferimento.
      */
     public Classe getClasse() {
         return classe;
@@ -83,7 +83,7 @@ public class Abilita {
     /**
      * Imposta un nuovo nome per l'abilità.
      *
-     * @param nome il nuovo nome da impostare[cite: 2].
+     * @param nome il nuovo nome da impostare.
      */
     public void setNome(String nome) {
         this.nome = nome;
@@ -92,7 +92,7 @@ public class Abilita {
     /**
      * Imposta una nuova descrizione per l'abilità.
      *
-     * @param descrizione la nuova descrizione dell'effetto da impostare[cite: 2].
+     * @param descrizione la nuova descrizione dell'effetto da impostare.
      */
     public void setDescrizione(String descrizione) {
         this.descrizione = descrizione;
@@ -101,7 +101,7 @@ public class Abilita {
     /**
      * Associa l'abilità a una nuova classe.
      *
-     * @param classe la nuova classe da associare[cite: 2].
+     * @param classe la nuova classe da associare.
      */
     public void setClasse(Classe classe) {
         this.classe = classe;
@@ -111,13 +111,13 @@ public class Abilita {
      * Confronta questa abilità con un altro oggetto per stabilirne l'uguaglianza.
      * <p>
      * Due abilità sono considerate identiche se possiedono lo stesso nome,
-     * ignorando le differenze tra maiuscole/minuscole e gli spazi vuoti iniziali/finali[cite: 2].
+     * ignorando le differenze tra maiuscole/minuscole e gli spazi vuoti iniziali/finali.
      * Questo permette il corretto funzionamento dei metodi delle API Collection
-     * (come {@code contains()} e {@code remove()})[cite: 2].
+     * (come {@code contains()} e {@code remove()}).
      * </p>
      *
-     * @param o L'oggetto da confrontare[cite: 2].
-     * @return {@code true} se gli oggetti rappresentano la stessa abilità logica, {@code false} altrimenti[cite: 2].
+     * @param o L'oggetto da confrontare.
+     * @return {@code true} se gli oggetti rappresentano la stessa abilità logica, {@code false} altrimenti.
      */
     @Override
     public boolean equals(Object o) {
@@ -134,10 +134,10 @@ public class Abilita {
      * Genera un codice hash univoco per l'abilità basato sul suo nome formattato.
      * <p>
      * L'hash viene calcolato sulla stringa in minuscolo e senza spazi per mantenere
-     * il contratto con il metodo {@code equals()}[cite: 2].
+     * il contratto con il metodo {@code equals()}.
      * </p>
      *
-     * @return il codice hash calcolato[cite: 2].
+     * @return il codice hash calcolato.
      */
     @Override
     public int hashCode() {
@@ -147,7 +147,7 @@ public class Abilita {
     /**
      * Restituisce la rappresentazione testuale dell'abilità.
      *
-     * @return stringa formattata con i dettagli dell'oggetto[cite: 2].
+     * @return stringa formattata con i dettagli dell'oggetto.
      */
     @Override
     public String toString() {
