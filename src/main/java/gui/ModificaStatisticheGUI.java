@@ -124,13 +124,13 @@ public class ModificaStatisticheGUI {
     private void inizializzaSpinner(Personaggio pg) {
         Statistica statAttuali = pg.getStatisticheBase();
 
-        forzaSpinner.setModel(new SpinnerNumberModel(statAttuali.getForza(), 1, 100, 1));
-        destrezzaSpinner.setModel(new SpinnerNumberModel(statAttuali.getDestrezza(), 1, 100, 1));
-        costituzioneSpinner.setModel(new SpinnerNumberModel(statAttuali.getCostituzione(), 1, 100, 1));
-        intelligenzaSpinner.setModel(new SpinnerNumberModel(statAttuali.getIntelligenza(), 1, 100, 1));
-        fedeSpinner.setModel(new SpinnerNumberModel(statAttuali.getFede(), 1, 100, 1));
-        carismaSpinner.setModel(new SpinnerNumberModel(statAttuali.getCarisma(), 1, 100, 1));
-        fortunaSpinner.setModel(new SpinnerNumberModel(statAttuali.getFortuna(), 1, 100, 1));
+        forzaSpinner.setModel(new SpinnerNumberModel(statAttuali.getForza(), 0, 100, 1));
+        destrezzaSpinner.setModel(new SpinnerNumberModel(statAttuali.getDestrezza(), 0, 100, 1));
+        costituzioneSpinner.setModel(new SpinnerNumberModel(statAttuali.getCostituzione(), 0, 100, 1));
+        intelligenzaSpinner.setModel(new SpinnerNumberModel(statAttuali.getIntelligenza(), 0, 100, 1));
+        fedeSpinner.setModel(new SpinnerNumberModel(statAttuali.getFede(), 0, 100, 1));
+        carismaSpinner.setModel(new SpinnerNumberModel(statAttuali.getCarisma(), 0, 100, 1));
+        fortunaSpinner.setModel(new SpinnerNumberModel(statAttuali.getFortuna(), 0, 100, 1));
 
         maxHpSpinner.setModel(new SpinnerNumberModel(statAttuali.getHpMax(), 1, 9999, 1));
         manaMaxSpinner.setModel(new SpinnerNumberModel(statAttuali.getManaMax(), 0, 9999, 1));
