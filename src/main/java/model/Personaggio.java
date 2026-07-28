@@ -38,12 +38,12 @@ public class Personaggio {
      * @param razza  la razza del personaggio con i relativi modificatori.
      * @param nome   il nome del personaggio.
      */
-    public Personaggio(Classe classe, Razza razza, String nome) {
+    public Personaggio(Classe classe, Razza razza, String nome, boolean isPg) {
         this.classe = classe;
         this.razza = razza;
         this.statisticaBase = new Statistica();
         this.nome = nome;
-        this.isPg = true;
+        this.isPg = isPg;
         this.puntiStatistica = 0;
         this.oro = 0;
         this.inventarioConsumabili = new HashMap<>();
